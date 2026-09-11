@@ -76,6 +76,66 @@
             padding: 1em;
         }
 
+        .bst-servarr-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1em;
+            margin-bottom: 1em;
+        }
+
+        .bst-servarr-instance-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+
+        .bst-servarr-instance-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+        }
+
+        .bst-servarr-instance-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1em;
+        }
+
+        .bst-servarr-instance-title-wrap {
+            min-width: 0;
+        }
+
+        .bst-servarr-instance-kind {
+            font-size: 1.05em;
+            font-weight: 500;
+            line-height: 1.35;
+            color: #fff;
+            margin-bottom: 0.25em;
+        }
+
+        .bst-servarr-instance-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65em;
+            flex-shrink: 0;
+        }
+
+        .bst-modal--compact {
+            width: min(100%, 24em);
+        }
+
+        .bst-modal-actions--stack {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .bst-modal-btn--choice {
+            justify-content: center;
+            text-align: center;
+        }
+
         .bst-section-header {
             display: flex;
             justify-content: space-between;
@@ -967,46 +1027,11 @@
                 <div class="bst-section-container">
                     <div class="bst-section-title">Radarr/Sonarr configuration for download progress on Requests page</div>
                     <div class="bst-card">
-                        <div class="bst-input-row" style="margin-bottom: 1.25em;">
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="radarrUrl">Radarr URL</label>
-                                    <div class="bst-input-stack">
-                                        <input id="radarrUrl" name="radarrUrl" type="text" class="bst-input" placeholder="http://192.168.1.170:7878" />
-                                        <div class="bst-field-desc">URL used by the server to reach Radarr (or you use to access it)</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="radarrApiKey">Radarr API Key</label>
-                                    <div class="bst-input-stack">
-                                        <input id="radarrApiKey" name="radarrApiKey" type="password" class="bst-input" autocomplete="off" />
-                                        <div class="bst-field-desc">Key for Radarr which you can get from Radarr → Settings → General → Security → API Key</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="bst-servarr-toolbar">
+                            <div class="bst-field-desc">Add one or more Radarr or Sonarr instances. The plugin uses them for Requests progress and open links.</div>
+                            <button type="button" class="bst-customize-btn" id="bstAddServarrInstance" aria-label="Add Servarr instance">+</button>
                         </div>
-                        <div class="bst-input-row">
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="sonarrUrl">Sonarr URL</label>
-                                    <div class="bst-input-stack">
-                                        <input id="sonarrUrl" name="sonarrUrl" type="text" class="bst-input" placeholder="http://192.168.1.170:8989" />
-                                        <div class="bst-field-desc">URL used by the server to reach Sonarr (or you use to access it)</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="sonarrApiKey">Sonarr API Key</label>
-                                    <div class="bst-input-stack">
-                                        <input id="sonarrApiKey" name="sonarrApiKey" type="password" class="bst-input" autocomplete="off" />
-                                        <div class="bst-field-desc">Key for Sonarr which you can get from Sonarr → Settings → General → Security → API Key</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <div id="bstServarrInstanceList" class="bst-servarr-instance-list"></div>
                     </div>
                 </div>
 
@@ -1752,6 +1777,74 @@
         </div>
     </div>
 
+    <template id="bstServarrInstanceTemplate">
+        <div class="bst-card bst-servarr-instance-card" data-servarr-kind="">
+            <div class="bst-servarr-instance-top">
+                <div class="bst-servarr-instance-title-wrap">
+                    <div class="bst-servarr-instance-kind" data-servarr-kind-label></div>
+                    <div class="bst-field-desc" data-servarr-kind-desc>Used for Requests progress and open links.</div>
+                </div>
+                <div class="bst-servarr-instance-actions">
+                    <label class="bst-toggle" title="Use as default">
+                        <input type="checkbox" data-servarr-field="isDefault" />
+                        <span class="bst-toggle-slider"></span>
+                    </label>
+                    <button type="button" class="bst-customize-btn" data-servarr-action="remove">Remove</button>
+                </div>
+            </div>
+            <div class="bst-input-row">
+                <div class="bst-input-group">
+                    <div class="bst-field-main">
+                        <label class="bst-label bst-label--side" data-servarr-label="name">Name</label>
+                        <div class="bst-input-stack">
+                            <input type="text" class="bst-input" data-servarr-field="name" />
+                        </div>
+                    </div>
+                </div>
+                <div class="bst-input-group">
+                    <div class="bst-field-main">
+                        <label class="bst-label bst-label--side" data-servarr-label="url">URL</label>
+                        <div class="bst-input-stack">
+                            <input type="text" class="bst-input" data-servarr-field="url" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bst-input-row">
+                <div class="bst-input-group">
+                    <div class="bst-field-main">
+                        <label class="bst-label bst-label--side" data-servarr-label="apiKey">API Key</label>
+                        <div class="bst-input-stack">
+                            <input type="password" class="bst-input" data-servarr-field="apiKey" autocomplete="off" />
+                        </div>
+                    </div>
+                </div>
+                <div class="bst-input-group" data-servarr-role="4k-row">
+                    <div class="bst-toggle-row">
+                        <div class="bst-toggle-copy">
+                            <label class="bst-toggle-label" data-servarr-4k-label>4K Radarr</label>
+                            <div class="bst-field-desc">Marks this Radarr as the 4K target.</div>
+                        </div>
+                        <label class="bst-toggle" title="Mark as 4K target">
+                            <input type="checkbox" data-servarr-field="is4k" />
+                            <span class="bst-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <div id="bstServarrAddModal" class="bst-modal-overlay" aria-hidden="true">
+        <div class="bst-modal bst-modal--compact" role="dialog" aria-modal="true" aria-labelledby="bstServarrAddModalTitle">
+            <h3 id="bstServarrAddModalTitle" class="bst-modal-title">Add Servarr instance</h3>
+            <div class="bst-modal-actions bst-modal-actions--stack">
+                <button type="button" class="bst-modal-btn bst-modal-btn--choice" data-servarr-add-kind="radarr">Add Radarr</button>
+                <button type="button" class="bst-modal-btn bst-modal-btn--choice" data-servarr-add-kind="sonarr">Add Sonarr</button>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript">
         (function () {
             const pluginId = 'c8e4f2a1-9b3d-4e7f-a6c2-1d5e8f0a3b7c';
@@ -1793,11 +1886,397 @@
                 return el ? String(el.value || '').trim() : '';
             }
 
+            const servarrInstanceList = document.getElementById('bstServarrInstanceList');
+            const servarrInstanceTemplate = document.getElementById('bstServarrInstanceTemplate');
+            const servarrAddModal = document.getElementById('bstServarrAddModal');
+            const servarrAddButton = document.getElementById('bstAddServarrInstance');
+            let servarrInstanceIdCounter = 0;
+
+            function normalizeServarrKind(kind) {
+                return String(kind || '').toLowerCase() === 'sonarr' ? 'sonarr' : 'radarr';
+            }
+
+            function getServarrKindLabel(kind) {
+                return normalizeServarrKind(kind) === 'sonarr' ? 'Sonarr' : 'Radarr';
+            }
+
+            function getServarrDefaultName(kind, index) {
+                return getServarrKindLabel(kind) + ' ' + index;
+            }
+
+            function getServarrInstanceCards() {
+                return servarrInstanceList
+                    ? Array.from(servarrInstanceList.querySelectorAll('.bst-servarr-instance-card'))
+                    : [];
+            }
+
+            function getServarrInstanceCountsFromDom() {
+                return getServarrInstanceCards().reduce(function (counts, card) {
+                    const kind = normalizeServarrKind(card.getAttribute('data-servarr-kind'));
+                    const urlInput = card.querySelector('[data-servarr-field="url"]');
+                    const apiKeyInput = card.querySelector('[data-servarr-field="apiKey"]');
+                    if (String(urlInput && urlInput.value || '').trim() !== '' && String(apiKeyInput && apiKeyInput.value || '').trim() !== '') {
+                        counts[kind] += 1;
+                    }
+                    return counts;
+                }, { radarr: 0, sonarr: 0 });
+            }
+
+            function normalizeServarrInstancesFromConfig(config) {
+                const raw = Array.isArray(config.ServarrInstances || config.servarrInstances)
+                    ? (config.ServarrInstances || config.servarrInstances)
+                    : [];
+                const instances = [];
+                const kindCounts = { radarr: 0, sonarr: 0 };
+
+                function pushInstance(source, fallbackKind) {
+                    const kind = normalizeServarrKind(source && (source.Kind || source.kind || source.Type || source.type || fallbackKind));
+                    kindCounts[kind] += 1;
+                    const name = String(source && (source.Name || source.name) || '').trim() || getServarrDefaultName(kind, kindCounts[kind]);
+                    instances.push({
+                        Kind: kind,
+                        Name: name,
+                        Url: String(source && (source.Url || source.url) || '').trim(),
+                        ApiKey: String(source && (source.ApiKey || source.apiKey) || '').trim(),
+                        IsDefault: source && (source.IsDefault ?? source.isDefault) === true,
+                        Is4k: kind === 'radarr' && source && (source.Is4k ?? source.is4k) === true
+                    });
+                }
+
+                raw.forEach(function (instance) {
+                    pushInstance(instance, instance && (instance.Kind || instance.kind || instance.Type || instance.type));
+                });
+
+                if (!instances.length) {
+                    if (String(config.RadarrUrl || '').trim() !== '' || String(config.RadarrApiKey || '').trim() !== '') {
+                        pushInstance({
+                            Kind: 'radarr',
+                            Name: '',
+                            Url: config.RadarrUrl || '',
+                            ApiKey: config.RadarrApiKey || '',
+                            IsDefault: true,
+                            Is4k: false
+                        }, 'radarr');
+                    }
+
+                    if (String(config.SonarrUrl || '').trim() !== '' || String(config.SonarrApiKey || '').trim() !== '') {
+                        pushInstance({
+                            Kind: 'sonarr',
+                            Name: '',
+                            Url: config.SonarrUrl || '',
+                            ApiKey: config.SonarrApiKey || '',
+                            IsDefault: true,
+                            Is4k: false
+                        }, 'sonarr');
+                    }
+                }
+
+                ['radarr', 'sonarr'].forEach(function (kind) {
+                    const byKind = instances.filter(function (instance) {
+                        return normalizeServarrKind(instance.Kind) === kind;
+                    });
+                    if (!byKind.length) {
+                        return;
+                    }
+
+                    let defaultIndex = byKind.findIndex(function (instance) {
+                        return instance.IsDefault === true;
+                    });
+                    if (defaultIndex < 0) {
+                        defaultIndex = 0;
+                    }
+
+                    byKind.forEach(function (instance, index) {
+                        instance.IsDefault = index === defaultIndex;
+                    });
+                });
+
+                return instances;
+            }
+
+            function updateServarrDefaultState(kind, activeCheckbox) {
+                if (!servarrInstanceList || !activeCheckbox || !activeCheckbox.checked) {
+                    return;
+                }
+
+                const normalizedKind = normalizeServarrKind(kind);
+                getServarrInstanceCards().forEach(function (card) {
+                    if (normalizeServarrKind(card.getAttribute('data-servarr-kind')) !== normalizedKind) {
+                        return;
+                    }
+                    const checkbox = card.querySelector('[data-servarr-field="isDefault"]');
+                    if (checkbox && checkbox !== activeCheckbox) {
+                        checkbox.checked = false;
+                    }
+                });
+            }
+
+            function repairServarrDefaults(kind) {
+                const normalizedKind = normalizeServarrKind(kind);
+                const cards = getServarrInstanceCards().filter(function (card) {
+                    return normalizeServarrKind(card.getAttribute('data-servarr-kind')) === normalizedKind;
+                });
+                if (!cards.length) {
+                    return;
+                }
+
+                const anyDefault = cards.some(function (card) {
+                    const checkbox = card.querySelector('[data-servarr-field="isDefault"]');
+                    return checkbox && checkbox.checked === true;
+                });
+                if (!anyDefault) {
+                    const checkbox = cards[0].querySelector('[data-servarr-field="isDefault"]');
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                }
+            }
+
+            function createServarrInstanceCard(instance) {
+                if (!servarrInstanceTemplate || !servarrInstanceTemplate.content) {
+                    return null;
+                }
+
+                const kind = normalizeServarrKind(instance && instance.Kind);
+                const uid = 'servarr-' + (++servarrInstanceIdCounter);
+                const fragment = servarrInstanceTemplate.content.cloneNode(true);
+                const card = fragment.querySelector('.bst-servarr-instance-card');
+                if (!card) {
+                    return null;
+                }
+
+                card.setAttribute('data-servarr-kind', kind);
+                card.setAttribute('data-servarr-uid', uid);
+
+                const kindLabel = card.querySelector('[data-servarr-kind-label]');
+                if (kindLabel) {
+                    kindLabel.textContent = getServarrKindLabel(kind) + ' instance';
+                }
+
+                const nameLabel = card.querySelector('[data-servarr-label="name"]');
+                const urlLabel = card.querySelector('[data-servarr-label="url"]');
+                const apiKeyLabel = card.querySelector('[data-servarr-label="apiKey"]');
+                const nameInput = card.querySelector('[data-servarr-field="name"]');
+                const urlInput = card.querySelector('[data-servarr-field="url"]');
+                const apiKeyInput = card.querySelector('[data-servarr-field="apiKey"]');
+                const defaultInput = card.querySelector('[data-servarr-field="isDefault"]');
+                const kindDesc = card.querySelector('[data-servarr-kind-desc]');
+                const kind4kRow = card.querySelector('[data-servarr-role="4k-row"]');
+                const kind4kLabel = card.querySelector('[data-servarr-4k-label]');
+                const removeButton = card.querySelector('[data-servarr-action="remove"]');
+
+                if (nameLabel && nameInput) {
+                    const nameId = uid + '-name';
+                    nameLabel.setAttribute('for', nameId);
+                    nameInput.id = nameId;
+                }
+
+                if (urlLabel && urlInput) {
+                    const urlId = uid + '-url';
+                    urlLabel.setAttribute('for', urlId);
+                    urlInput.id = urlId;
+                }
+
+                if (apiKeyLabel && apiKeyInput) {
+                    const apiKeyId = uid + '-api-key';
+                    apiKeyLabel.setAttribute('for', apiKeyId);
+                    apiKeyInput.id = apiKeyId;
+                }
+
+                if (nameInput) {
+                    nameInput.value = instance.Name || '';
+                }
+
+                if (urlInput) {
+                    urlInput.value = instance.Url || '';
+                    urlInput.placeholder = kind === 'sonarr'
+                        ? 'http://192.168.1.170:8989'
+                        : 'http://192.168.1.170:7878';
+                }
+
+                if (apiKeyInput) {
+                    apiKeyInput.value = instance.ApiKey || '';
+                }
+
+                if (defaultInput) {
+                    defaultInput.checked = instance.IsDefault === true;
+                }
+
+                if (kindDesc) {
+                    kindDesc.textContent = 'Used for Requests progress and open links.';
+                }
+
+                if (kind4kRow) {
+                    kind4kRow.hidden = kind !== 'radarr';
+                }
+
+                if (kind4kLabel) {
+                    kind4kLabel.textContent = '4K ' + getServarrKindLabel(kind);
+                }
+
+                if (defaultInput) {
+                    defaultInput.addEventListener('change', function () {
+                        updateServarrDefaultState(kind, defaultInput);
+                        updateConfigSummary();
+                    });
+                }
+
+                if (removeButton) {
+                    removeButton.addEventListener('click', function () {
+                        const removedKind = normalizeServarrKind(card.getAttribute('data-servarr-kind'));
+                        card.remove();
+                        repairServarrDefaults(removedKind);
+                        updateConfigSummary();
+                    });
+                }
+
+                return card;
+            }
+
+            function renderServarrInstances(instances) {
+                if (!servarrInstanceList) {
+                    return;
+                }
+
+                servarrInstanceList.innerHTML = '';
+                (Array.isArray(instances) ? instances : []).forEach(function (instance) {
+                    const card = createServarrInstanceCard(instance);
+                    if (card) {
+                        servarrInstanceList.appendChild(card);
+                    }
+                });
+                repairServarrDefaults('radarr');
+                repairServarrDefaults('sonarr');
+                updateConfigSummary();
+            }
+
+            function addServarrInstance(kind) {
+                const normalizedKind = normalizeServarrKind(kind);
+                const count = getServarrInstanceCards().filter(function (card) {
+                    return normalizeServarrKind(card.getAttribute('data-servarr-kind')) === normalizedKind;
+                }).length + 1;
+                const card = createServarrInstanceCard({
+                    Kind: normalizedKind,
+                    Name: getServarrDefaultName(normalizedKind, count),
+                    Url: '',
+                    ApiKey: '',
+                    IsDefault: count === 1,
+                    Is4k: false
+                });
+                if (card && servarrInstanceList) {
+                    servarrInstanceList.appendChild(card);
+                    repairServarrDefaults(normalizedKind);
+                    updateConfigSummary();
+                    const focusInput = card.querySelector('[data-servarr-field="name"]');
+                    if (focusInput) {
+                        focusInput.focus();
+                        focusInput.select();
+                    }
+                }
+            }
+
+            function collectServarrInstancesPayload() {
+                const cards = getServarrInstanceCards();
+                const instances = cards.map(function (card) {
+                    const kind = normalizeServarrKind(card.getAttribute('data-servarr-kind'));
+                    const nameInput = card.querySelector('[data-servarr-field="name"]');
+                    const urlInput = card.querySelector('[data-servarr-field="url"]');
+                    const apiKeyInput = card.querySelector('[data-servarr-field="apiKey"]');
+                    const defaultInput = card.querySelector('[data-servarr-field="isDefault"]');
+                    const is4kInput = card.querySelector('[data-servarr-field="is4k"]');
+                    return {
+                        Kind: kind,
+                        Name: String(nameInput && nameInput.value || '').trim(),
+                        Url: String(urlInput && urlInput.value || '').trim(),
+                        ApiKey: String(apiKeyInput && apiKeyInput.value || '').trim(),
+                        DefaultChecked: defaultInput && defaultInput.checked === true,
+                        Is4k: kind === 'radarr' && is4kInput ? is4kInput.checked === true : false
+                    };
+                }).filter(function (instance) {
+                    return instance.Url !== '' || instance.ApiKey !== '';
+                });
+
+                const defaultByKind = { radarr: -1, sonarr: -1 };
+                const nameCounters = { radarr: 0, sonarr: 0 };
+
+                instances.forEach(function (instance, index) {
+                    const kind = normalizeServarrKind(instance.Kind);
+                    if (defaultByKind[kind] < 0 && instance.DefaultChecked === true) {
+                        defaultByKind[kind] = index;
+                    }
+                });
+
+                instances.forEach(function (instance, index) {
+                    const kind = normalizeServarrKind(instance.Kind);
+                    if (defaultByKind[kind] < 0) {
+                        defaultByKind[kind] = index;
+                    }
+                });
+
+                return instances.map(function (instance, index) {
+                    const kind = normalizeServarrKind(instance.Kind);
+                    nameCounters[kind] += 1;
+                    return {
+                        Kind: kind,
+                        Name: instance.Name || getServarrDefaultName(kind, nameCounters[kind]),
+                        Url: instance.Url,
+                        ApiKey: instance.ApiKey,
+                        IsDefault: index === defaultByKind[kind],
+                        Is4k: kind === 'radarr' && instance.Is4k
+                    };
+                });
+            }
+
+            function syncLegacyServarrFields(config, instances) {
+                function findPreferred(kind) {
+                    const normalizedKind = normalizeServarrKind(kind);
+                    const byKind = instances.filter(function (instance) {
+                        return normalizeServarrKind(instance.Kind) === normalizedKind;
+                    });
+                    const configured = byKind.filter(function (instance) {
+                        return String(instance.Url || '').trim() !== '' &&
+                            String(instance.ApiKey || '').trim() !== '';
+                    });
+                    return configured.find(function (instance) {
+                        return instance.IsDefault === true;
+                    }) || configured[0] || byKind.find(function (instance) {
+                        return instance.IsDefault === true;
+                    }) || byKind[0] || null;
+                }
+
+                const radarr = findPreferred('radarr');
+                const sonarr = findPreferred('sonarr');
+
+                config.RadarrUrl = radarr ? radarr.Url : '';
+                config.RadarrApiKey = radarr ? radarr.ApiKey : '';
+                config.SonarrUrl = sonarr ? sonarr.Url : '';
+                config.SonarrApiKey = sonarr ? sonarr.ApiKey : '';
+            }
+
+            function openServarrAddModal() {
+                if (!servarrAddModal) {
+                    return;
+                }
+
+                servarrAddModal.classList.add('is-open');
+                servarrAddModal.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeServarrAddModal() {
+                if (!servarrAddModal) {
+                    return;
+                }
+
+                servarrAddModal.classList.remove('is-open');
+                servarrAddModal.setAttribute('aria-hidden', 'true');
+            }
+
             function updateConfigSummary() {
                 setSummaryRow('bstCfgSeerr', fieldValue('jellyseerrUrl') !== '' && fieldValue('jellyseerrApiKey') !== '');
                 setSummaryRow('bstCfgTmdb', fieldValue('tmdbApiKey') !== '');
-                setSummaryRow('bstCfgRadarr', fieldValue('radarrUrl') !== '' && fieldValue('radarrApiKey') !== '');
-                setSummaryRow('bstCfgSonarr', fieldValue('sonarrUrl') !== '' && fieldValue('sonarrApiKey') !== '');
+                const counts = getServarrInstanceCountsFromDom();
+                setSummaryRow('bstCfgRadarr', counts.radarr > 0);
+                setSummaryRow('bstCfgSonarr', counts.sonarr > 0);
             }
 
             const TAB_TITLES = {
@@ -2187,13 +2666,59 @@
             }
 
             function bindConfigSummaryListeners() {
-                ['jellyseerrUrl', 'jellyseerrApiKey', 'tmdbApiKey', 'radarrUrl', 'radarrApiKey', 'sonarrUrl', 'sonarrApiKey'].forEach(function (id) {
+                ['jellyseerrUrl', 'jellyseerrApiKey', 'tmdbApiKey'].forEach(function (id) {
                     const el = document.getElementById(id);
                     if (el) {
                         el.addEventListener('input', updateConfigSummary);
                         el.addEventListener('change', updateConfigSummary);
                     }
                 });
+
+                if (servarrInstanceList && servarrInstanceList.dataset.bstBound !== 'true') {
+                    servarrInstanceList.dataset.bstBound = 'true';
+                    servarrInstanceList.addEventListener('input', updateConfigSummary);
+                    servarrInstanceList.addEventListener('change', function (event) {
+                        const target = event.target.closest('[data-servarr-field]');
+                        if (!target) {
+                            return;
+                        }
+
+                        if (target.getAttribute('data-servarr-field') === 'isDefault') {
+                            const card = target.closest('.bst-servarr-instance-card');
+                            if (card) {
+                                updateServarrDefaultState(card.getAttribute('data-servarr-kind'), target);
+                                repairServarrDefaults(card.getAttribute('data-servarr-kind'));
+                            }
+                        }
+
+                        updateConfigSummary();
+                    });
+                }
+
+                if (servarrAddButton && servarrAddButton.dataset.bstBound !== 'true') {
+                    servarrAddButton.dataset.bstBound = 'true';
+                    servarrAddButton.addEventListener('click', function () {
+                        openServarrAddModal();
+                    });
+                }
+
+                if (servarrAddModal && servarrAddModal.dataset.bstBound !== 'true') {
+                    servarrAddModal.dataset.bstBound = 'true';
+                    servarrAddModal.addEventListener('click', function (event) {
+                        if (event.target === servarrAddModal) {
+                            closeServarrAddModal();
+                            return;
+                        }
+
+                        const choice = event.target.closest('[data-servarr-add-kind]');
+                        if (!choice) {
+                            return;
+                        }
+
+                        addServarrInstance(choice.getAttribute('data-servarr-add-kind'));
+                        closeServarrAddModal();
+                    });
+                }
             }
 
             document.querySelectorAll('.bst-page-nav-btn[data-bst-panel]').forEach(function (btn) {
@@ -2683,8 +3208,17 @@
             }
 
             document.addEventListener('keydown', function (event) {
-                if (event.key === 'Escape' && customizeModal && customizeModal.classList.contains('is-open')) {
+                if (event.key !== 'Escape') {
+                    return;
+                }
+
+                if (customizeModal && customizeModal.classList.contains('is-open')) {
                     closeCustomizeModal();
+                    return;
+                }
+
+                if (servarrAddModal && servarrAddModal.classList.contains('is-open')) {
+                    closeServarrAddModal();
                 }
             });
 
@@ -2754,13 +3288,10 @@
                     customTabsForeign
                 );
                 syncTabCardsFromState();
+                renderServarrInstances(normalizeServarrInstancesFromConfig(config));
                 document.querySelector('#jellyseerrUrl').value = config.JellyseerrUrl || '';
                 document.querySelector('#externalJellyseerrUrl').value = config.ExternalJellyseerrUrl || '';
                 document.querySelector('#jellyseerrApiKey').value = config.JellyseerrApiKey || '';
-                document.querySelector('#radarrUrl').value = config.RadarrUrl || '';
-                document.querySelector('#radarrApiKey').value = config.RadarrApiKey || '';
-                document.querySelector('#sonarrUrl').value = config.SonarrUrl || '';
-                document.querySelector('#sonarrApiKey').value = config.SonarrApiKey || '';
                 document.querySelector('#jellyseerrPreferredLanguages').value = config.JellyseerrPreferredLanguages || 'en';
                 document.querySelector('#watchRegion').value = config.WatchRegion || 'US';
                 document.querySelector('#rowItemLimit').value = config.RowItemLimit || 20;
@@ -2788,6 +3319,7 @@
                 customTabsForeign = [];
                 tabBarOrder = normalizeBarOrder([], customTabsForeign);
                 syncTabCardsFromState();
+                renderServarrInstances([]);
                 Dashboard.hideLoadingMsg();
             });
 
@@ -2807,10 +3339,8 @@
                     config.JellyseerrUrl = document.querySelector('#jellyseerrUrl').value;
                     config.ExternalJellyseerrUrl = document.querySelector('#externalJellyseerrUrl').value;
                     config.JellyseerrApiKey = document.querySelector('#jellyseerrApiKey').value;
-                    config.RadarrUrl = document.querySelector('#radarrUrl').value.trim();
-                    config.RadarrApiKey = document.querySelector('#radarrApiKey').value.trim();
-                    config.SonarrUrl = document.querySelector('#sonarrUrl').value.trim();
-                    config.SonarrApiKey = document.querySelector('#sonarrApiKey').value.trim();
+                    config.ServarrInstances = collectServarrInstancesPayload();
+                    syncLegacyServarrFields(config, config.ServarrInstances);
                     config.JellyseerrPreferredLanguages = document.querySelector('#jellyseerrPreferredLanguages').value;
                     config.WatchRegion = document.querySelector('#watchRegion').value || 'US';
                     config.RowItemLimit = parseInt(document.querySelector('#rowItemLimit').value, 10) || 20;

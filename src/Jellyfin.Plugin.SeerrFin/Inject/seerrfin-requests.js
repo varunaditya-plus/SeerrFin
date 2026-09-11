@@ -61,17 +61,27 @@ window.seerrFinLog = window.seerrFinLog || {
             type: 'GET',
             dataType: 'json'
         }).then(function (config) {
+            const radarrInstances = Array.isArray(config.radarrInstances) ? config.radarrInstances : [];
+            const sonarrInstances = Array.isArray(config.sonarrInstances) ? config.sonarrInstances : [];
             state.clientSettings = {
                 jellyseerrBrowseUrl: (config.jellyseerrBrowseUrl || '').replace(/\/+$/, ''),
-                radarrUrl: (config.radarrUrl || '').replace(/\/+$/, ''),
-                sonarrUrl: (config.sonarrUrl || '').replace(/\/+$/, '')
+                hasRadarr: config.hasRadarr === true || radarrInstances.length > 0 || !!config.radarrUrl,
+                hasSonarr: config.hasSonarr === true || sonarrInstances.length > 0 || !!config.sonarrUrl,
+                radarrUrl: ((config.radarrUrl || (radarrInstances[0] && radarrInstances[0].url)) || '').replace(/\/+$/, ''),
+                sonarrUrl: ((config.sonarrUrl || (sonarrInstances[0] && sonarrInstances[0].url)) || '').replace(/\/+$/, ''),
+                radarrInstances: radarrInstances,
+                sonarrInstances: sonarrInstances
             };
         }).catch(function (err) {
             log.warn('client settings fetch failed', err);
             state.clientSettings = {
                 jellyseerrBrowseUrl: '',
+                hasRadarr: false,
+                hasSonarr: false,
                 radarrUrl: '',
-                sonarrUrl: ''
+                sonarrUrl: '',
+                radarrInstances: [],
+                sonarrInstances: []
             };
         });
     }
@@ -112,6 +122,27 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    function getPreferredServarrInstanceUrl(instances, prefer4k) {
+        const list = Array.isArray(instances) ? instances : [];
+        if (!list.length) {
+            return '';
+        }
+
+        const preferred = typeof prefer4k === 'boolean'
+            ? list.filter(function (instance) {
+                return prefer4k ? instance.is4k === true : instance.is4k !== true;
+            })
+            : list;
+        const pool = preferred.length > 0 ? preferred : list;
+        const selected = pool.find(function (instance) {
+            return instance.isDefault === true && String(instance.url || '').trim() !== '';
+        }) || pool.find(function (instance) {
+            return String(instance.url || '').trim() !== '';
+        }) || null;
+
+        return selected ? String(selected.url || '').replace(/\/+$/, '') : '';
     }
 
     function escapeHtml(text) {
@@ -297,9 +328,15 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         const mediaType = item.type === 'tv' ? 'tv' : 'movie';
-        const base = mediaType === 'tv'
+        const instances = mediaType === 'tv'
+            ? state.clientSettings?.sonarrInstances
+            : state.clientSettings?.radarrInstances;
+        const base = getPreferredServarrInstanceUrl(
+            instances,
+            mediaType === 'movie' ? item.is4k === true : undefined
+        ) || (mediaType === 'tv'
             ? state.clientSettings?.sonarrUrl
-            : state.clientSettings?.radarrUrl;
+            : state.clientSettings?.radarrUrl);
         if (!base || !item.tmdbId) {
             return '';
         }
@@ -312,10 +349,17 @@ window.seerrFinLog = window.seerrFinLog || {
             return;
         }
 
-        const safeTitle = escapeHtml(item.title || 'content');
+        const titleText = item.title || 'content';
+        const safeTitle = escapeHtml(titleText);
         const mediaType = item.type === 'tv' ? 'tv' : 'movie';
         const safeTmdbId = escapeHtml(String(item.tmdbId));
         const safeMediaType = escapeHtml(mediaType);
+        const progress = getServarrProgress(item);
+        const instanceSuffixText = progress?.instanceName ? ` (${progress.instanceName})` : '';
+        const radarrTitleText = `Open ${titleText} in Radarr${instanceSuffixText}`;
+        const sonarrTitleText = `Open ${titleText} in Sonarr${instanceSuffixText}`;
+        const radarrTooltipText = `Open in Radarr${instanceSuffixText}`;
+        const sonarrTooltipText = `Open in Sonarr${instanceSuffixText}`;
 
         const playBtn = isPlayableRequest(item) ? `
             <button type="button" class="seerrfin-request-action-btn seerrfin-request-play-btn"
@@ -325,26 +369,26 @@ window.seerrFinLog = window.seerrFinLog || {
             </button>` : '';
 
         let radarrBtn = '';
-        if (mediaType === 'movie' && state.clientSettings?.radarrUrl) {
+        if (mediaType === 'movie' && (state.clientSettings?.hasRadarr || state.clientSettings?.radarrUrl)) {
             const radarrUrl = getServarrOpenUrl(item);
             if (radarrUrl) {
                 radarrBtn = `
             <button type="button" class="seerrfin-request-action-btn seerrfin-request-radarr-btn"
                 data-open-url="${escapeHtml(radarrUrl)}"
-                aria-label="Open ${safeTitle} in Radarr" title="Open in Radarr">
+                aria-label="${escapeHtml(radarrTitleText)}" title="${escapeHtml(radarrTooltipText)}">
                 ${RADARR_LOGO}
             </button>`;
             }
         }
 
         let sonarrBtn = '';
-        if (mediaType === 'tv' && state.clientSettings?.sonarrUrl) {
+        if (mediaType === 'tv' && (state.clientSettings?.hasSonarr || state.clientSettings?.sonarrUrl)) {
             const sonarrUrl = getServarrOpenUrl(item);
             if (sonarrUrl) {
                 sonarrBtn = `
             <button type="button" class="seerrfin-request-action-btn seerrfin-request-sonarr-btn"
                 data-open-url="${escapeHtml(sonarrUrl)}"
-                aria-label="Open ${safeTitle} in Sonarr" title="Open in Sonarr">
+                aria-label="${escapeHtml(sonarrTitleText)}" title="${escapeHtml(sonarrTooltipText)}">
                 ${SONARR_LOGO}
             </button>`;
             }
@@ -442,7 +486,8 @@ window.seerrFinLog = window.seerrFinLog || {
             percent: raw.percent ?? raw.Percent ?? 0,
             downloadedBytes: raw.downloadedBytes ?? raw.DownloadedBytes ?? 0,
             totalBytes: raw.totalBytes ?? raw.TotalBytes ?? 0,
-            isActive: raw.isActive ?? raw.IsActive ?? false
+            isActive: raw.isActive ?? raw.IsActive ?? false,
+            instanceName: raw.instanceName || raw.InstanceName || ''
         };
     }
 
@@ -458,13 +503,15 @@ window.seerrFinLog = window.seerrFinLog || {
         const isTransfer = !isFailed && progress.isActive === true && (
             progress.statusKey === 'queued' || progress.statusKey.indexOf('downloaded-') === 0
         );
+        const instanceSuffixText = progress.instanceName ? ` · ${progress.instanceName}` : '';
 
         const percentText = isFailed ? 'Failed' : (isTransfer ? `${percent}%` : '0%');
-        const detailText = isFailed
+        const detailBase = isFailed
             ? 'Failed to find content'
             : (isTransfer
                 ? `${formatBytes(progress.downloadedBytes)}/${formatBytes(progress.totalBytes)}`
                 : (progress.statusLabel || ''));
+        const detailText = detailBase + instanceSuffixText;
 
         return `
             <div class="seerrfin-request-progress" data-status="${statusKey}">

@@ -168,7 +168,12 @@ public class SeerrFinController : ControllerBase
 
     [HttpGet("Configuration")]
     [Authorize(Roles = "Administrator")]
-    public ActionResult<PluginConfiguration> GetConfiguration() => SeerrFinPlugin.Instance.Configuration;
+    public ActionResult<PluginConfiguration> GetConfiguration()
+    {
+        PluginConfiguration config = SeerrFinPlugin.Instance.Configuration;
+        ServarrConfigHelper.Resolve(config);
+        return config;
+    }
 
     [HttpGet("display-settings")]
     [Authorize]
@@ -505,6 +510,8 @@ public class SeerrFinController : ControllerBase
     public ActionResult GetClientSettings()
     {
         PluginConfiguration config = SeerrFinPlugin.Instance.Configuration;
+        IReadOnlyList<ServarrInstanceConfig> radarrInstances = ServarrConfigHelper.GetConfiguredInstances(config, "radarr");
+        IReadOnlyList<ServarrInstanceConfig> sonarrInstances = ServarrConfigHelper.GetConfiguredInstances(config, "sonarr");
         string? key = config.TmdbApiKey?.Trim();
         string? browseUrl = config.ExternalJellyseerrUrl?.Trim();
         if (string.IsNullOrEmpty(browseUrl))
@@ -516,15 +523,25 @@ public class SeerrFinController : ControllerBase
         {
             tmdbApiKey = key ?? string.Empty,
             jellyseerrBrowseUrl = browseUrl ?? string.Empty,
-            radarrUrl = IsServarrBrowseUrlConfigured(config.RadarrUrl, config.RadarrApiKey),
-            sonarrUrl = IsServarrBrowseUrlConfigured(config.SonarrUrl, config.SonarrApiKey)
+            hasRadarr = radarrInstances.Count > 0,
+            hasSonarr = sonarrInstances.Count > 0,
+            radarrUrl = ServarrConfigHelper.GetPreferredUrl(config, "radarr") ?? string.Empty,
+            sonarrUrl = ServarrConfigHelper.GetPreferredUrl(config, "sonarr") ?? string.Empty,
+            radarrInstances = radarrInstances.Select(instance => new
+            {
+                name = instance.Name ?? string.Empty,
+                url = instance.Url ?? string.Empty,
+                isDefault = instance.IsDefault,
+                is4k = instance.Is4k
+            }),
+            sonarrInstances = sonarrInstances.Select(instance => new
+            {
+                name = instance.Name ?? string.Empty,
+                url = instance.Url ?? string.Empty,
+                isDefault = instance.IsDefault
+            })
         });
     }
-
-    private static string IsServarrBrowseUrlConfigured(string? url, string? apiKey) =>
-        !string.IsNullOrWhiteSpace(url) && !string.IsNullOrWhiteSpace(apiKey)
-            ? url.Trim().TrimEnd('/')
-            : string.Empty;
 
     [HttpGet("details/{mediaType}/{mediaId}")]
     [Authorize]

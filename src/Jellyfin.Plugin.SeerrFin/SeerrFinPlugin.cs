@@ -22,6 +22,7 @@ public class SeerrFinPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfigu
         // Normalize cached instance once on load. without this SaveConfiguration could stay a partial tab list.
         Configuration.Tabs = SeerrFinTabConfigHelper.Normalize(Configuration.Tabs);
         Configuration.TabBarOrder = SeerrFinTabConfigHelper.NormalizeBarOrder(Configuration.TabBarOrder);
+        ServarrConfigHelper.Resolve(Configuration);
     }
 
     public IEnumerable<PluginPageInfo> GetPages()
@@ -44,6 +45,7 @@ public class SeerrFinPlugin : BasePlugin<PluginConfiguration>, IHasPluginConfigu
         {
             config.Tabs = SeerrFinTabConfigHelper.Normalize(config.Tabs);
             config.TabBarOrder = SeerrFinTabConfigHelper.NormalizeBarOrder(config.TabBarOrder);
+            ServarrConfigHelper.Resolve(config);
         }
 
         base.UpdateConfiguration(configuration);

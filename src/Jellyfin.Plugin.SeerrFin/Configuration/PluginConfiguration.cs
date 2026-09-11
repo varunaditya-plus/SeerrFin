@@ -19,6 +19,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string? SonarrApiKey { get; set; } = string.Empty;
 
+    public List<ServarrInstanceConfig> ServarrInstances { get; set; } = new();
+
     public string? JellyseerrPreferredLanguages { get; set; } = "en";
 
     public string? TmdbApiKey { get; set; } = string.Empty;

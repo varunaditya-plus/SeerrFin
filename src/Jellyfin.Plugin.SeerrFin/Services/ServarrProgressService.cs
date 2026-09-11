@@ -18,7 +18,9 @@ public sealed class ServarrProgressService
     public async Task EnrichRequestsAsync(JArray requests, CancellationToken cancellationToken)
     {
         PluginConfiguration config = SeerrFinPlugin.Instance.Configuration;
-        if (!IsRadarrConfigured(config) && !IsSonarrConfigured(config))
+        IReadOnlyList<ServarrInstanceConfig> radarrInstances = ServarrConfigHelper.GetConfiguredInstances(config, "radarr");
+        IReadOnlyList<ServarrInstanceConfig> sonarrInstances = ServarrConfigHelper.GetConfiguredInstances(config, "sonarr");
+        if (radarrInstances.Count == 0 && sonarrInstances.Count == 0)
         {
             return;
         }
@@ -35,19 +37,19 @@ public sealed class ServarrProgressService
             return;
         }
 
-        RadarrSnapshot? radarrSnapshot = IsRadarrConfigured(config)
-            ? await LoadRadarrSnapshotAsync(config, contexts, cancellationToken).ConfigureAwait(false)
-            : null;
+        List<RadarrSnapshot> radarrSnapshots = radarrInstances.Count > 0
+            ? await LoadRadarrSnapshotsAsync(radarrInstances, contexts, cancellationToken).ConfigureAwait(false)
+            : new List<RadarrSnapshot>();
 
-        SonarrSnapshot? sonarrSnapshot = IsSonarrConfigured(config)
-            ? await LoadSonarrSnapshotAsync(config, contexts, cancellationToken).ConfigureAwait(false)
-            : null;
+        List<SonarrSnapshot> sonarrSnapshots = sonarrInstances.Count > 0
+            ? await LoadSonarrSnapshotsAsync(sonarrInstances, contexts, cancellationToken).ConfigureAwait(false)
+            : new List<SonarrSnapshot>();
 
         foreach (ServarrRequestContext context in contexts)
         {
             ServarrProgressInfo? progress = string.Equals(context.Type, "tv", StringComparison.OrdinalIgnoreCase)
-                ? BuildSeriesProgress(context, sonarrSnapshot)
-                : BuildMovieProgress(context, radarrSnapshot);
+                ? BuildSeriesProgress(context, ResolveSonarrSnapshot(context, sonarrSnapshots))
+                : BuildMovieProgress(context, ResolveRadarrSnapshot(context, radarrSnapshots));
 
             if (progress != null)
             {
@@ -59,15 +61,12 @@ public sealed class ServarrProgressService
                     ["downloadedBytes"] = progress.DownloadedBytes,
                     ["totalBytes"] = progress.TotalBytes,
                     ["isActive"] = progress.IsActive,
-                    ["openUrl"] = progress.OpenUrl
+                    ["openUrl"] = progress.OpenUrl,
+                    ["instanceName"] = progress.InstanceName
                 };
             }
         }
     }
-
-    private static bool IsRadarrConfigured(PluginConfiguration config) => !string.IsNullOrWhiteSpace(config.RadarrUrl) && !string.IsNullOrWhiteSpace(config.RadarrApiKey);
-
-    private static bool IsSonarrConfigured(PluginConfiguration config) => !string.IsNullOrWhiteSpace(config.SonarrUrl) && !string.IsNullOrWhiteSpace(config.SonarrApiKey);
 
     private static ServarrRequestContext? BuildContext(JObject request)
     {
@@ -84,14 +83,43 @@ public sealed class ServarrProgressService
             .Select(v => v!.Value)
             .ToHashSet() ?? new HashSet<int>();
 
-        return new ServarrRequestContext(request, type, tmdbId.Value, request.Value<int?>("externalServiceId"), seasonNumbers);
+        bool is4k = request.Value<bool?>("is4k") ?? false;
+
+        return new ServarrRequestContext(request, type, tmdbId.Value, request.Value<int?>("externalServiceId"), seasonNumbers, is4k);
     }
 
-    private async Task<RadarrSnapshot?> LoadRadarrSnapshotAsync(PluginConfiguration config, IReadOnlyCollection<ServarrRequestContext> contexts, CancellationToken cancellationToken)
+    private async Task<List<RadarrSnapshot>> LoadRadarrSnapshotsAsync(
+        IReadOnlyCollection<ServarrInstanceConfig> instances,
+        IReadOnlyCollection<ServarrRequestContext> contexts,
+        CancellationToken cancellationToken)
+    {
+        RadarrSnapshot?[] snapshots = await Task.WhenAll(
+                instances.Select(instance => LoadRadarrSnapshotAsync(instance, contexts, cancellationToken)))
+            .ConfigureAwait(false);
+
+        return snapshots.Where(snapshot => snapshot != null).Cast<RadarrSnapshot>().ToList();
+    }
+
+    private async Task<List<SonarrSnapshot>> LoadSonarrSnapshotsAsync(
+        IReadOnlyCollection<ServarrInstanceConfig> instances,
+        IReadOnlyCollection<ServarrRequestContext> contexts,
+        CancellationToken cancellationToken)
+    {
+        SonarrSnapshot?[] snapshots = await Task.WhenAll(
+                instances.Select(instance => LoadSonarrSnapshotAsync(instance, contexts, cancellationToken)))
+            .ConfigureAwait(false);
+
+        return snapshots.Where(snapshot => snapshot != null).Cast<SonarrSnapshot>().ToList();
+    }
+
+    private async Task<RadarrSnapshot?> LoadRadarrSnapshotAsync(
+        ServarrInstanceConfig instance,
+        IReadOnlyCollection<ServarrRequestContext> contexts,
+        CancellationToken cancellationToken)
     {
         try
         {
-            using HttpClient client = CreateClient(config.RadarrUrl!, config.RadarrApiKey!);
+            using HttpClient client = CreateClient(instance.Url!, instance.ApiKey!);
             List<JObject> queueRecords = await FetchAllQueueRecordsAsync(client, includeMovie: true, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -147,20 +175,30 @@ public sealed class ServarrProgressService
                 }
             }
 
-            return new RadarrSnapshot(NormalizeServarrBaseUrl(config.RadarrUrl!), moviesByTmdbId, queueByMovieId, queueByTmdbId);
+            return new RadarrSnapshot(
+                instance.Name?.Trim() ?? ServarrConfigHelper.GetKindLabel(instance.Kind),
+                instance.IsDefault,
+                instance.Is4k,
+                NormalizeServarrBaseUrl(instance.Url!),
+                moviesByTmdbId,
+                queueByMovieId,
+                queueByTmdbId);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "SF • failed to load Radarr progress snapshot from {RadarrUrl}", config.RadarrUrl);
+            _logger.LogWarning(ex, "SF • failed to load Radarr progress snapshot from {RadarrUrl} ({Name})", instance.Url, instance.Name);
             return null;
         }
     }
 
-    private async Task<SonarrSnapshot?> LoadSonarrSnapshotAsync(PluginConfiguration config, IReadOnlyCollection<ServarrRequestContext> contexts, CancellationToken cancellationToken)
+    private async Task<SonarrSnapshot?> LoadSonarrSnapshotAsync(
+        ServarrInstanceConfig instance,
+        IReadOnlyCollection<ServarrRequestContext> contexts,
+        CancellationToken cancellationToken)
     {
         try
         {
-            using HttpClient client = CreateClient(config.SonarrUrl!, config.SonarrApiKey!);
+            using HttpClient client = CreateClient(instance.Url!, instance.ApiKey!);
             List<JObject> queueRecords = await FetchAllQueueRecordsAsync(client, includeMovie: false, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -240,13 +278,46 @@ public sealed class ServarrProgressService
                 }
             }
 
-            return new SonarrSnapshot(NormalizeServarrBaseUrl(config.SonarrUrl!), seriesByTmdbId, episodesBySeriesId, queueBySeriesId);
+            return new SonarrSnapshot(
+                instance.Name?.Trim() ?? ServarrConfigHelper.GetKindLabel(instance.Kind),
+                instance.IsDefault,
+                NormalizeServarrBaseUrl(instance.Url!),
+                seriesByTmdbId,
+                episodesBySeriesId,
+                queueBySeriesId);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "SF • failed to load Sonarr progress snapshot from {SonarrUrl}", config.SonarrUrl);
+            _logger.LogWarning(ex, "SF • failed to load Sonarr progress snapshot from {SonarrUrl} ({Name})", instance.Url, instance.Name);
             return null;
         }
+    }
+
+    private static RadarrSnapshot? ResolveRadarrSnapshot(ServarrRequestContext context, IReadOnlyCollection<RadarrSnapshot> snapshots)
+    {
+        if (snapshots.Count == 0)
+        {
+            return null;
+        }
+
+        List<RadarrSnapshot> matches = snapshots.Where(snapshot => snapshot.Matches(context)).ToList();
+        List<RadarrSnapshot> preferred = matches.Where(snapshot => snapshot.Is4k == context.Is4k).ToList();
+        IReadOnlyCollection<RadarrSnapshot> pool = preferred.Count > 0 ? preferred : matches.Count > 0 ? matches : snapshots;
+
+        return pool.FirstOrDefault(snapshot => snapshot.IsDefault) ?? pool.FirstOrDefault();
+    }
+
+    private static SonarrSnapshot? ResolveSonarrSnapshot(ServarrRequestContext context, IReadOnlyCollection<SonarrSnapshot> snapshots)
+    {
+        if (snapshots.Count == 0)
+        {
+            return null;
+        }
+
+        List<SonarrSnapshot> matches = snapshots.Where(snapshot => snapshot.Matches(context)).ToList();
+        IReadOnlyCollection<SonarrSnapshot> pool = matches.Count > 0 ? matches : snapshots;
+
+        return pool.FirstOrDefault(snapshot => snapshot.IsDefault) ?? pool.FirstOrDefault();
     }
 
     private static ServarrProgressInfo? BuildMovieProgress(ServarrRequestContext context, RadarrSnapshot? snapshot)
@@ -265,7 +336,7 @@ public sealed class ServarrProgressService
 
         if (queueItems.Count > 0)
         {
-            return BuildQueueProgress(queueItems, snapshot.BaseUrl, movie, isMovie: true);
+            return BuildQueueProgress(queueItems, snapshot.BaseUrl, movie, isMovie: true, snapshot.InstanceName);
         }
 
         if (movie == null)
@@ -278,7 +349,8 @@ public sealed class ServarrProgressService
             monitored: movie.Value<bool?>("monitored") ?? false,
             isUnreleased: IsUnreleasedMedia(movie.Value<string>("status")),
             sizeOnDisk: movie.Value<long?>("sizeOnDisk") ?? 0,
-            openUrl: BuildServarrOpenUrl(snapshot.BaseUrl, GetTitleSlug(movie), isMovie: true));
+            openUrl: BuildServarrOpenUrl(snapshot.BaseUrl, GetTitleSlug(movie), isMovie: true),
+            instanceName: snapshot.InstanceName);
     }
 
     private static ServarrProgressInfo? BuildSeriesProgress(ServarrRequestContext context, SonarrSnapshot? snapshot)
@@ -300,7 +372,7 @@ public sealed class ServarrProgressService
 
         if (queueItems.Count > 0)
         {
-            return BuildQueueProgress(queueItems, snapshot.BaseUrl, series, isMovie: false);
+            return BuildQueueProgress(queueItems, snapshot.BaseUrl, series, isMovie: false, snapshot.InstanceName);
         }
 
         List<JObject> episodes = seriesId.HasValue && snapshot.EpisodesBySeriesId.TryGetValue(seriesId.Value, out List<JObject>? eps)
@@ -312,7 +384,13 @@ public sealed class ServarrProgressService
             bool monitored = series.Value<bool?>("monitored") ?? false;
             long sizeOnDisk = series.Value<long?>("sizeOnDisk") ?? 0;
             bool hasFile = sizeOnDisk > 0;
-            return BuildLibraryProgress(hasFile, monitored, isUnreleased: false, sizeOnDisk, BuildServarrOpenUrl(snapshot.BaseUrl, GetTitleSlug(series), isMovie: false));
+            return BuildLibraryProgress(
+                hasFile,
+                monitored,
+                isUnreleased: false,
+                sizeOnDisk,
+                BuildServarrOpenUrl(snapshot.BaseUrl, GetTitleSlug(series), isMovie: false),
+                snapshot.InstanceName);
         }
 
         bool anyFile = episodes.Any(e => e.Value<bool?>("hasFile") == true);
@@ -327,28 +405,33 @@ public sealed class ServarrProgressService
 
         if (allUnreleased && !anyFile)
         {
-            return BuildLibraryProgress(false, anyMonitored, true, 0, seriesOpenUrl);
+            return BuildLibraryProgress(false, anyMonitored, true, 0, seriesOpenUrl, snapshot.InstanceName);
         }
 
         if (allHaveFiles && allMonitored)
         {
-            return BuildLibraryProgress(true, true, false, totalSize, seriesOpenUrl);
+            return BuildLibraryProgress(true, true, false, totalSize, seriesOpenUrl, snapshot.InstanceName);
         }
 
         if (allHaveFiles)
         {
-            return BuildLibraryProgress(true, false, false, totalSize, seriesOpenUrl);
+            return BuildLibraryProgress(true, false, false, totalSize, seriesOpenUrl, snapshot.InstanceName);
         }
 
         if (!anyFile && anyMonitored)
         {
-            return BuildLibraryProgress(false, true, false, 0, seriesOpenUrl);
+            return BuildLibraryProgress(false, true, false, 0, seriesOpenUrl, snapshot.InstanceName);
         }
 
-        return BuildLibraryProgress(false, false, false, 0, seriesOpenUrl);
+        return BuildLibraryProgress(false, false, false, 0, seriesOpenUrl, snapshot.InstanceName);
     }
 
-    private static ServarrProgressInfo BuildQueueProgress(IReadOnlyCollection<JObject> queueItems, string baseUrl, JObject? media, bool isMovie)
+    private static ServarrProgressInfo BuildQueueProgress(
+        IReadOnlyCollection<JObject> queueItems,
+        string baseUrl,
+        JObject? media,
+        bool isMovie,
+        string instanceName)
     {
         double totalSize = queueItems.Sum(item => item.Value<double?>("size") ?? 0);
         double sizeLeft = queueItems.Sum(item => item.Value<double?>("sizeleft") ?? 0);
@@ -367,11 +450,18 @@ public sealed class ServarrProgressService
             DownloadedBytes = (long)downloaded,
             TotalBytes = (long)totalSize,
             IsActive = true,
-            OpenUrl = BuildServarrOpenUrl(baseUrl, titleSlug, isMovie)
+            OpenUrl = BuildServarrOpenUrl(baseUrl, titleSlug, isMovie),
+            InstanceName = instanceName
         };
     }
 
-    private static ServarrProgressInfo BuildLibraryProgress(bool hasFile, bool monitored, bool isUnreleased, long sizeOnDisk, string? openUrl = null)
+    private static ServarrProgressInfo BuildLibraryProgress(
+        bool hasFile,
+        bool monitored,
+        bool isUnreleased,
+        long sizeOnDisk,
+        string? openUrl = null,
+        string? instanceName = null)
     {
         if (isUnreleased)
         {
@@ -383,7 +473,8 @@ public sealed class ServarrProgressService
                 DownloadedBytes = 0,
                 TotalBytes = 0,
                 IsActive = false,
-                OpenUrl = openUrl
+                OpenUrl = openUrl,
+                InstanceName = instanceName ?? string.Empty
             };
         }
 
@@ -399,7 +490,8 @@ public sealed class ServarrProgressService
                 DownloadedBytes = sizeOnDisk,
                 TotalBytes = sizeOnDisk,
                 IsActive = downloadedActive,
-                OpenUrl = openUrl
+                OpenUrl = openUrl,
+                InstanceName = instanceName ?? string.Empty
             };
         }
 
@@ -413,7 +505,8 @@ public sealed class ServarrProgressService
                 DownloadedBytes = sizeOnDisk,
                 TotalBytes = sizeOnDisk,
                 IsActive = downloadedActive,
-                OpenUrl = openUrl
+                OpenUrl = openUrl,
+                InstanceName = instanceName ?? string.Empty
             };
         }
 
@@ -427,7 +520,8 @@ public sealed class ServarrProgressService
                 DownloadedBytes = 0,
                 TotalBytes = 0,
                 IsActive = false,
-                OpenUrl = openUrl
+                OpenUrl = openUrl,
+                InstanceName = instanceName ?? string.Empty
             };
         }
 
@@ -439,7 +533,8 @@ public sealed class ServarrProgressService
             DownloadedBytes = 0,
             TotalBytes = 0,
             IsActive = false,
-            OpenUrl = openUrl
+            OpenUrl = openUrl,
+            InstanceName = instanceName ?? string.Empty
         };
     }
 
@@ -590,19 +685,36 @@ public sealed class ServarrProgressService
         string Type,
         int TmdbId,
         int? ExternalServiceId,
-        HashSet<int> SeasonNumbers);
+        HashSet<int> SeasonNumbers,
+        bool Is4k);
 
     private sealed record RadarrSnapshot(
+        string InstanceName,
+        bool IsDefault,
+        bool Is4k,
         string BaseUrl,
         Dictionary<int, JObject> MoviesByTmdbId,
         Dictionary<int, List<JObject>> QueueByMovieId,
-        Dictionary<int, List<JObject>> QueueByTmdbId);
+        Dictionary<int, List<JObject>> QueueByTmdbId)
+    {
+        public bool Matches(ServarrRequestContext context) =>
+            MoviesByTmdbId.ContainsKey(context.TmdbId)
+            || QueueByTmdbId.ContainsKey(context.TmdbId)
+            || (context.ExternalServiceId.HasValue && QueueByMovieId.ContainsKey(context.ExternalServiceId.Value));
+    }
 
     private sealed record SonarrSnapshot(
+        string InstanceName,
+        bool IsDefault,
         string BaseUrl,
         Dictionary<int, JObject> SeriesByTmdbId,
         Dictionary<int, List<JObject>> EpisodesBySeriesId,
-        Dictionary<int, List<JObject>> QueueBySeriesId);
+        Dictionary<int, List<JObject>> QueueBySeriesId)
+    {
+        public bool Matches(ServarrRequestContext context) =>
+            SeriesByTmdbId.ContainsKey(context.TmdbId)
+            || (context.ExternalServiceId.HasValue && QueueBySeriesId.ContainsKey(context.ExternalServiceId.Value));
+    }
 
     private sealed class ServarrProgressInfo
     {
@@ -619,5 +731,7 @@ public sealed class ServarrProgressService
         public bool IsActive { get; set; }
 
         public string? OpenUrl { get; set; }
+
+        public string InstanceName { get; set; } = string.Empty;
     }
 }
