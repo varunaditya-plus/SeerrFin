@@ -319,6 +319,7 @@ public sealed class ServarrProgressService
         bool allHaveFiles = episodes.All(e => e.Value<bool?>("hasFile") == true);
         bool anyMonitored = episodes.Any(e => e.Value<bool?>("monitored") == true);
         bool allMonitored = episodes.All(e => e.Value<bool?>("monitored") == true);
+        bool anyMissingMonitored = episodes.Any(e => e.Value<bool?>("hasFile") != true && e.Value<bool?>("monitored") == true);
         bool allUnreleased = episodes.All(e =>
             IsUnreleasedMedia(e.Value<string>("airDateUtc") ?? e.Value<string>("airDate")));
         long totalSize = episodes.Where(e => e.Value<bool?>("hasFile") == true)
@@ -345,7 +346,7 @@ public sealed class ServarrProgressService
             return BuildLibraryProgress(false, true, false, 0, seriesOpenUrl);
         }
 
-        return BuildLibraryProgress(false, anyMonitored, false, 0, seriesOpenUrl);
+        return BuildLibraryProgress(false, anyMissingMonitored, false, 0, seriesOpenUrl);
     }
 
     private static ServarrProgressInfo BuildQueueProgress(IReadOnlyCollection<JObject> queueItems, string baseUrl, JObject? media, bool isMovie)
