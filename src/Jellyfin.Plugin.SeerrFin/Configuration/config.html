@@ -1426,8 +1426,15 @@
                             <div class="bst-card">
                         <div class="bst-toggle-row">
                             <div class="bst-toggle-copy">
+                                <label class="bst-toggle-label" for="advAllowQualityProfileSelection">Allow users to choose quality</label>
+                                <div class="bst-field-desc">When disabled, requests use the default Radarr or Sonarr profile configured in Seerr.</div>
+                            </div>
+                            <label class="bst-toggle"><input id="advAllowQualityProfileSelection" type="checkbox" checked /><span class="bst-toggle-slider"></span></label>
+                        </div>
+                        <div class="bst-toggle-row">
+                            <div class="bst-toggle-copy">
                                 <label class="bst-toggle-label" for="advTvSeasonPickerEnabled">TV season picker</label>
-                                <div class="bst-field-desc">Show a season picker before choosing a quality profile for TV.</div>
+                                <div class="bst-field-desc">Show a season picker before submitting a TV request.</div>
                             </div>
                             <label class="bst-toggle"><input id="advTvSeasonPickerEnabled" type="checkbox" checked /><span class="bst-toggle-slider"></span></label>
                         </div>
@@ -2366,6 +2373,7 @@
                         RefreshOnTabShow: true
                     },
                     RequestModal: {
+                        AllowQualityProfileSelection: true,
                         TvSeasonPickerEnabled: true,
                         IncludeSpecialsSeason: false,
                         RequireExplicitSeasonSelection: false,
@@ -2469,6 +2477,7 @@
                 document.querySelector('#advSplitPartiallyAvailableFilter').checked = r.SplitPartiallyAvailableFilter === true;
 
                 const m = advanced.RequestModal;
+                document.querySelector('#advAllowQualityProfileSelection').checked = m.AllowQualityProfileSelection !== false;
                 document.querySelector('#advTvSeasonPickerEnabled').checked = m.TvSeasonPickerEnabled !== false;
                 document.querySelector('#advIncludeSpecialsSeason').checked = m.IncludeSpecialsSeason === true;
                 document.querySelector('#advRequireExplicitSeasonSelection').checked = m.RequireExplicitSeasonSelection === true;
@@ -2542,6 +2551,7 @@
                         RefreshOnTabShow: document.querySelector('#advRequestsRefreshOnTabShow').checked
                     },
                     RequestModal: {
+                        AllowQualityProfileSelection: document.querySelector('#advAllowQualityProfileSelection').checked,
                         TvSeasonPickerEnabled: document.querySelector('#advTvSeasonPickerEnabled').checked,
                         IncludeSpecialsSeason: document.querySelector('#advIncludeSpecialsSeason').checked,
                         RequireExplicitSeasonSelection: document.querySelector('#advRequireExplicitSeasonSelection').checked,

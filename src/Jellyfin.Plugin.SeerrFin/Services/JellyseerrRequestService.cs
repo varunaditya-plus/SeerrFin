@@ -68,7 +68,14 @@ public class JellyseerrRequestService
         };
     }
 
-    public async Task<(int StatusCode, string Body, string ContentType)> SubmitRequestAsync(string username, DiscoverRequestPayload payload, CancellationToken cancellationToken)
+    public Task<(int StatusCode, string Body, string ContentType)> SubmitRequestAsync(string username, DiscoverRequestPayload payload, CancellationToken cancellationToken) =>
+        SubmitRequestAsync(username, payload, allowQualityProfileSelection: true, cancellationToken: cancellationToken);
+
+    public async Task<(int StatusCode, string Body, string ContentType)> SubmitRequestAsync(
+        string username,
+        DiscoverRequestPayload payload,
+        bool allowQualityProfileSelection,
+        CancellationToken cancellationToken)
     {
         PluginConfiguration config = SeerrFinPlugin.Instance.Configuration;
         if (string.IsNullOrWhiteSpace(config.JellyseerrUrl) || string.IsNullOrWhiteSpace(config.JellyseerrApiKey))
@@ -104,8 +111,8 @@ public class JellyseerrRequestService
                 : "all";
         }
 
-        // Only Advanced Requests can override Seerr defaults
-        if (HasRequestAdvanced(permissions))
+        // Only Advanced Requests can override Seerr defaults, and admins can disable profile selection for the request modal.
+        if (allowQualityProfileSelection && HasRequestAdvanced(permissions))
         {
             if (payload.ServerId != null)
             {

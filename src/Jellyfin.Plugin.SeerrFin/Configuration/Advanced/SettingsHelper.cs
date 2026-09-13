@@ -212,6 +212,7 @@ public static class AdvancedSettingsHelper
             },
             requestModal = new
             {
+                allowQualityProfileSelection = advanced.RequestModal.AllowQualityProfileSelection,
                 tvSeasonPickerEnabled = advanced.RequestModal.TvSeasonPickerEnabled,
                 includeSpecialsSeason = advanced.RequestModal.IncludeSpecialsSeason,
                 requireExplicitSeasonSelection = advanced.RequestModal.RequireExplicitSeasonSelection,

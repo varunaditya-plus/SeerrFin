@@ -650,8 +650,12 @@ public class SeerrFinController : ControllerBase
             return Forbid();
         }
 
+        bool allowQualityProfileSelection = AdvancedSettingsHelper
+            .Resolve(SeerrFinPlugin.Instance.Configuration)
+            .RequestModal
+            .AllowQualityProfileSelection;
         (int statusCode, string body, string contentType) = await _requestService
-            .SubmitRequestAsync(username, payload, cancellationToken)
+            .SubmitRequestAsync(username, payload, allowQualityProfileSelection, cancellationToken)
             .ConfigureAwait(false);
 
         return new ContentResult

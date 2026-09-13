@@ -56,6 +56,7 @@ window.seerrFinLog = window.seerrFinLog || {
             ? plugin._displaySettings.Advanced.requestModal
             : null;
         return {
+            allowQualityProfileSelection: readAdvancedBool(modal && modal.allowQualityProfileSelection, true),
             tvSeasonPickerEnabled: readAdvancedBool(modal && modal.tvSeasonPickerEnabled, true),
             includeSpecialsSeason: readAdvancedBool(modal && modal.includeSpecialsSeason, false),
             requireExplicitSeasonSelection: readAdvancedBool(modal && modal.requireExplicitSeasonSelection, false),
@@ -913,8 +914,9 @@ window.seerrFinLog = window.seerrFinLog || {
         });
     }
 
-    function renderQualityModalShell(is4k) {
-        const title = is4k ? 'Choose 4K quality profile' : 'Choose quality profile';
+    function renderQualityModalShell(is4k, useSeerrDefaults) {
+        const title = useSeerrDefaults ? 'Request' : (is4k ? 'Choose 4K quality profile' : 'Choose quality profile');
+        const loadingText = useSeerrDefaults ? 'Submitting request…' : 'Loading profiles…';
         return `
             <div class="bst-quality-wrapper">
                 <div class="bst-quality-backdrop"></div>
@@ -923,7 +925,7 @@ window.seerrFinLog = window.seerrFinLog || {
                         <h3 id="bst-quality-title">${title}</h3>
                         <button type="button" class="bst-quality-close" aria-label="Close">${CLOSE_ICON}</button>
                     </div>
-                    <div class="bst-quality-list"><div class="bst-quality-loading">Loading profiles…</div></div>
+                    <div class="bst-quality-list"><div class="bst-quality-loading">${loadingText}</div></div>
                 </div>
             </div>`;
     }
@@ -962,10 +964,11 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         is4k = !!is4k;
+        const useSeerrDefaults = getRequestModalAdvanced().allowQualityProfileSelection === false;
 
         // Show shell so the click feels instant (fill profiles when the api returns)
         closeQualityModal();
-        document.body.insertAdjacentHTML('beforeend', renderQualityModalShell(is4k));
+        document.body.insertAdjacentHTML('beforeend', renderQualityModalShell(is4k, useSeerrDefaults));
         activeQualityRoot = document.body.lastElementChild;
 
         const list = activeQualityRoot.querySelector('.bst-quality-list');
@@ -985,6 +988,14 @@ window.seerrFinLog = window.seerrFinLog || {
                 return;
             }
             list.innerHTML = `<div class="bst-quality-empty">${escapeHtml(message || 'Request failed')}</div>`;
+        }
+
+        if (useSeerrDefaults) {
+            submitRequest(mediaId, mediaType, {
+                is4k: is4k,
+                seasons: selectedSeasons
+            }, finishRequest, failRequest).catch(function () {});
+            return;
         }
 
         ApiClient.ajax({

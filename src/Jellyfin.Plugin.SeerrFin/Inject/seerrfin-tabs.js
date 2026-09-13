@@ -1518,6 +1518,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     refreshOnTabShow: self.readAdvancedBool(requests.refreshOnTabShow ?? requests.RefreshOnTabShow, true)
                 },
                 requestModal: {
+                    allowQualityProfileSelection: self.readAdvancedBool(requestModal.allowQualityProfileSelection ?? requestModal.AllowQualityProfileSelection, true),
                     tvSeasonPickerEnabled: self.readAdvancedBool(requestModal.tvSeasonPickerEnabled ?? requestModal.TvSeasonPickerEnabled, true),
                     includeSpecialsSeason: self.readAdvancedBool(requestModal.includeSpecialsSeason ?? requestModal.IncludeSpecialsSeason, false),
                     requireExplicitSeasonSelection: self.readAdvancedBool(requestModal.requireExplicitSeasonSelection ?? requestModal.RequireExplicitSeasonSelection, false),
