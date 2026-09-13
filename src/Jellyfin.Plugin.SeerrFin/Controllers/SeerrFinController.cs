@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using Jellyfin.Plugin.SeerrFin.Configuration;
@@ -534,7 +535,25 @@ public class SeerrFinController : ControllerBase
         [FromServices] IUserManager userManager)
     {
         JObject? details = _discoveryService.GetMediaDetails(GetUsername(userManager) ?? string.Empty, mediaType, mediaId);
-        return details == null ? NotFound() : Content(details.ToString(), "application/json");
+        if (details == null)
+        {
+            return NotFound();
+        }
+
+        // Only expose a Jellyfin item the requesting user can actually see in their libraries
+        JObject? mediaInfo = details["mediaInfo"] as JObject;
+        int? status = mediaInfo?.Value<int?>("status");
+        int? status4k = mediaInfo?.Value<int?>("status4k");
+        if (status is 4 or 5 || status4k is 4 or 5)
+        {
+            Guid? jellyfinItemId = _requestsService.ResolveLibraryItemId(GetUserId(), mediaType, mediaId);
+            if (jellyfinItemId.HasValue)
+            {
+                details["jellyfinItemId"] = jellyfinItemId.Value.ToString("N", CultureInfo.InvariantCulture);
+            }
+        }
+
+        return Content(details.ToString(), "application/json");
     }
 
     [HttpGet("justwatch/qualities/{mediaType}/{tmdbId}")]

@@ -21,6 +21,7 @@
 }
 
 .bst-popout-wrapper button,
+.bst-popout-wrapper .bst-btn-play,
 .bst-popout-wrapper .bst-btn-request,
 .bst-popout-wrapper .bst-btn-request-4k,
 .bst-popout-wrapper .bst-btn-trailer,
@@ -332,6 +333,7 @@
     gap: 1rem;
 }
 
+.bst-btn-play,
 .bst-btn-request {
     display: inline-flex;
     align-items: center;
@@ -351,6 +353,7 @@
 }
 
 @media (min-width: 640px) {
+    .bst-btn-play,
     .bst-btn-request {
         flex: initial;
         padding-left: 2rem;
@@ -358,10 +361,12 @@
     }
 }
 
+.bst-btn-play:hover,
 .bst-btn-request:hover {
     background: #008bff;
 }
 
+.bst-btn-play:active,
 .bst-btn-request:active {
     opacity: 0.85;
 }
