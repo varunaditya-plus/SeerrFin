@@ -85,6 +85,10 @@ public class SeerrFinController : ControllerBase
         Response.Headers.ETag = $"\"v{version}-c{config.CacheBustCounter}\"";
     }
 
+    [HttpGet("seerrfin-i18n.js")]
+    [Produces("application/javascript")]
+    public ActionResult GetLocalizationScript() => ServeEmbedded("Inject.seerrfin-i18n.js", "application/javascript");
+
     [HttpGet("seerrfin-tabs.js")]
     [Produces("application/javascript")]
     public ActionResult GetScript() => ServeEmbedded("Inject.seerrfin-tabs.js", "application/javascript");

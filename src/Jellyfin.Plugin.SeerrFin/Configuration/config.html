@@ -1758,6 +1758,10 @@
             const customTabsPluginId = 'fbacd0b6-fd46-4a05-b0a4-2045d6a135b0';
             const form = document.querySelector('.seerrFinConfigurationForm');
 
+            function t(source) {
+                return window.seerrFinI18n ? window.seerrFinI18n.t(source) : source;
+            }
+
             function switchBstPage(pageId) {
                 document.querySelectorAll('.bst-page-nav-btn[data-bst-panel]').forEach(function (btn) {
                     btn.classList.toggle('is-active', btn.getAttribute('data-bst-panel') === pageId);
@@ -1815,7 +1819,17 @@
 
             function resolveTabTitle(id, title) {
                 const value = String(title || '').trim();
-                return value || TAB_TITLES[id] || id;
+                const defaultTitle = TAB_TITLES[id] || id;
+                if (!value || value === defaultTitle || value === t(defaultTitle)) {
+                    return t(defaultTitle);
+                }
+                return value;
+            }
+
+            function canonicalizeTabTitle(id, title) {
+                const value = String(title || '').trim();
+                const defaultTitle = TAB_TITLES[id] || id;
+                return !value || value === defaultTitle || value === t(defaultTitle) ? defaultTitle : value;
             }
 
             let tabSettings = createDefaultTabs();
@@ -1975,12 +1989,14 @@
                 renderTabOrderList();
             }
 
+            document.addEventListener('seerrfinlanguagechange', syncTabCardsFromState);
+
             function buildTabsPayload() {
                 return tabSettings.map(function (tab) {
                     return {
                         Id: tab.Id,
                         Enabled: tab.Enabled !== false,
-                        Title: resolveTabTitle(tab.Id, tab.Title)
+                        Title: canonicalizeTabTitle(tab.Id, tab.Title)
                     };
                 });
             }
@@ -2624,7 +2640,7 @@
                 activeCustomizeKey = key;
                 const style = displayCustomizations[item.configKey] || defaultDisplayItemStyle(item);
 
-                customizeTitle.textContent = 'Customize ' + item.label;
+                customizeTitle.textContent = t('Customize') + ' ' + t(item.label);
                 customizeDuotone.checked = style.DuotoneEnabled === true;
                 customizeDuotoneLight.value = toColorInputValue(style.DuotoneLight, 'ffffff');
                 customizeDuotoneDark.value = toColorInputValue(style.DuotoneDark, '969696');

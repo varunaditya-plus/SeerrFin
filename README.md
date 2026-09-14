@@ -35,6 +35,7 @@ The best way to discover and request Movies and TV Shows by using Seerr directly
 - **Bulk request from Letterboxd**: Select and request multiple movies from your Letterboxd watchlist at once
 - **Display customizations**: Customize logos, backdrops, poster style, and colors for all carousels/cards
 - **Native Jellyfin UI**: Optional native look for carousels, grid pages, and search results that matches Jellyfin's own UI style (should work with most themes)
+- **Automatic localization**: English and French interfaces follow each user's Jellyfin display language, with English as the fallback
 
 
 ## Installation

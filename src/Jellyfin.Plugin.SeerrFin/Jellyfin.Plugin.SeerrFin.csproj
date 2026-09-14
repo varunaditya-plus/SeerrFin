@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Configuration\config.html" />
+        <EmbeddedResource Include="Inject\seerrfin-i18n.js" />
         <EmbeddedResource Include="Inject\seerrfin-nativeui.js" />
         <EmbeddedResource Include="Inject\seerrfin-tabs.js" />
         <EmbeddedResource Include="Inject\seerrfin-tabs.css" />
