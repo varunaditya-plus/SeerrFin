@@ -360,6 +360,17 @@ public class JellyseerrRequestsService
 
     private static bool IsPlayableMediaStatus(int? mediaStatus) => mediaStatus is 4 or 5;
 
+    public Guid? ResolveLibraryItemId(Guid userId, string? type, int tmdbId)
+    {
+        User? user = _userManager.GetUserById(userId);
+        if (user == null)
+        {
+            return null;
+        }
+
+        return ResolveLibraryItemId(user, type, tmdbId, new Dictionary<string, Guid?>(StringComparer.OrdinalIgnoreCase));
+    }
+
     private Guid? ResolveLibraryItemId(User user, string? type, int tmdbId, Dictionary<string, Guid?> cache)
     {
         string cacheKey = $"{type}:{tmdbId}";

@@ -308,7 +308,7 @@ window.seerrFinLog = window.seerrFinLog || {
             tmdbDetails.mediaInfo = jellyseerrDetails.mediaInfo;
         }
 
-        ['mediaAdded', 'status', 'status4k', 'inProduction'].forEach(function (key) {
+        ['mediaAdded', 'status', 'status4k', 'inProduction', 'jellyfinItemId'].forEach(function (key) {
             if (jellyseerrDetails[key] !== undefined && jellyseerrDetails[key] !== null) {
                 tmdbDetails[key] = jellyseerrDetails[key];
             }
@@ -430,6 +430,23 @@ window.seerrFinLog = window.seerrFinLog || {
             type: 'GET',
             dataType: 'json'
         });
+    }
+
+    function navigateToJellyfinItem(itemId) {
+        if (!itemId || typeof ApiClient === 'undefined') {
+            return;
+        }
+
+        // Only navigate once Jellyfin confirms the current user can see the item
+        ApiClient.getItem(ApiClient.getCurrentUserId(), itemId)
+            .then(function (item) {
+                closeDetailsModal();
+                window.Emby.Page.showItem(item);
+            })
+            .catch(function (err) {
+                log.warn('Jellyfin item lookup failed for ' + itemId, err);
+                Dashboard.alert('Unable to open this item in Jellyfin');
+            });
     }
 
     function loadClientSettings() {
@@ -1112,6 +1129,12 @@ window.seerrFinLog = window.seerrFinLog || {
         const logoUrl = getLogoImageUrl(data);
         const requestState = getRequestButtonState(data, false);
         const request4kState = getRequestButtonState(data, true);
+        // The play button takes over the "Available" wording, so the disabled Available button is dropped.
+        // Other disabled states (Pending, Processing) still carry info and stay.
+        const showPlay = !!data.jellyfinItemId;
+        const hideRequest = showPlay && requestState.requested && requestState.label === 'Available';
+        const hideRequest4k = showPlay && request4kState.requested && request4kState.label === 'Available';
+        const playLabel = (hideRequest || hideRequest4k) ? 'Available' : 'Partially available';
 
         return `
             <div class="bst-popout-wrapper">
@@ -1143,8 +1166,13 @@ window.seerrFinLog = window.seerrFinLog || {
                                     <div class="bst-content">
                                         <div class="bst-actions-row">
                                             <div class="bst-actions-left">
-                                                <button type="button" class="bst-btn-request" data-action="request"${requestState.requested ? ' disabled' : ''}>${escapeHtml(requestState.label)}</button>
-                                                ${getRequestModalAdvanced().showRequest4kButton !== false
+                                                ${showPlay
+                                                    ? `<button type="button" class="bst-btn-play" data-action="play" data-jellyfin-item-id="${escapeHtml(String(data.jellyfinItemId))}">${playLabel}</button>`
+                                                    : ''}
+                                                ${hideRequest
+                                                    ? ''
+                                                    : `<button type="button" class="bst-btn-request" data-action="request"${requestState.requested ? ' disabled' : ''}>${escapeHtml(requestState.label)}</button>`}
+                                                ${getRequestModalAdvanced().showRequest4kButton !== false && !hideRequest4k
                                                     ? `<button type="button" class="bst-btn-request-4k" data-action="request-4k"${request4kState.requested ? ' disabled' : ''}>${escapeHtml(request4kState.label)}</button>`
                                                     : ''}
                                                 ${trailerKey
@@ -1220,6 +1248,13 @@ window.seerrFinLog = window.seerrFinLog || {
         if (request4kBtn && !request4kBtn.disabled) {
             request4kBtn.addEventListener('click', function () {
                 openQualityModal(mediaId, mediaType, title, undefined, true);
+            });
+        }
+
+        const playBtn = root.querySelector('[data-action="play"]');
+        if (playBtn) {
+            playBtn.addEventListener('click', function () {
+                navigateToJellyfinItem(playBtn.getAttribute('data-jellyfin-item-id'));
             });
         }
 

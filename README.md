@@ -28,6 +28,7 @@ The best way to discover and request Movies and TV Shows by using Seerr directly
 - **Discovery sections**: Carousels sorting movies/tv shows to be discovered by (eg. Trending, Popular, etc.)
 - **Jellyfin search integration**: Added Seerr movie and TV show results appear in Jellyfin's search to allow you to search and request content directly from Jellyfin
 - **Request from Seerr**: Easily request movies and TV shows directly in Jellyfin and select quality profiles and specific seasons (for shows)
+- **Play what you already have**: Titles already in your Jellyfin library get a Play button in the details popup that opens them directly in Jellyfin
 - **Quality recommendations**: See the highest released and most common streaming quality when requesting to know the right quality profile for your request
 - **Requests tab**: Track your Seerr requests with, and open each request open requested content in Seerr, Radarr or Sonarr
 - **Radarr/Sonarr download progress**: See live download progress of requests to see how far along each request is
