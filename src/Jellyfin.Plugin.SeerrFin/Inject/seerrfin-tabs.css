@@ -1,5 +1,4 @@
-/* Jellyfin 12 now gives us the header, More menu and drawer links */
-a[data-seerrfin-menu-nav][aria-current="page"] {
+header.MuiAppBar-root a[data-seerrfin-menu-nav][aria-current="page"] {
     color: var(--jf-palette-primary-main);
 }
 

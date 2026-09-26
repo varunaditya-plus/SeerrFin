@@ -409,6 +409,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 }
                 // Legacy tab clicks do not update the route, so keep a home deep link in sync so a later header refresh cant restore the tab just left
                 window.location.hash = id ? '#/home?seerrfinTab=' + id : (index === 0 ? '#/home' : '#/home?tab=' + index);
+                self.syncModernNavigation();
             }, true);
 
             tabs.addEventListener('beforetabchange', function (event) {
@@ -847,6 +848,12 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             return id && this.TAB_DEFS[id] ? id : null;
         },
 
+        getActiveModernNavId: function () {
+            const route = new URLSearchParams(window.location.hash.split('?')[1] || '');
+            const id = route.get('seerrfinTab');
+            return id && this.TAB_DEFS[id] ? id : null;
+        },
+
         bindModernNavigation: function () {
             const self = this;
             // menuLinks are native anchors with target=_blank, including freshly mounted More/drawer entries. Handle only our ordinary clicks and let Jellyfin's own bubbling handlers close the native menu/drawer.
@@ -856,6 +863,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 if (!self.getModernNavId(link)) return;
                 event.preventDefault();
                 window.location.hash = link.getAttribute('href');
+                self.syncModernNavigation();
                 self.ensureNativeTabs().then(function () { self.scheduleRender(); });
             }, true);
         },
@@ -925,8 +933,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
 
         syncModernNavigation: function () {
             const self = this;
-            const selected = self.isHomeTabContext() && document.querySelector('.headerTabs .emby-tab-button-active');
-            const activeId = selected && selected.getAttribute('data-seerrfin-tab');
+            const activeId = self.getActiveModernNavId();
             document.querySelectorAll('header.MuiAppBar-root a[href], .MuiDrawer-paper a[href], #user-view-overflow-menu a[href], .customMenuOptions a[href]').forEach(function (link) {
                 const id = self.getModernNavId(link);
                 if (!id) {
@@ -934,6 +941,14 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 }
                 link.dataset.seerrfinMenuNav = id;
                 const active = activeId === id;
+                const isHeaderLink = !!link.closest('header.MuiAppBar-root');
+                link.classList.toggle('Mui-selected', active && !isHeaderLink);
+                if (isHeaderLink) {
+                    link.classList.toggle('MuiButton-textPrimary', active);
+                    link.classList.toggle('MuiButton-colorPrimary', active);
+                    link.classList.toggle('MuiButton-textInherit', !active);
+                    link.classList.toggle('MuiButton-colorInherit', !active);
+                }
                 if (active && link.getAttribute('aria-current') !== 'page') {
                     link.setAttribute('aria-current', 'page');
                 } else if (!active && link.hasAttribute('aria-current')) {
