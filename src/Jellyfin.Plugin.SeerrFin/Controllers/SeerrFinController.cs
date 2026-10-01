@@ -122,6 +122,46 @@ public class SeerrFinController : ControllerBase
     [Produces("text/css")]
     public ActionResult GetLetterboxdStylesheet() => ServeEmbedded("Inject.seerrfin-letterboxd.css", "text/css");
 
+    [HttpGet("seerrfin-watchlist.js")]
+    [Produces("application/javascript")]
+    public ActionResult GetWatchlistScript() => ServeEmbedded("Inject.seerrfin-watchlist.js", "application/javascript");
+
+    [HttpGet("seerrfin-watchlist.css")]
+    [Produces("text/css")]
+    public ActionResult GetWatchlistStylesheet() => ServeEmbedded("Inject.seerrfin-watchlist.css", "text/css");
+
+    [HttpGet("watchlist")]
+    [Authorize]
+    public Task<IActionResult> GetWatchlist([FromServices] JellyseerrWatchlistService watchlist, [FromQuery] int page = 1, CancellationToken cancellationToken = default) =>
+        WatchlistOperation(watchlist, HttpMethod.Get, page, null, 0, cancellationToken);
+
+    [HttpGet("watchlist/{mediaType}/{tmdbId:int}")]
+    [Authorize]
+    public Task<IActionResult> GetWatchlistState(string mediaType, int tmdbId, [FromServices] JellyseerrWatchlistService watchlist, CancellationToken cancellationToken) =>
+        WatchlistOperation(watchlist, HttpMethod.Get, 1, mediaType, tmdbId, cancellationToken);
+
+    [HttpPost("watchlist/{mediaType}/{tmdbId:int}")]
+    [Authorize]
+    public Task<IActionResult> AddToWatchlist(string mediaType, int tmdbId, [FromServices] JellyseerrWatchlistService watchlist, CancellationToken cancellationToken) =>
+        WatchlistOperation(watchlist, HttpMethod.Post, 1, mediaType, tmdbId, cancellationToken);
+
+    [HttpDelete("watchlist/{mediaType}/{tmdbId:int}")]
+    [Authorize]
+    public Task<IActionResult> RemoveFromWatchlist(string mediaType, int tmdbId, [FromServices] JellyseerrWatchlistService watchlist, CancellationToken cancellationToken) =>
+        WatchlistOperation(watchlist, HttpMethod.Delete, 1, mediaType, tmdbId, cancellationToken);
+
+    private async Task<IActionResult> WatchlistOperation(JellyseerrWatchlistService watchlist, HttpMethod method, int page, string? mediaType, int tmdbId, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        if (page < 1 || (mediaType != null && (tmdbId <= 0 || (mediaType != "movie" && mediaType != "tv"))))
+        {
+            return BadRequest(new { message = "Invalid watchlist page or title." });
+        }
+
+        var result = await watchlist.SendAsync(GetUserId(), method, page, mediaType, tmdbId, cancellationToken).ConfigureAwait(false);
+        return new ContentResult { StatusCode = result.StatusCode, Content = result.Body, ContentType = "application/json" };
+    }
+
     [HttpGet("jellyseerr/{*path}")]
     [Authorize]
     public Task<IActionResult> JellyseerrProxyGet(

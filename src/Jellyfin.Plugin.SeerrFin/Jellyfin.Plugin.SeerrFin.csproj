@@ -27,6 +27,8 @@
         <EmbeddedResource Include="Inject\seerrfin-modal.css" />
         <EmbeddedResource Include="Inject\seerrfin-requests.js" />
         <EmbeddedResource Include="Inject\seerrfin-requests.css" />
+        <EmbeddedResource Include="Inject\seerrfin-watchlist.js" />
+        <EmbeddedResource Include="Inject\seerrfin-watchlist.css" />
         <EmbeddedResource Include="Inject\seerrfin-letterboxd.js" />
         <EmbeddedResource Include="Inject\seerrfin-letterboxd.css" />
     </ItemGroup>

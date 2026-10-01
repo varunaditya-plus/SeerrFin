@@ -14,6 +14,7 @@ public class SeerrFinTabConfig
         new() { Id = "tv", Title = "TV Shows" },
         new() { Id = "discover", Enabled = false, Title = "Discover" },
         new() { Id = "requests", Title = "Requests" },
+        new() { Id = "watchlist", Title = "Watchlist" },
         new() { Id = "letterboxd", Title = "Letterboxd" }
     ];
 }

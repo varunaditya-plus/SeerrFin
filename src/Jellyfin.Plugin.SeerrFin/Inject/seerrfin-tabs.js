@@ -58,6 +58,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             tv: { sectionClass: 'seerrfin-tv-sections', defaultTitle: 'TV Shows' },
             discover: { sectionClass: 'seerrfin-discover-sections', defaultTitle: 'Discover' },
             requests: { sectionClass: 'seerrfin-requests-sections', defaultTitle: 'Requests' },
+            watchlist: { sectionClass: 'seerrfin-watchlist-sections', defaultTitle: 'Watchlist' },
             letterboxd: { sectionClass: 'seerrfin-letterboxd-sections', defaultTitle: 'Letterboxd' }
         },
 
@@ -471,6 +472,9 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 if (typeof window.__seerrFinRequestsEnsureMounted === 'function') {
                     window.__seerrFinRequestsEnsureMounted({ tabShown: true });
                 }
+                if (typeof window.__seerrFinWatchlistEnsureMounted === 'function') {
+                    window.__seerrFinWatchlistEnsureMounted();
+                }
                 if (typeof window.__seerrFinLetterboxdEnsureMounted === 'function') {
                     window.__seerrFinLetterboxdEnsureMounted();
                 }
@@ -878,7 +882,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 const tab = tabsById[id];
                 return tab && tab.enabled !== false ? tab : null;
             }).filter(Boolean);
-            const icons = { movies: 'movie', tv: 'tv', discover: 'explore', requests: 'download', letterboxd: 'bookmark' };
+            const icons = { movies: 'movie', tv: 'tv', discover: 'explore', requests: 'download', watchlist: 'bookmark', letterboxd: 'bookmark' };
 
             document.querySelectorAll('header.MuiAppBar-root .MuiToolbar-root > .MuiStack-root').forEach(function (nav) {
                 const runtimeLinks = Array.from(nav.querySelectorAll('[data-seerrfin-runtime-nav]'));

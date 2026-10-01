@@ -1220,6 +1220,7 @@ window.seerrFinLog = window.seerrFinLog || {
                                                 ${getRequestModalAdvanced().showRequest4kButton !== false && !hideRequest4k
                                                     ? `<button type="button" class="bst-btn-request-4k" data-action="request-4k"${request4kState.requested ? ' disabled' : ''}>${escapeHtml(request4kState.label)}</button>`
                                                     : ''}
+                                                <button type="button" class="bst-btn-watchlist" data-action="watchlist" aria-pressed="false" disabled>Loading watchlist…</button>
                                                 ${trailerKey
                                                     ? `<button type="button" class="bst-btn-trailer" data-action="trailer" data-trailer-key="${escapeHtml(trailerKey)}">Trailer</button>`
                                                     : ''}
@@ -1281,6 +1282,42 @@ window.seerrFinLog = window.seerrFinLog || {
                 logoImg.remove();
             });
         }
+
+        const watchlistBtn = root.querySelector('[data-action="watchlist"]');
+        const watchlistUserId = ApiClient.getCurrentUserId();
+        let watchlisted = false;
+        let watchlistLoaded = false;
+        function updateWatchlistButton(result) {
+            if (!root.isConnected || watchlistUserId !== ApiClient.getCurrentUserId()) return;
+            watchlisted = result.watchlisted === true;
+            watchlistLoaded = true;
+            watchlistBtn.setAttribute('aria-pressed', String(watchlisted));
+            watchlistBtn.textContent = watchlisted ? 'Remove from watchlist' : 'Add to watchlist';
+            watchlistBtn.disabled = false;
+        }
+        function loadWatchlistButton() {
+            if (!window.seerrFinWatchlist) {
+                watchlistBtn.textContent = 'Watchlist unavailable';
+                return;
+            }
+            window.seerrFinWatchlist.get(mediaId, mediaType).then(updateWatchlistButton).catch(function () {
+                if (!root.isConnected || watchlistUserId !== ApiClient.getCurrentUserId()) return;
+                watchlistBtn.textContent = 'Retry watchlist';
+                watchlistBtn.disabled = false;
+            });
+        }
+        watchlistBtn.addEventListener('click', function () {
+            if (watchlistUserId !== ApiClient.getCurrentUserId()) return;
+            watchlistBtn.disabled = true;
+            if (!watchlistLoaded) { loadWatchlistButton(); return; }
+            watchlistBtn.textContent = watchlisted ? 'Removing…' : 'Adding…';
+            window.seerrFinWatchlist.set(mediaId, mediaType, !watchlisted).then(updateWatchlistButton).catch(function (error) {
+                if (!root.isConnected || watchlistUserId !== ApiClient.getCurrentUserId()) return;
+                updateWatchlistButton({ watchlisted: watchlisted });
+                notifyUser(error?.responseJSON?.message || 'Unable to update watchlist. Please try again.');
+            });
+        });
+        loadWatchlistButton();
 
         const requestBtn = root.querySelector('[data-action="request"]');
         if (requestBtn && !requestBtn.disabled) {
@@ -1344,8 +1381,11 @@ window.seerrFinLog = window.seerrFinLog || {
         document.body.insertAdjacentHTML('beforeend', renderDetailsLoading());
         activeDetailsRoot = document.body.lastElementChild;
         document.body.style.overflow = 'hidden';
+        const loadingRoot = activeDetailsRoot;
+        const userId = ApiClient.getCurrentUserId();
 
         loadModalDetails(mediaId, mediaType).then(function (data) {
+            if (activeDetailsRoot !== loadingRoot || !loadingRoot.isConnected || ApiClient.getCurrentUserId() !== userId) return;
             const dom = buildDetailsDom(data, mediaId, mediaType);
             activeDetailsRoot.replaceWith(dom);
             activeDetailsRoot = dom;
@@ -1364,6 +1404,7 @@ window.seerrFinLog = window.seerrFinLog || {
             };
             document.addEventListener('keydown', escapeHandler);
         }).catch(function (err) {
+            if (activeDetailsRoot !== loadingRoot || !loadingRoot.isConnected || ApiClient.getCurrentUserId() !== userId) return;
             log.error('details modal failed for ' + mediaType + '/' + mediaId, err);
             closeDetailsModal();
             Dashboard.alert('Failed to load details');
