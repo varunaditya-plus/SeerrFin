@@ -1,14 +1,14 @@
 {
   "category": "General",
-  "changelog": "Added Seerr watchlists with a tab and a button in the details modal to add content to watchlist",
+  "changelog": "Added Seerr user's download quotas and permissions. Also added a Seerr Profile & Limits modal to see and edit your Seerr profile and locale/region settings, and modals for Seerr Requests, Blocklist, Issues, Users and Settings which show for users with the required permission level",
   "description": "The best way to discover and request Movies and TV Shows through Seerr directly in Jellyfin.",
   "guid": "c8e4f2a1-9b3d-4e7f-a6c2-1d5e8f0a3b7c",
   "name": "SeerrFin",
   "overview": "This plugin lets you add two extra tabs to your top bar, allowing you to discover new Movies and TV Shows, and easily request them in any quality profile you want.",
   "owner": "varunaditya-plus",
   "targetAbi": "12.0.0.0",
-  "timestamp": "2026-10-01T18:39:35.0000000Z",
-  "version": "1.7.6.0",
+  "timestamp": "2026-10-01T18:41:56.0000000Z",
+  "version": "1.8.0.0",
   "status": "Active",
   "autoUpdate": true,
   "assemblies": [

@@ -10,6 +10,15 @@
     "repositoryUrl": "https://github.com/varunaditya-plus/SeerrFin",
     "versions": [
       {
+        "version": "1.8.0.0",
+        "changelog": "Added Seerr user's download quotas and permissions. Also added a Seerr Profile & Limits modal to see and edit your Seerr profile and locale/region settings, and modals for Seerr Requests, Blocklist, Issues, Users and Settings which show for users with the required permission level",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/varunaditya-plus/SeerrFin/releases/download/1.8.0.0/Jellyfin.Plugin.SeerrFin_12.0.0.zip",
+        "checksum": "BBD382ECE832A8CC65701890D8B3156B",
+        "timestamp": "2026-10-01T18:41:56.0000000Z",
+        "dependencies": []
+      },
+      {
         "version": "1.7.6.0",
         "changelog": "Added Seerr watchlists with a tab and a button in the details modal to add content to watchlist",
         "targetAbi": "12.0.0.0",
