@@ -1462,6 +1462,13 @@
                         </div>
                         <div class="bst-toggle-row">
                             <div class="bst-toggle-copy">
+                                <label class="bst-toggle-label" for="advOpenExternalLinksInModal">Open external links in modal</label>
+                                <div class="bst-field-desc">Open Seerr, Radarr and Sonarr links inside Jellyfin from Requests. Close the modal to return to the same page.</div>
+                            </div>
+                            <label class="bst-toggle"><input id="advOpenExternalLinksInModal" type="checkbox" /><span class="bst-toggle-slider"></span></label>
+                        </div>
+                        <div class="bst-toggle-row">
+                            <div class="bst-toggle-copy">
                                 <label class="bst-toggle-label" for="advRequestsCardsInteractive">Interactive request cards</label>
                                 <div class="bst-field-desc">Enable hover actions and card interactivity on the Requests tab.</div>
                             </div>
@@ -2545,6 +2552,7 @@
                     Requests: {
                         PageSize: 20,
                         FetchSize: 100,
+                        OpenExternalLinksInModal: false,
                         CardsInteractive: false,
                         CardsIncludeMetaText: false,
                         IncludePartialsInProcessingFilter: false,
@@ -2652,6 +2660,7 @@
                 document.querySelector('#advRequestsAutoRefreshInterval').value = r.AutoRefreshIntervalSeconds === 0 || r.AutoRefreshIntervalSeconds ? r.AutoRefreshIntervalSeconds : 10;
                 document.querySelector('#advRequestsRefreshOnVisibility').checked = r.RefreshOnVisibility !== false;
                 document.querySelector('#advRequestsRefreshOnTabShow').checked = r.RefreshOnTabShow !== false;
+                document.querySelector('#advOpenExternalLinksInModal').checked = r.OpenExternalLinksInModal === true;
                 document.querySelector('#advRequestsCardsInteractive').checked = r.CardsInteractive === true;
                 document.querySelector('#advRequestsCardsIncludeMetaText').checked = r.CardsIncludeMetaText === true;
                 document.querySelector('#advIncludePartialsInProcessingFilter').checked = r.IncludePartialsInProcessingFilter === true;
@@ -2723,6 +2732,7 @@
                     Requests: {
                         PageSize: parseInt(document.querySelector('#advRequestsPageSize').value, 10) || 20,
                         FetchSize: parseInt(document.querySelector('#advRequestsFetchSize').value, 10) || 100,
+                        OpenExternalLinksInModal: document.querySelector('#advOpenExternalLinksInModal').checked,
                         CardsInteractive: document.querySelector('#advRequestsCardsInteractive').checked,
                         CardsIncludeMetaText: document.querySelector('#advRequestsCardsIncludeMetaText').checked,
                         IncludePartialsInProcessingFilter: document.querySelector('#advIncludePartialsInProcessingFilter').checked,

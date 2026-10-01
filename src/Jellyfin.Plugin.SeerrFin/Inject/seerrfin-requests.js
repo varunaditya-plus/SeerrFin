@@ -77,6 +77,11 @@ window.seerrFinLog = window.seerrFinLog || {
             return;
         }
 
+        if (getRequestsAdvanced().openExternalLinksInModal === true && window.seerrFinApp) {
+            window.seerrFinApp.openMedia(mediaType, Number(tmdbId));
+            return;
+        }
+
         const openWithBase = function (base) {
             if (!base) {
                 return;
@@ -102,12 +107,16 @@ window.seerrFinLog = window.seerrFinLog || {
         });
     }
 
-    function openServarrUrl(url) {
+    function openServarrUrl(url, service) {
         if (!url) {
             return;
         }
 
-        window.open(url, '_blank', 'noopener,noreferrer');
+        if (getRequestsAdvanced().openExternalLinksInModal === true && window.seerrFinApp) {
+            window.seerrFinApp.openExternal(url, service);
+        } else {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
     }
 
     function escapeHtml(text) {
@@ -927,7 +936,7 @@ window.seerrFinLog = window.seerrFinLog || {
             if (radarrBtn) {
                 event.preventDefault();
                 event.stopPropagation();
-                openServarrUrl(radarrBtn.getAttribute('data-open-url'));
+                openServarrUrl(radarrBtn.getAttribute('data-open-url'), 'Radarr');
                 return;
             }
 
@@ -935,7 +944,7 @@ window.seerrFinLog = window.seerrFinLog || {
             if (sonarrBtn) {
                 event.preventDefault();
                 event.stopPropagation();
-                openServarrUrl(sonarrBtn.getAttribute('data-open-url'));
+                openServarrUrl(sonarrBtn.getAttribute('data-open-url'), 'Sonarr');
                 return;
             }
 

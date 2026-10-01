@@ -14,9 +14,9 @@
 }
 
 .bst-popout-wrapper,
-.bst-popout-wrapper *,
+.bst-popout-wrapper *:not(.material-icons),
 .bst-quality-wrapper,
-.bst-quality-wrapper * {
+.bst-quality-wrapper *:not(.material-icons) {
     font-family: var(--bst-font-family) !important;
 }
 
@@ -29,7 +29,7 @@
 .bst-popout-wrapper h1,
 .bst-popout-wrapper h3,
 .bst-popout-wrapper p,
-.bst-popout-wrapper span,
+.bst-popout-wrapper span:not(.material-icons),
 .bst-popout-wrapper bdi,
 .bst-popout-wrapper .bst-overview,
 .bst-popout-wrapper .bst-sidebar-lines,
@@ -133,11 +133,6 @@
     cursor: pointer;
     color: rgba(255, 255, 255, 0.55);
     transition: color 0.15s ease;
-}
-
-.bst-modal-close svg {
-    width: 1.35em;
-    height: 1.35em;
 }
 
 .bst-modal-close:hover {

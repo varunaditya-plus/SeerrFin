@@ -6,6 +6,8 @@ public class AdvancedRequestsSettings
 
     public int FetchSize { get; set; } = 100;
 
+    public bool OpenExternalLinksInModal { get; set; }
+
     public bool CardsInteractive { get; set; }
 
     public bool CardsIncludeMetaText { get; set; }

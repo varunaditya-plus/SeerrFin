@@ -57,7 +57,8 @@
         if (descriptor?.set) Object.defineProperty(type.prototype, property, { ...descriptor, set(value) { descriptor.set.call(this, property === 'srcset' ? srcset(String(value)) : resource(String(value))); } });
     }
     if (bootstrap) {
-        let router, readinessTimer, attempts = 0, finished = false;
+        let router, readinessTimer, attempts = 0, finished = false, navigating = false, retryRequested = false;
+        const mediaPath = /^(\/(?:movie|tv)\/[1-9][0-9]*)\?manage=1$/.exec(initialPath)?.[1];
         const timeout = setTimeout(fail, 45000);
         function cleanup() {
             finished = true;
@@ -68,19 +69,27 @@
         }
         function complete(path) {
             if (finished) return;
-            if (path === initialPath) {
+            if (path === initialPath || (mediaPath && path === mediaPath)) {
                 cleanup();
                 document.documentElement.style.visibility = '';
-            } else navigate();
+            } else {
+                retryRequested = true;
+                navigate();
+            }
         }
         async function navigate() {
-            if (finished) return;
+            if (finished || navigating) return;
             if (++attempts > 5) { fail(); return; }
+            navigating = true;
+            retryRequested = false;
             try {
-                if (await router.replace(initialPath) === false) navigate();
+                if (await router.replace(initialPath) === false) retryRequested = true;
             } catch (error) {
-                if (error?.cancelled) navigate();
+                if (error?.cancelled) retryRequested = true;
                 else fail();
+            } finally {
+                navigating = false;
+                if (!finished && retryRequested) navigate();
             }
         }
         function ready() {

@@ -202,6 +202,7 @@ public static class AdvancedSettingsHelper
             {
                 pageSize = advanced.Requests.PageSize,
                 fetchSize = advanced.Requests.FetchSize,
+                openExternalLinksInModal = advanced.Requests.OpenExternalLinksInModal,
                 cardsInteractive = advanced.Requests.CardsInteractive,
                 cardsIncludeMetaText = advanced.Requests.CardsIncludeMetaText,
                 includePartialsInProcessingFilter = advanced.Requests.IncludePartialsInProcessingFilter,

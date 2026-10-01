@@ -237,8 +237,8 @@
     ];
     let menuRead;
     let appState;
-    function createAppSession(page) {
-        return ApiClient.ajax({ url: ApiClient.getUrl('SeerrFin/app-session'), type: 'POST', dataType: 'json', contentType: 'application/json', data: JSON.stringify({ page }) });
+    function createAppSession(page, mediaId) {
+        return ApiClient.ajax({ url: ApiClient.getUrl('SeerrFin/app-session'), type: 'POST', dataType: 'json', contentType: 'application/json', data: JSON.stringify({ page, mediaId }) });
     }
     function revokeApp(state) {
         const sessionId = state.sessionId;
@@ -253,12 +253,13 @@
         document.body.style.overflow = state.overflow;
         if (state.origin?.isConnected) state.origin.focus();
     }
-    function openApp(page) {
+    function openApp(page, mediaId, externalUrl) {
         if (appState) return;
-        const label = menuPages.find(item => item[0] === page)?.[1];
+        const label = externalUrl ? page : page === 'movie' ? 'Movie' : page === 'tv' ? 'TV show' : menuPages.find(item => item[0] === page)?.[1];
         if (!label) return;
+        const title = externalUrl ? label : 'Seerr ' + label;
         const root = document.createElement('div'); root.className = 'seerrfin-app-view';
-        root.innerHTML = `<section role="dialog" aria-modal="true" aria-label="Seerr ${label}" class="seerrfin-app-panel"><header><h2>Seerr ${label}</h2><button type="button" class="paper-icon-button-light" data-app-refresh aria-label="Reload Seerr page"><span class="material-icons" aria-hidden="true">refresh</span></button><button type="button" class="paper-icon-button-light" data-app-close aria-label="Close Seerr page"><span class="material-icons" aria-hidden="true">close</span></button></header><div data-app-body><p role="status">Loading…</p></div></section>`;
+        root.innerHTML = `<section role="dialog" aria-modal="true" aria-label="${title}" class="seerrfin-app-panel"><header><h2>${title}</h2><button type="button" class="paper-icon-button-light" data-app-refresh aria-label="Reload ${externalUrl ? label : 'Seerr'} page"><span class="material-icons" aria-hidden="true">refresh</span></button><button type="button" class="paper-icon-button-light" data-app-close aria-label="Close ${externalUrl ? label : 'Seerr'} page"><span class="material-icons" aria-hidden="true">close</span></button></header><div data-app-body><p role="status">Loading…</p></div></section>`;
         const state = appState = { root, user: ApiClient.getCurrentUserId(), origin: document.activeElement, overflow: document.body.style.overflow };
         document.body.appendChild(root); document.body.style.overflow = 'hidden';
         const current = () => appState === state && state.user === ApiClient.getCurrentUserId();
@@ -267,14 +268,18 @@
             root.querySelector('[data-app-refresh]').disabled = true;
             revokeApp(state);
             try {
-                const session = await createAppSession(page);
-                state.sessionId = session.sessionId;
-                if (!current()) { revokeApp(state); return; }
-                const frame = document.createElement('iframe'); frame.title = 'Seerr ' + label;
-                frame.src = session.path; frame.referrerPolicy = 'no-referrer';
+                let path = externalUrl;
+                if (!path) {
+                    const session = await createAppSession(page, mediaId);
+                    state.sessionId = session.sessionId;
+                    if (!current()) { revokeApp(state); return; }
+                    path = session.path;
+                }
+                const frame = document.createElement('iframe'); frame.title = title;
+                frame.src = path; frame.referrerPolicy = 'no-referrer';
                 body.replaceChildren(frame); state.frame = frame;
             } catch (error) {
-                const message = await errorMessage(error, 'Unable to open Seerr. Please try again.');
+                const message = await errorMessage(error, `Unable to open ${externalUrl ? label : 'Seerr'}. Please try again.`);
                 if (current()) body.innerHTML = `<p role="alert">${escapeHtml(message)}</p>`;
             } finally { if (current()) root.querySelector('[data-app-refresh]').disabled = false; }
         }
@@ -295,8 +300,23 @@
         document.addEventListener('keydown', state.keydown);
         root.querySelector('[data-app-close]').focus(); loadApp();
     }
+    window.seerrFinApp = {
+        openMedia(type, id) {
+            const mediaId = Number(id);
+            if ((type !== 'movie' && type !== 'tv') || !Number.isInteger(mediaId) || mediaId <= 0 || mediaId > 2147483647) return;
+            openApp(type, mediaId);
+        },
+        openExternal(url, service) {
+            if (service !== 'Radarr' && service !== 'Sonarr') return;
+            try {
+                const target = new URL(url);
+                if (!['http:', 'https:'].includes(target.protocol) || target.username || target.password) return;
+                openApp(service, undefined, target.href);
+            } catch (_) {}
+        }
+    };
     window.addEventListener('message', event => {
-        if (event.origin !== location.origin || !appState || event.source !== appState.frame?.contentWindow) return;
+        if (event.origin !== location.origin || !appState?.sessionId || event.source !== appState.frame?.contentWindow) return;
         if (event.data?.type === 'seerrfin-app-close') closeApp();
         else if (event.data?.type === 'seerrfin-app-error') {
             appState.root.querySelector('[data-app-body]').innerHTML = '<p role="alert">Unable to load the Seerr page. Try reloading.</p>';

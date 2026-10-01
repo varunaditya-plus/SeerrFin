@@ -1604,6 +1604,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 requests: {
                     pageSize: requests.pageSize ?? requests.PageSize ?? 20,
                     fetchSize: requests.fetchSize ?? requests.FetchSize ?? 100,
+                    openExternalLinksInModal: self.readAdvancedBool(requests.openExternalLinksInModal ?? requests.OpenExternalLinksInModal, false),
                     cardsInteractive: self.readAdvancedBool(requests.cardsInteractive ?? requests.CardsInteractive, false),
                     cardsIncludeMetaText: self.readAdvancedBool(requests.cardsIncludeMetaText ?? requests.CardsIncludeMetaText, false),
                     includePartialsInProcessingFilter: self.readAdvancedBool(requests.includePartialsInProcessingFilter ?? requests.IncludePartialsInProcessingFilter, false),

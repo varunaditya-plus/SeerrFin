@@ -9,7 +9,7 @@ namespace Jellyfin.Plugin.SeerrFin.Controllers;
 [Route("SeerrFin")]
 public class SeerrFinAppController(JellyseerrAppService service) : ControllerBase
 {
-    public sealed record OpenRequest(string Page);
+    public sealed record OpenRequest(string Page, int? MediaId = null);
     private Guid UserId => Guid.TryParse(User.Claims.FirstOrDefault(x => x.Type.Equals("Jellyfin-UserId", StringComparison.OrdinalIgnoreCase))?.Value, out var id) ? id : Guid.Empty;
     private string Prefix => Request.PathBase + "/SeerrFin/app";
     private void NoCache() => Response.Headers.CacheControl = "no-store";
@@ -20,10 +20,10 @@ public class SeerrFinAppController(JellyseerrAppService service) : ControllerBas
     public async Task<IActionResult> Open([FromBody] OpenRequest request, CancellationToken cancellationToken)
     {
         NoCache();
-        var result = await service.CreateAsync(UserId, request.Page, Prefix, cancellationToken).ConfigureAwait(false);
+        var result = await service.CreateAsync(UserId, request.Page, Prefix, cancellationToken, request.MediaId).ConfigureAwait(false);
         if (result.StatusCode != 200) return StatusCode(result.StatusCode, new { message = result.Message });
         SetSessionCookie(result.Ticket!, result.SessionId!.Value);
-        return Ok(new { sessionId = result.SessionId, path = result.Path });
+        return Ok(new { sessionId = result.SessionId.Value.ToString("D"), path = result.Path });
     }
 
     [HttpDelete("app/{sessionId:guid}/session-close")]

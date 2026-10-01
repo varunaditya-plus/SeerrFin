@@ -19,13 +19,15 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
     public static readonly TimeSpan SessionLifetime = TimeSpan.FromMinutes(15);
     private readonly ConcurrentDictionary<string, Session> _sessions = new(StringComparer.Ordinal);
 
-    private sealed record Session(Guid Id, int SeerrUserId, DateTimeOffset ExpiresAt, Uri Origin, string ConfigurationHash, CookieContainer Cookies);
+    private sealed record Session(Guid Id, int SeerrUserId, DateTimeOffset ExpiresAt, Uri Origin, string ConfigurationHash, CookieContainer Cookies, JObject BootstrapProps);
     public sealed record SessionResult(int StatusCode, string? Ticket = null, Guid? SessionId = null, string? Path = null, string? Message = null);
     public sealed record Reply(int StatusCode, byte[] Body, string ContentType, string? Location = null);
 
-    public async Task<SessionResult> CreateAsync(Guid userId, string page, string prefix, CancellationToken cancellationToken)
+    public async Task<SessionResult> CreateAsync(Guid userId, string page, string prefix, CancellationToken cancellationToken, int? mediaId = null)
     {
         if (userId == Guid.Empty) return new(401, Message: "User not found.");
+        bool mediaPage = page is "movie" or "tv";
+        if (mediaPage ? mediaId is null or <= 0 : mediaId != null) return new(400, Message: "Choose a valid Seerr page.");
         int? required = PagePermission(page);
         if (!required.HasValue) return new(400, Message: "Choose a Seerr page.");
         if (!TryConfiguration(out var origin, out var key, out var hash)) return new(400, Message: "Seerr is not configured in SeerrFin.");
@@ -41,8 +43,9 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
             foreach (var entry in _sessions) if (entry.Value.ExpiresAt <= now) _sessions.TryRemove(entry.Key, out _);
             string ticket = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
             Guid id = Guid.NewGuid();
-            _sessions[ticket] = new(id, user.Value<int>("id"), now + SessionLifetime, origin, hash, cookies);
-            return new(200, ticket, id, prefix + "/" + id + "/" + page);
+            _sessions[ticket] = new(id, user.Value<int>("id"), now + SessionLifetime, origin, hash, cookies, new());
+            string path = mediaPage ? page + "/" + mediaId!.Value.ToString(CultureInfo.InvariantCulture) + "?manage=1" : page;
+            return new(200, ticket, id, prefix + "/" + id + "/" + path);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
         catch (Exception)
@@ -75,6 +78,16 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
         try
         {
             using HttpClient client = CreateClient();
+            if (method == "GET")
+            {
+                // Media pages make cookie-only loopback SSR calls. Use Seerr's real client
+                // bootstrap and actor-scoped page data instead of its unauthenticated SSR.
+                if (Regex.IsMatch(upstreamPath, "^/(movie|tv)/[1-9][0-9]*/?$", RegexOptions.CultureInvariant))
+                    return await BootstrapAsync(client, session, key, upstreamPath, query, prefix, cancellationToken).ConfigureAwait(false);
+                Match mediaData = Regex.Match(upstreamPath, "^/_next/data/[^/]+/(?<type>movie|tv)/(?<id>[1-9][0-9]*)\\.json$", RegexOptions.CultureInvariant);
+                if (mediaData.Success && int.TryParse(mediaData.Groups["id"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out int mediaId))
+                    return await MediaDataAsync(client, session, key, mediaData.Groups["type"].Value, mediaId, cancellationToken).ConfigureAwait(false);
+            }
             using HttpRequestMessage request = new(new HttpMethod(method), new Uri(session.Origin, upstreamPath + query));
             request.Headers.Add("X-Api-Key", key);
             request.Headers.Add("X-Api-User", session.SeerrUserId.ToString(CultureInfo.InvariantCulture));
@@ -178,6 +191,14 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
 
     private static async Task<Reply> BootstrapAsync(HttpClient client, Session session, string key, string path, string query, string prefix, CancellationToken cancellationToken)
     {
+        var bootstrap = await ReadBootstrapAsync(client, session, key, cancellationToken).ConfigureAwait(false);
+        string json = JsonConvert.SerializeObject(bootstrap.Data, new JsonSerializerSettings { StringEscapeHandling = StringEscapeHandling.EscapeHtml });
+        string html = bootstrap.Html[..bootstrap.Json.Index] + json + bootstrap.Html[(bootstrap.Json.Index + bootstrap.Json.Length)..];
+        return new(200, Encoding.UTF8.GetBytes(RewriteHtml(html, prefix, path + query, true)), "text/html; charset=utf-8");
+    }
+
+    private static async Task<(string Html, Group Json, JObject Data)> ReadBootstrapAsync(HttpClient client, Session session, string key, CancellationToken cancellationToken)
+    {
         using HttpResponseMessage document = await ReadAsActorAsync(client, session, key, "/login", cancellationToken).ConfigureAwait(false);
         document.EnsureSuccessStatusCode();
         string html = await document.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -191,10 +212,29 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
         if (user.Value<int>("id") != session.SeerrUserId) throw new JsonException("Unexpected Seerr actor.");
         props["user"] = user;
         props["locale"] = user["settings"]?.Value<string>("locale") is { Length: > 0 } locale ? locale : props["currentSettings"]?.Value<string>("locale") ?? props.Value<string>("locale") ?? "en";
-        string json = JsonConvert.SerializeObject(data, new JsonSerializerSettings { StringEscapeHandling = StringEscapeHandling.EscapeHtml });
-        Group original = dataTag.Groups["json"];
-        html = html[..original.Index] + json + html[(original.Index + original.Length)..];
-        return new(200, Encoding.UTF8.GetBytes(RewriteHtml(html, prefix, path + query, true)), "text/html; charset=utf-8");
+        lock (session.BootstrapProps)
+        {
+            session.BootstrapProps.RemoveAll();
+            foreach (JProperty property in props.Properties()) session.BootstrapProps.Add(property.Name, property.Value.DeepClone());
+        }
+        return (html, dataTag.Groups["json"], data);
+    }
+
+    private static async Task<Reply> MediaDataAsync(HttpClient client, Session session, string key, string type, int mediaId, CancellationToken cancellationToken)
+    {
+        using HttpResponseMessage response = await ReadAsActorAsync(client, session, key, "/api/v1/" + type + "/" + mediaId.ToString(CultureInfo.InvariantCulture), cancellationToken).ConfigureAwait(false);
+        byte[] bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode) return new((int)response.StatusCode, bytes, response.Content.Headers.ContentType?.ToString() ?? "application/json");
+        JObject props;
+        lock (session.BootstrapProps) props = (JObject)session.BootstrapProps.DeepClone();
+        if (props.Count == 0)
+        {
+            await ReadBootstrapAsync(client, session, key, cancellationToken).ConfigureAwait(false);
+            lock (session.BootstrapProps) props = (JObject)session.BootstrapProps.DeepClone();
+        }
+        props["pageProps"] = new JObject { [type] = JObject.Parse(Encoding.UTF8.GetString(bytes)) };
+        props["__N_SSP"] = true;
+        return new(200, Encoding.UTF8.GetBytes(props.ToString(Formatting.None)), "application/json; charset=utf-8");
     }
 
     private static async Task<HttpResponseMessage> ReadAsActorAsync(HttpClient client, Session session, string key, string path, CancellationToken cancellationToken)
@@ -239,7 +279,7 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
 
     private static int? PagePermission(string page) => page switch
     {
-        "requests" => 0,
+        "requests" or "movie" or "tv" => 0,
         "blocklist" => 268435456 | 1073741824,
         "issues" => 1048576 | 2097152 | 4194304,
         "users" => 8,
