@@ -10,6 +10,10 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
     public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
     {
         serviceCollection.AddHttpClient();
+        serviceCollection.AddHttpClient(JellyseerrAppService.ClientName).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            AllowAutoRedirect = false, UseCookies = false, AutomaticDecompression = System.Net.DecompressionMethods.All
+        });
         serviceCollection.AddSingleton<ImageCacheService>(services =>
         {
             IHttpClientFactory httpClientFactory = services.GetRequiredService<IHttpClientFactory>();
@@ -31,6 +35,9 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         serviceCollection.AddSingleton<ServarrProgressService>();
         serviceCollection.AddSingleton<JellyseerrProxyService>();
         serviceCollection.AddSingleton<JellyseerrWatchlistService>();
+        serviceCollection.AddSingleton<JellyseerrAccountService>();
+        serviceCollection.AddSingleton<JellyseerrProfileService>();
+        serviceCollection.AddSingleton<JellyseerrAppService>();
         serviceCollection.AddSingleton<LetterboxdWatchlistService>();
         serviceCollection.AddSingleton<LetterboxdBulkRequestService>();
     }

@@ -248,12 +248,12 @@ public class JellyseerrRequestService
     }
 
     // for REQUEST_ADVANCED or MANAGE_REQUESTS seerr shows advanced requester
-    private static bool HasRequestAdvanced(int permissions) =>
+    internal static bool HasRequestAdvanced(int permissions) =>
         (permissions & PermissionAdmin) != 0
         || (permissions & PermissionManageRequests) != 0
         || (permissions & PermissionRequestAdvanced) != 0;
 
-    private static bool HasRequestPermission(int permissions, string mediaType, bool is4k)
+    internal static bool HasRequestPermission(int permissions, string mediaType, bool is4k)
     {
         if ((permissions & PermissionAdmin) != 0)
         {

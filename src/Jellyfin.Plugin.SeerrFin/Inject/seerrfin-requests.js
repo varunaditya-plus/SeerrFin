@@ -854,18 +854,6 @@ window.seerrFinLog = window.seerrFinLog || {
         }, settings.intervalSeconds * 1000);
     }
 
-    function isOpenedFromDiscover() {
-        const query = new URLSearchParams(window.location.hash.split('?')[1] || '');
-        return query.get('seerrfinFrom') === 'discover';
-    }
-
-    function syncDiscoverBackButton(container) {
-        const button = container.querySelector('.seerrfin-requests-back');
-        if (button) {
-            button.hidden = !isOpenedFromDiscover();
-        }
-    }
-
     function renderRequestsPanel() {
         const filterButtons = FILTERS.map(function (filter) {
             const activeClass = state.filter === filter.id ? ' is-active' : '';
@@ -878,9 +866,6 @@ window.seerrFinLog = window.seerrFinLog || {
         return `
             <div class="verticalSection seerrfin-requests-panel">
                 <div class="sectionTitleContainer sectionTitleContainer-cards padded-left padded-right">
-                    <button type="button" class="seerrfin-requests-back paper-icon-button-light emby-button" aria-label="Back to Discover" title="Back to Discover"${isOpenedFromDiscover() ? '' : ' hidden'}>
-                        <span class="material-icons" aria-hidden="true">arrow_back</span>
-                    </button>
                     <h2 class="sectionTitle sectionTitle-cards">Requests</h2>
                     <button type="button" class="seerrfin-requests-reload" aria-label="Reload requests" title="Reload requests">
                         <span class="material-icons" aria-hidden="true">refresh</span>
@@ -926,13 +911,6 @@ window.seerrFinLog = window.seerrFinLog || {
         container.dataset.seerrfinRequestsBound = 'true';
 
         container.addEventListener('click', function (event) {
-            const backBtn = event.target.closest('.seerrfin-requests-back');
-            if (backBtn) {
-                event.preventDefault();
-                window.location.hash = '#/home?seerrfinTab=discover';
-                return;
-            }
-
             const reloadBtn = event.target.closest('.seerrfin-requests-reload');
             if (reloadBtn) {
                 event.preventDefault();
@@ -1025,7 +1003,6 @@ window.seerrFinLog = window.seerrFinLog || {
             return;
         }
 
-        syncDiscoverBackButton(container);
         startAutoRefresh();
         if (options.tabShown) {
             refreshIfActive({ reason: 'tab' });

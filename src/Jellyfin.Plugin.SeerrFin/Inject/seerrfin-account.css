@@ -1,0 +1,55 @@
+[data-seerrfin-account] { margin: 1em 0; font-size: .9em; }
+.seerrfin-account-heading { display: flex; align-items: center; justify-content: space-between; gap: 1em; }
+.seerrfin-account-heading h3 { margin: 0; font-size: 1.1em; }
+.seerrfin-account-heading .emby-button { margin: 0; padding: .4em .8em; }
+.seerrfin-account-quotas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1em; margin-top: .75em; }
+.seerrfin-account-quota { display: flex; flex-direction: column; gap: .35em; padding: .75em; border: 1px solid var(--secondaryTextColor, #777); border-radius: .25em; }
+.seerrfin-account-quota.is-restricted { border-color: #f28b82; }
+.seerrfin-account-quota.is-restricted > span { color: #f28b82; }
+.seerrfin-account-note, .seerrfin-account-quota small { color: var(--secondaryTextColor, #bbb); }
+.seerrfin-account-note { line-height: 1.5; }
+.seerrfin-account-permissions summary { cursor: pointer; }
+.seerrfin-account-permissions ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(16em, 1fr)); gap: .5em 1.5em; padding: 0; list-style: none; }
+.seerrfin-account-permissions li { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; }
+.seerrfin-account-permissions li strong { white-space: nowrap; font-weight: normal; }
+@media (max-width: 480px) { .seerrfin-account-quotas { grid-template-columns: 1fr; } }
+
+.seerrfin-profile-view, .seerrfin-app-view { position: fixed; inset: 0; z-index: 999998; display: flex; align-items: center; justify-content: center; padding: 1.25em; }
+.seerrfin-profile-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, .72); }
+.seerrfin-profile-panel { position: relative; width: 46em; max-width: 100%; max-height: 90vh; overflow: auto; box-sizing: border-box; padding: 1.5em 1.75em; border: 1px solid #383838; border-radius: .75em; background: var(--backgroundColor, #181818); color: var(--textColor, #fff); }
+.seerrfin-profile-actions, .seerrfin-app-panel header { display: flex; align-items: center; justify-content: space-between; gap: 1em; }
+.seerrfin-app-panel header h2 { margin: 0; font-size: 1.3em; }
+.seerrfin-app-panel header .paper-icon-button-light { flex: none; color: inherit; }
+.seerrfin-profile-close { position: absolute; top: 1.5em; right: 1.75em; color: inherit; }
+.seerrfin-profile-panel [data-profile-content] > p { margin-right: 3em; }
+.seerrfin-profile-identity { display: flex; align-items: center; gap: 1em; padding: 0 3em 1.4em 0; }
+.seerrfin-profile-identity > div:last-child { display: flex; flex-direction: column; gap: .4em; min-width: 0; }
+.seerrfin-profile-identity strong { font-size: 1.3em; overflow-wrap: anywhere; }
+.seerrfin-profile-identity span:not(.material-icons) { color: var(--secondaryTextColor, #aaa); font-size: .9em; }
+.seerrfin-profile-avatar { position: relative; display: grid; place-items: center; width: 4.5em; height: 4.5em; border-radius: 50%; overflow: hidden; background: #353535; flex: none; }
+.seerrfin-profile-avatar > span { font-size: 2em; }
+.seerrfin-profile-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.seerrfin-profile-tabs { display: flex; gap: 1.5em; border-bottom: 1px solid #383838; margin-bottom: 1.25em; }
+.seerrfin-profile-tabs button { padding: .75em 0; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--secondaryTextColor, #aaa); font: inherit; cursor: pointer; }
+.seerrfin-profile-tabs button[aria-selected="true"] { color: var(--textColor, #fff); border-bottom-color: var(--accent, #00a4dc); }
+.seerrfin-profile-tabs button:focus-visible, .seerrfin-profile-panel input:focus-visible, .seerrfin-profile-panel select:focus-visible { outline: 2px solid var(--accent, #00a4dc); outline-offset: 3px; }
+.seerrfin-profile-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1em 1.25em; }
+.seerrfin-profile-fields label { display: flex; flex-direction: column; gap: .5em; font-size: .9em; }
+.seerrfin-profile-fields input, .seerrfin-profile-fields select { box-sizing: border-box; width: 100%; padding: .7em .8em; color: inherit; background: var(--inputBackground, #262626); border: 1px solid #444; border-radius: .35em; font: inherit; }
+.seerrfin-profile-fields [data-profile-languages] { grid-column: 1 / -1; }
+.seerrfin-profile-panel [hidden] { display: none !important; }
+.seerrfin-profile-note { color: var(--secondaryTextColor, #aaa); font-size: .85em; margin: 1.5em 0 1em; }
+.seerrfin-profile-actions { justify-content: flex-start; flex-wrap: wrap; gap: .5em; }
+.seerrfin-profile-actions .emby-button { margin: 0; }
+.seerrfin-profile-panel [data-profile-status] { min-height: 1.5em; margin-bottom: 0; font-size: .9em; }
+.seerrfin-profile-panel [role="alert"] { color: #f28b82; }
+.seerrfin-settings-link { display: block; margin: 0; padding: 0; width: 100%; text-align: start; background: none; color: inherit; font: inherit; }
+.seerrfin-settings-link:hover, .seerrfin-settings-link:focus-visible { background: rgba(128, 128, 128, .15); }
+.seerrfin-app-view { background: rgba(0, 0, 0, .8); }
+.seerrfin-app-panel { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: #111827; border: 1px solid #374151; border-radius: .5em; }
+.seerrfin-app-panel header { padding: .5em 1em; border-bottom: 1px solid #374151; }
+.seerrfin-app-panel header h2 { flex: 1; }
+.seerrfin-app-panel [data-app-body] { flex: 1; min-height: 0; }
+.seerrfin-app-panel [data-app-body] > p { padding: 1em; }
+.seerrfin-app-panel iframe { width: 100%; height: 100%; border: 0; display: block; }
+@media (max-width: 600px) { .seerrfin-profile-fields { grid-template-columns: 1fr; } .seerrfin-profile-panel { padding: 1em; } .seerrfin-profile-close { top: 1em; right: 1em; } .seerrfin-profile-view { padding: .75em; } .seerrfin-app-view { padding: 0; } .seerrfin-app-panel { border: 0; border-radius: 0; } }

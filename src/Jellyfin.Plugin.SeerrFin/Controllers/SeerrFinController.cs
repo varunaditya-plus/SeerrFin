@@ -135,6 +135,48 @@ public class SeerrFinController : ControllerBase
     public Task<IActionResult> GetWatchlist([FromServices] JellyseerrWatchlistService watchlist, [FromQuery] int page = 1, CancellationToken cancellationToken = default) =>
         WatchlistOperation(watchlist, HttpMethod.Get, page, null, 0, cancellationToken);
 
+    [HttpGet("seerrfin-account.js")]
+    [Produces("application/javascript")]
+    public ActionResult GetAccountScript() => ServeEmbedded("Inject.seerrfin-account.js", "application/javascript");
+
+    [HttpGet("seerrfin-app.js")]
+    [Produces("application/javascript")]
+    public ActionResult GetAppScript() => ServeEmbedded("Inject.seerrfin-app.js", "application/javascript");
+
+    [HttpGet("seerrfin-account.css")]
+    [Produces("text/css")]
+    public ActionResult GetAccountStylesheet() => ServeEmbedded("Inject.seerrfin-account.css", "text/css");
+
+    [HttpGet("account")]
+    [Authorize]
+    public async Task<IActionResult> GetAccount([FromServices] JellyseerrAccountService account, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var result = await account.GetAsync(GetUserId(), cancellationToken).ConfigureAwait(false);
+        return new ContentResult { StatusCode = result.StatusCode, Content = result.Body, ContentType = "application/json" };
+    }
+
+    [HttpGet("profile")]
+    [Authorize]
+    public Task<IActionResult> GetProfile([FromServices] JellyseerrProfileService profile, CancellationToken cancellationToken) => ProfileOperation(profile, null, cancellationToken);
+
+    [HttpPost("profile")]
+    [Authorize]
+    public Task<IActionResult> SaveProfile([FromServices] JellyseerrProfileService profile, [FromBody] System.Text.Json.JsonElement changes, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        if (changes.ValueKind != System.Text.Json.JsonValueKind.Object || changes.GetRawText().Length > 8192)
+            return Task.FromResult<IActionResult>(BadRequest(new { message = "Invalid profile fields." }));
+        return ProfileOperation(profile, JObject.Parse(changes.GetRawText()), cancellationToken);
+    }
+
+    private async Task<IActionResult> ProfileOperation(JellyseerrProfileService profile, JObject? changes, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var result = await profile.ExecuteAsync(GetUserId(), changes, cancellationToken).ConfigureAwait(false);
+        return new ContentResult { StatusCode = result.StatusCode, Content = result.Body, ContentType = "application/json" };
+    }
+
     [HttpGet("watchlist/{mediaType}/{tmdbId:int}")]
     [Authorize]
     public Task<IActionResult> GetWatchlistState(string mediaType, int tmdbId, [FromServices] JellyseerrWatchlistService watchlist, CancellationToken cancellationToken) =>
@@ -441,12 +483,7 @@ public class SeerrFinController : ControllerBase
         [FromQuery] int startIndex = 0,
         [FromQuery] int? limit = null)
     {
-        string region = SeerrFinPlugin.Instance.Configuration.WatchRegion;
-        if (string.IsNullOrWhiteSpace(region))
-        {
-            region = "US";
-        }
-        return DiscoverRow(userManager, $"/api/v1/discover/movies?watchProviders={providerId}&watchRegion={Uri.EscapeDataString(region)}", "movie", startIndex, limit);
+        return DiscoverRow(userManager, $"/api/v1/discover/movies?watchProviders={providerId}", "movie", startIndex, limit);
     }
 
     [HttpGet("discover/tv/provider/{providerId}")]
@@ -457,12 +494,7 @@ public class SeerrFinController : ControllerBase
         [FromQuery] int startIndex = 0,
         [FromQuery] int? limit = null)
     {
-        string region = SeerrFinPlugin.Instance.Configuration.WatchRegion;
-        if (string.IsNullOrWhiteSpace(region))
-        {
-            region = "US";
-        }
-        return DiscoverRow(userManager, $"/api/v1/discover/tv?watchProviders={providerId}&watchRegion={Uri.EscapeDataString(region)}", "tv", startIndex, limit);
+        return DiscoverRow(userManager, $"/api/v1/discover/tv?watchProviders={providerId}", "tv", startIndex, limit);
     }
 
     private ActionResult<QueryResult<BaseItemDto>> DiscoverRow(

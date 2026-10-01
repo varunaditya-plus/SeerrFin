@@ -148,6 +148,22 @@ public class JellyseerrDiscoveryService
             return EmptyResult();
         }
 
+        JObject preferences;
+        JObject defaults = new();
+        try
+        {
+            bool provider = jellyseerrPath.Contains("watchProviders=", StringComparison.Ordinal);
+            preferences = hasReleaseTypeFilter || provider ? JellyseerrProfileService.ReadMainAsync(client, jellyseerrUserId.Value).GetAwaiter().GetResult() : new JObject();
+            if (hasReleaseTypeFilter || provider) defaults = JellyseerrProfileService.ReadDefaultsAsync(client).GetAwaiter().GetResult();
+            if (provider && !jellyseerrPath.Contains("watchRegion=", StringComparison.Ordinal))
+                jellyseerrPath += "&watchRegion=" + Uri.EscapeDataString(JellyseerrProfileService.StreamingRegion(preferences, config, defaults));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "SeerrFin • failed to load personal discovery preferences");
+            return EmptyResult();
+        }
+
         bool useTmdbReleaseFilter = hasReleaseTypeFilter;
         Dictionary<int, bool> releaseTypeCache = new();
 
@@ -173,11 +189,11 @@ public class JellyseerrDiscoveryService
                 {
                     if (jellyseerrPath.Contains("/discover/trending", StringComparison.OrdinalIgnoreCase))
                     {
-                        json = FetchTmdbTrendingMoviesJson(tmdbApiKey!, config, jellyseerrPage, releaseTypeCache);
+                        json = FetchTmdbTrendingMoviesJson(tmdbApiKey!, config, jellyseerrPage, releaseTypeCache, preferences.Value<string>("locale") is { Length: > 0 } locale ? locale : defaults.Value<string>("locale") ?? "en");
                     }
                     else
                     {
-                        string url = BuildTmdbDiscoverUrl(jellyseerrPath, config, jellyseerrPage);
+                        string url = BuildTmdbDiscoverUrl(jellyseerrPath, config, jellyseerrPage, preferences, defaults);
                         json = FetchTmdbDiscoverJson(url, tmdbApiKey!);
                     }
                 }
@@ -498,6 +514,16 @@ public class JellyseerrDiscoveryService
             if (jellyseerrUserId != null)
             {
                 client.DefaultRequestHeaders.Add("X-Api-User", jellyseerrUserId.ToString());
+                if (path.Contains("/watchproviders/", StringComparison.Ordinal))
+                {
+                    try
+                    {
+                        JObject main = JellyseerrProfileService.ReadMainAsync(client, jellyseerrUserId.Value).GetAwaiter().GetResult();
+                        JObject defaults = JellyseerrProfileService.ReadDefaultsAsync(client).GetAwaiter().GetResult();
+                        path = path[..path.IndexOf('?')] + "?watchRegion=" + Uri.EscapeDataString(JellyseerrProfileService.StreamingRegion(main, config, defaults));
+                    }
+                    catch (Exception ex) { _logger.LogWarning(ex, "SeerrFin • failed to load personal streaming region"); return new JArray(); }
+                }
             }
         }
 
@@ -653,7 +679,7 @@ public class JellyseerrDiscoveryService
 
     private static string GetDefaultFutureReleaseDate() => DateTime.UtcNow.AddDays((int)(365 * 1.5)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    private static string BuildTmdbDiscoverUrl(string jellyseerrPath, PluginConfiguration config, int page)
+    private static string BuildTmdbDiscoverUrl(string jellyseerrPath, PluginConfiguration config, int page, JObject preferences, JObject defaults)
     {
         AdvancedDiscoverySettings discovery = AdvancedSettingsHelper.Resolve(config).Discovery;
         var query = new List<string>
@@ -667,6 +693,16 @@ public class JellyseerrDiscoveryService
         };
 
         AppendLanguageFilter(query, config);
+        string Effective(string key) => preferences.Value<string>(key) is { Length: > 0 } value ? value : defaults.Value<string>(key) ?? "";
+        query.Add("language=" + Uri.EscapeDataString(Effective("locale")));
+        string region = Effective("discoverRegion");
+        if (region.Length > 0 && region != "all") query.Add("region=" + Uri.EscapeDataString(region));
+        string original = Effective("originalLanguage");
+        if (original.Length > 0 && original != "all")
+        {
+            query.RemoveAll(x => x.StartsWith("with_original_language=", StringComparison.Ordinal));
+            query.Add("with_original_language=" + Uri.EscapeDataString(original));
+        }
         AppendPathParams(query, jellyseerrPath, GetWatchRegion(config));
 
         if (!query.Exists(static part => part.StartsWith("sort_by=", StringComparison.Ordinal)))
@@ -743,10 +779,10 @@ public class JellyseerrDiscoveryService
         }
     }
 
-    private JObject? FetchTmdbTrendingMoviesJson(string apiKey, PluginConfiguration config, int page, Dictionary<int, bool> releaseTypeCache)
+    private JObject? FetchTmdbTrendingMoviesJson(string apiKey, PluginConfiguration config, int page, Dictionary<int, bool> releaseTypeCache, string locale)
     {
         string url = "https://api.themoviedb.org/3/trending/movie/week?page="
-            + page.ToString(CultureInfo.InvariantCulture);
+            + page.ToString(CultureInfo.InvariantCulture) + "&language=" + Uri.EscapeDataString(locale);
 
         using HttpRequestMessage request = CreateTmdbRequest(url, apiKey);
         using HttpResponseMessage response = new HttpClient().SendAsync(request).GetAwaiter().GetResult();

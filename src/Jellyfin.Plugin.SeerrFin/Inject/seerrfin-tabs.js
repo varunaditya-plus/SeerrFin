@@ -3426,10 +3426,8 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         },
 
         fetchSeerrSearch: function (query) {
-            const language = ((navigator.language || 'en').split('-')[0] || 'en');
             const url = ApiClient.getUrl('SeerrFin/search') +
                 '?query=' + encodeURIComponent(query) +
-                '&language=' + encodeURIComponent(language) +
                 '&_=' + Date.now();
 
             return ApiClient.ajax({

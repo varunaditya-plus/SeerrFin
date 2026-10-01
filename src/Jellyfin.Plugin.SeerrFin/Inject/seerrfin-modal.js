@@ -304,7 +304,10 @@ window.seerrFinLog = window.seerrFinLog || {
             return tmdbDetails;
         }
 
-        // Tmdb gives rich metadata. Seer adds request/availability
+        // Preserve Seerr's text in the saved locale alongside TMDB artwork and metadata.
+        ['title', 'name', 'overview', 'genres'].forEach(function (key) {
+            if (jellyseerrDetails[key]) tmdbDetails[key] = jellyseerrDetails[key];
+        });
         if (jellyseerrDetails.mediaInfo) {
             tmdbDetails.mediaInfo = jellyseerrDetails.mediaInfo;
         }
