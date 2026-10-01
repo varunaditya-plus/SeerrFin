@@ -10,6 +10,15 @@
     "repositoryUrl": "https://github.com/varunaditya-plus/SeerrFin",
     "versions": [
       {
+        "version": "1.8.1.0",
+        "changelog": "Added advanced discovery filters to all discovery filters to allow users to filter between content",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/varunaditya-plus/SeerrFin/releases/download/1.8.1.0/Jellyfin.Plugin.SeerrFin_12.0.0.zip",
+        "checksum": "E1ECB5FD1FCF75C2D994482E3845A631",
+        "timestamp": "2026-10-01T18:43:44.0000000Z",
+        "dependencies": []
+      },
+      {
         "version": "1.8.0.0",
         "changelog": "Added Seerr user's download quotas and permissions. Also added a Seerr Profile & Limits modal to see and edit your Seerr profile and locale/region settings, and modals for Seerr Requests, Blocklist, Issues, Users and Settings which show for users with the required permission level",
         "targetAbi": "12.0.0.0",
