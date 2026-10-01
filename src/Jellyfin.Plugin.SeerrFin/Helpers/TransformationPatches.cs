@@ -86,11 +86,13 @@ public static class TransformationPatches
             $"<link rel=\"stylesheet\" href=\"../SeerrFin/seerrfin-requests.css{cacheParam}\" />" +
             $"<link rel=\"stylesheet\" href=\"../SeerrFin/seerrfin-letterboxd.css{cacheParam}\" />" +
             $"<link rel=\"stylesheet\" href=\"../SeerrFin/seerrfin-watchlist.css{cacheParam}\" />" +
-            $"<link rel=\"stylesheet\" href=\"../SeerrFin/seerrfin-account.css{cacheParam}\" />";
+            $"<link rel=\"stylesheet\" href=\"../SeerrFin/seerrfin-account.css{cacheParam}\" />" +
+            $"<link rel=\"stylesheet\" href=\"../SeerrFin/seerrfin-filters.css{cacheParam}\" />";
         string scripts =
             $"<script defer src=\"../SeerrFin/seerrfin-modal.js{cacheParam}\"></script>" +
             $"<script defer src=\"../SeerrFin/seerrfin-nativeui.js{cacheParam}\"></script>" +
             $"<script defer src=\"../SeerrFin/seerrfin-tabs.js{cacheParam}\"></script>" +
+            $"<script defer src=\"../SeerrFin/seerrfin-filters.js{cacheParam}\"></script>" +
             $"<script defer src=\"../SeerrFin/seerrfin-account.js{cacheParam}\"></script>" +
             $"<script defer src=\"../SeerrFin/seerrfin-requests.js{cacheParam}\"></script>" +
             $"<script defer src=\"../SeerrFin/seerrfin-letterboxd.js{cacheParam}\"></script>" +

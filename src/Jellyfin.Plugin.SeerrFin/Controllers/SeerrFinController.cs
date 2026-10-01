@@ -367,6 +367,32 @@ public class SeerrFinController : ControllerBase
         return Ok(new BackdropBatchResponseDto { Items = items });
     }
 
+    [HttpGet("discover/filtered/{mediaType}")]
+    [Authorize]
+    public Task<IActionResult> GetFilteredDiscovery([FromServices] JellyseerrFilterService filters, string mediaType, CancellationToken cancellationToken) =>
+        FilterOperation(filters, mediaType, false, cancellationToken);
+
+    [HttpGet("discover/filter-options/{mediaType}")]
+    [Authorize]
+    public Task<IActionResult> GetDiscoveryFilterOptions([FromServices] JellyseerrFilterService filters, string mediaType, CancellationToken cancellationToken) =>
+        FilterOperation(filters, mediaType, true, cancellationToken);
+
+    private async Task<IActionResult> FilterOperation(JellyseerrFilterService filters, string mediaType, bool options, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        var query = Request.Query.ToDictionary(x => x.Key, x => x.Value.ToString());
+        var result = await filters.GetAsync(GetUserId(), mediaType, query, options, cancellationToken).ConfigureAwait(false);
+        return new ContentResult { StatusCode = result.StatusCode, Content = result.Body, ContentType = "application/json" };
+    }
+
+    [HttpGet("seerrfin-filters.js")]
+    [Produces("application/javascript")]
+    public ActionResult GetFiltersScript() => ServeEmbedded("Inject.seerrfin-filters.js", "application/javascript");
+
+    [HttpGet("seerrfin-filters.css")]
+    [Produces("text/css")]
+    public ActionResult GetFiltersStylesheet() => ServeEmbedded("Inject.seerrfin-filters.css", "text/css");
+
     [HttpGet("discover/movies/trending")]
     [Authorize]
     public ActionResult<QueryResult<BaseItemDto>> MoviesTrending(

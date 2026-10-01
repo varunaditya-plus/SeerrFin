@@ -32,6 +32,8 @@
         <EmbeddedResource Include="Inject\seerrfin-account.js" />
         <EmbeddedResource Include="Inject\seerrfin-app.js" />
         <EmbeddedResource Include="Inject\seerrfin-account.css" />
+        <EmbeddedResource Include="Inject\seerrfin-filters.js" />
+        <EmbeddedResource Include="Inject\seerrfin-filters.css" />
         <EmbeddedResource Include="Inject\seerrfin-letterboxd.js" />
         <EmbeddedResource Include="Inject\seerrfin-letterboxd.css" />
     </ItemGroup>

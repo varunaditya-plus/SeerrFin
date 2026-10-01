@@ -38,6 +38,7 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
         serviceCollection.AddSingleton<JellyseerrAccountService>();
         serviceCollection.AddSingleton<JellyseerrProfileService>();
         serviceCollection.AddSingleton<JellyseerrAppService>();
+        serviceCollection.AddSingleton<JellyseerrFilterService>();
         serviceCollection.AddSingleton<LetterboxdWatchlistService>();
         serviceCollection.AddSingleton<LetterboxdBulkRequestService>();
     }

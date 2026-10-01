@@ -1120,7 +1120,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         },
 
         isContainerPopulated: function (container) {
-            return container.querySelector('.seerrfin-poster-section') !== null;
+            return container.querySelector('.seerrfin-poster-section, .seerrfin-filter-host') !== null;
         },
 
         isGridViewOpen: function (container) {
@@ -1224,6 +1224,14 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 return container.dataset.seerrfinLoadId !== loadId || !self.isContainerVisible(visibleContainer);
             };
 
+            const showLoadFailure = function () {
+                Array.from(container.children).forEach(function (child) {
+                    if (!child.classList.contains('seerrfin-filter-host')) child.remove();
+                });
+                container.insertAdjacentHTML('beforeend', '<div class="seerrfin-empty-row">Failed to load discovery rows. Check Seerr settings and that your Jellyfin user is linked in Seerr.</div>');
+                window.seerrFinFilters?.mount(container, mediaType, self.resolveTabTitle(type, self._tabConfig?.tabs?.find(tab => tab.id === type)?.title));
+            };
+
             const browseTitle = mediaType === 'movie' ? 'Browse by studio' : 'Browse by network';
             const browseKind = mediaType === 'movie' ? 'studio' : 'network';
             const carouselDefs = [
@@ -1240,6 +1248,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 }
 
                 container.innerHTML = '';
+                window.seerrFinFilters?.mount(container, mediaType, self.resolveTabTitle(type, self._tabConfig?.tabs?.find(tab => tab.id === type)?.title));
                 const useNativeCarousels = self.shouldUseNativeCarousels();
                 log.info(type + ' tab using ' + (useNativeCarousels ? 'native' : 'custom') + ' carousels');
 
@@ -1266,7 +1275,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     }
                     if (!anySuccess && !isStale()) {
                         log.error(type + ' tab: all discovery rows/carousels failed');
-                        container.innerHTML = `<div class="seerrfin-empty-row">Failed to load discovery rows. Check Seerr settings and that your Jellyfin user is linked in Seerr.</div>`;
+                        showLoadFailure();
                     }
                     finishLoading();
                 };
@@ -1341,7 +1350,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 log.error(type + ' tab load failed', err);
                 container.dataset.seerrfinLoading = 'false';
                 container.dataset.seerrfinLoaded = 'true';
-                container.innerHTML = `<div class="seerrfin-empty-row">Failed to load discovery rows. Check Seerr settings and that your Jellyfin user is linked in Seerr.</div>`;
+                showLoadFailure();
             });
         },
 

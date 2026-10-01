@@ -668,7 +668,7 @@ public class JellyseerrDiscoveryService
     private static bool ShouldApplyReleaseTypeFilter(string? mediaTypeFilter, string jellyseerrPath, PluginConfiguration config) =>
         string.Equals(mediaTypeFilter, "movie", StringComparison.OrdinalIgnoreCase) && GetReleaseTypes(config).Count > 0 && !jellyseerrPath.Contains("/upcoming", StringComparison.OrdinalIgnoreCase);
 
-    private static List<int> GetReleaseTypes(PluginConfiguration config) =>
+    internal static List<int> GetReleaseTypes(PluginConfiguration config) =>
         (config.DiscoverReleaseTypes ?? new List<int>())
             .Where(type => type is >= 1 and <= 6)
             .Distinct()
@@ -845,7 +845,7 @@ public class JellyseerrDiscoveryService
         return matches;
     }
 
-    private static bool HasMatchingReleaseTypeAnywhere(JObject releaseDates, IReadOnlyList<int> releaseTypes)
+    internal static bool HasMatchingReleaseTypeAnywhere(JObject releaseDates, IReadOnlyList<int> releaseTypes)
     {
         foreach (JObject country in releaseDates.Value<JArray>("results")?.OfType<JObject>() ?? [])
         {
@@ -908,7 +908,7 @@ public class JellyseerrDiscoveryService
         };
     }
 
-    private static HttpRequestMessage CreateTmdbRequest(string url, string apiKey)
+    internal static HttpRequestMessage CreateTmdbRequest(string url, string apiKey)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -964,6 +964,9 @@ public class JellyseerrDiscoveryService
             HideAvailableInLibrary = discovery.HideAvailableInLibrary
         };
     }
+
+    internal BaseItemDto? MapFilteredDiscoverItem(JObject item, bool hasLanguage) => MapDiscoverItem(item,
+        hasLanguage ? ResolveSearchMapping() : ResolveMapping(SeerrFinPlugin.Instance.Configuration, false));
 
     private sealed class DiscoverItemFilterOptions
     {
