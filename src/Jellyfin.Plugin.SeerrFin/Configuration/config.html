@@ -301,6 +301,69 @@
             max-width: 42%;
         }
 
+        .bst-servarr-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1em;
+        }
+
+        .bst-servarr-heading h3 {
+            margin: 0;
+        }
+
+        .bst-servarr-heading .bst-servarr-icon-btn {
+            border: 0;
+            background: transparent;
+        }
+
+        .bst-servarr-icon-btn {
+            display: grid;
+            place-items: center;
+            box-sizing: border-box;
+            width: 2.5em;
+            height: 2.5em;
+            padding: 0;
+            border: 1px solid var(--divider, rgba(255, 255, 255, 0.25));
+            background: var(--cardBackground, rgba(255, 255, 255, 0.08));
+            color: inherit;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .bst-servarr-table {
+            overflow-x: auto;
+        }
+
+        .bst-servarr-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) calc(1.47em + 24px);
+            gap: 0.75em;
+            min-width: 44em;
+        }
+
+        .bst-servarr-row {
+            height: calc(1.47em + 24px);
+            margin-top: 0.75em;
+        }
+
+        .bst-servarr-row .bst-input {
+            height: 100%;
+            min-width: 0;
+        }
+
+        .bst-servarr-remove {
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--cardBackground, transparent);
+        }
+
+        .bst-servarr-remove:hover {
+            border-color: #c62828;
+            background: #c62828;
+            color: #fff;
+        }
+
         .bst-save-btn {
             padding: 12px;
             border: none;
@@ -1001,45 +1064,21 @@
                 <div class="bst-section-container">
                     <div class="bst-section-title">Radarr/Sonarr configuration for download progress on Requests page</div>
                     <div class="bst-card">
-                        <div class="bst-input-row" style="margin-bottom: 1.25em;">
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="radarrUrl">Radarr URL</label>
-                                    <div class="bst-input-stack">
-                                        <input id="radarrUrl" name="radarrUrl" type="text" class="bst-input" placeholder="http://192.168.1.170:7878" />
-                                        <div class="bst-field-desc">URL used by the server to reach Radarr (or you use to access it)</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="radarrApiKey">Radarr API Key</label>
-                                    <div class="bst-input-stack">
-                                        <input id="radarrApiKey" name="radarrApiKey" type="password" class="bst-input" autocomplete="off" />
-                                        <div class="bst-field-desc">Key for Radarr which you can get from Radarr → Settings → General → Security → API Key</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="bst-servarr-heading">
+                            <h3>Radarr instances</h3>
+                            <button type="button" class="bst-servarr-icon-btn" id="addRadarrInstance" aria-label="Add Radarr server" title="Add Radarr server"><span class="material-icons add" aria-hidden="true"></span></button>
                         </div>
-                        <div class="bst-input-row">
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="sonarrUrl">Sonarr URL</label>
-                                    <div class="bst-input-stack">
-                                        <input id="sonarrUrl" name="sonarrUrl" type="text" class="bst-input" placeholder="http://192.168.1.170:8989" />
-                                        <div class="bst-field-desc">URL used by the server to reach Sonarr (or you use to access it)</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="sonarrApiKey">Sonarr API Key</label>
-                                    <div class="bst-input-stack">
-                                        <input id="sonarrApiKey" name="sonarrApiKey" type="password" class="bst-input" autocomplete="off" />
-                                        <div class="bst-field-desc">Key for Sonarr which you can get from Sonarr → Settings → General → Security → API Key</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="bst-servarr-table">
+                            <div class="bst-servarr-grid" aria-hidden="true"><span>Seerr server</span><span>Server URL</span><span>API key</span><span>Browser URL (optional)</span></div>
+                            <div id="radarrInstances"></div>
+                        </div>
+                        <div class="bst-servarr-heading">
+                            <h3>Sonarr instances</h3>
+                            <button type="button" class="bst-servarr-icon-btn" id="addSonarrInstance" aria-label="Add Sonarr server" title="Add Sonarr server"><span class="material-icons add" aria-hidden="true"></span></button>
+                        </div>
+                        <div class="bst-servarr-table">
+                            <div class="bst-servarr-grid" aria-hidden="true"><span>Seerr server</span><span>Server URL</span><span>API key</span><span>Browser URL (optional)</span></div>
+                            <div id="sonarrInstances"></div>
                         </div>
                     </div>
                 </div>
@@ -1837,9 +1876,115 @@
             function updateConfigSummary() {
                 setSummaryRow('bstCfgSeerr', fieldValue('jellyseerrUrl') !== '' && fieldValue('jellyseerrApiKey') !== '');
                 setSummaryRow('bstCfgTmdb', fieldValue('tmdbApiKey') !== '');
-                setSummaryRow('bstCfgRadarr', fieldValue('radarrUrl') !== '' && fieldValue('radarrApiKey') !== '');
-                setSummaryRow('bstCfgSonarr', fieldValue('sonarrUrl') !== '' && fieldValue('sonarrApiKey') !== '');
+                setSummaryRow('bstCfgRadarr', hasServarrConnection('radarr'));
+                setSummaryRow('bstCfgSonarr', hasServarrConnection('sonarr'));
             }
+
+            const servarrServers = { radarr: [], sonarr: [] };
+
+            function populateServarrServerSelect(select, type, selected) {
+                select.replaceChildren(new Option(select.dataset.legacy === 'true' ? 'Automatic (existing single connection)' : 'Choose a Seerr server', ''));
+                servarrServers[type].forEach(function (server) {
+                    select.add(new Option(server.serverName + ' (ID ' + server.serverId + ')' + (server.is4k ? ' · 4K' : ''), String(server.serverId)));
+                });
+                if (selected !== '' && !Array.from(select.options).some(function (option) { return option.value === String(selected); })) {
+                    select.add(new Option('Seerr server ID ' + selected, String(selected)));
+                }
+                select.value = String(selected);
+            }
+
+            function addServarrInstance(type, instance, legacy) {
+                instance = instance || {};
+                const row = document.createElement('div');
+                row.className = 'bst-servarr-grid bst-servarr-row';
+                const fields = [
+                    ['ServerId', 'Seerr server', 'select'],
+                    ['Url', 'Server URL', 'url'],
+                    ['ApiKey', 'API key', 'password'],
+                    ['ExternalUrl', 'Browser URL (optional)', 'url']
+                ];
+                fields.forEach(function (field) {
+                    const input = document.createElement(field[2] === 'select' ? 'select' : 'input');
+                    input.className = 'bst-input';
+                    input.dataset.field = field[0];
+                    input.setAttribute('aria-label', type + ' ' + field[1]);
+                    if (field[2] === 'select') {
+                        input.dataset.legacy = String(legacy === true);
+                        populateServarrServerSelect(input, type, instance.ServerId == null ? '' : instance.ServerId);
+                    } else {
+                        input.type = field[2];
+                        input.value = instance[field[0]] || '';
+                        if (field[2] === 'password') input.autocomplete = 'off';
+                    }
+                    input.required = field[0] !== 'ExternalUrl' && !(legacy && field[0] === 'ServerId');
+                    row.appendChild(input);
+                });
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'bst-servarr-icon-btn bst-servarr-remove';
+                remove.setAttribute('aria-label', 'Remove ' + type + ' server');
+                const icon = document.createElement('span');
+                icon.className = 'material-icons delete';
+                icon.setAttribute('aria-hidden', 'true');
+                remove.appendChild(icon);
+                remove.addEventListener('click', function () {
+                    if (confirm("Are you sure you want to delete this server?\nYou won't be able to get it back.")) {
+                        row.remove();
+                        updateConfigSummary();
+                    }
+                });
+                row.appendChild(remove);
+                document.getElementById(type + 'Instances').appendChild(row);
+            }
+
+            function loadServarrInstances(type, config) {
+                const key = type === 'radarr' ? 'Radarr' : 'Sonarr';
+                const rows = config[key + 'Instances'] || [];
+                if (rows.length) rows.forEach(function (row) { addServarrInstance(type, row, false); });
+                else if (config[key + 'Url'] || config[key + 'ApiKey']) {
+                    addServarrInstance(type, { Url: config[key + 'Url'], ApiKey: config[key + 'ApiKey'] }, true);
+                }
+                ApiClient.ajax({ url: ApiClient.getUrl('SeerrFin/servarr-servers/' + type), type: 'GET', dataType: 'json' })
+                    .then(function (payload) {
+                        servarrServers[type] = payload || [];
+                        document.querySelectorAll('#' + type + 'Instances select').forEach(function (select) {
+                            populateServarrServerSelect(select, type, select.value);
+                        });
+                    }).catch(function () { /* Keep saved server IDs when Seerr is unavailable. */ });
+            }
+
+            function readServarrInstances(type) {
+                return Array.from(document.getElementById(type + 'Instances').children).map(function (row) {
+                    const instance = {};
+                    row.querySelectorAll('[data-field]').forEach(function (input) {
+                        instance[input.dataset.field] = input.dataset.field === 'ServerId'
+                            ? (input.value === '' ? null : Number(input.value)) : input.value.trim();
+                    });
+                    return instance;
+                });
+            }
+
+            function hasServarrConnection(type) {
+                return readServarrInstances(type).some(function (row) { return row.Url && row.ApiKey; });
+            }
+
+            function saveServarrInstances(type, config) {
+                const key = type === 'radarr' ? 'Radarr' : 'Sonarr';
+                const rows = readServarrInstances(type);
+                const ids = rows.map(function (row) { return row.ServerId; });
+                if ((rows.length > 1 && ids.includes(null)) || rows.some(function (row) { return row.ServerId === null && row.ExternalUrl; }) || new Set(ids).size !== ids.length) {
+                    throw new Error('Choose a different Seerr server for each ' + key + ' connection.');
+                }
+                const legacy = rows.length === 1 && rows[0].ServerId === null ? rows[0] : null;
+                config[key + 'Url'] = legacy ? legacy.Url : '';
+                config[key + 'ApiKey'] = legacy ? legacy.ApiKey : '';
+                config[key + 'Instances'] = legacy ? [] : rows;
+            }
+
+            ['radarr', 'sonarr'].forEach(function (type) {
+                const key = type === 'radarr' ? 'Radarr' : 'Sonarr';
+                document.getElementById('add' + key + 'Instance').addEventListener('click', function () { addServarrInstance(type); });
+            });
 
             const TAB_TITLES = {
                 movies: 'Movies',
@@ -2230,7 +2375,7 @@
             }
 
             function bindConfigSummaryListeners() {
-                ['jellyseerrUrl', 'jellyseerrApiKey', 'tmdbApiKey', 'radarrUrl', 'radarrApiKey', 'sonarrUrl', 'sonarrApiKey'].forEach(function (id) {
+                ['jellyseerrUrl', 'jellyseerrApiKey', 'tmdbApiKey'].forEach(function (id) {
                     const el = document.getElementById(id);
                     if (el) {
                         el.addEventListener('input', updateConfigSummary);
@@ -2803,10 +2948,8 @@
                 document.querySelector('#jellyseerrUrl').value = config.JellyseerrUrl || '';
                 document.querySelector('#externalJellyseerrUrl').value = config.ExternalJellyseerrUrl || '';
                 document.querySelector('#jellyseerrApiKey').value = config.JellyseerrApiKey || '';
-                document.querySelector('#radarrUrl').value = config.RadarrUrl || '';
-                document.querySelector('#radarrApiKey').value = config.RadarrApiKey || '';
-                document.querySelector('#sonarrUrl').value = config.SonarrUrl || '';
-                document.querySelector('#sonarrApiKey').value = config.SonarrApiKey || '';
+                loadServarrInstances('radarr', config);
+                loadServarrInstances('sonarr', config);
                 document.querySelector('#jellyseerrPreferredLanguages').value = config.JellyseerrPreferredLanguages || 'en';
                 document.querySelector('#watchRegion').value = config.WatchRegion || 'US';
                 document.querySelector('#rowItemLimit').value = config.RowItemLimit || 20;
@@ -2853,10 +2996,8 @@
                     config.JellyseerrUrl = document.querySelector('#jellyseerrUrl').value;
                     config.ExternalJellyseerrUrl = document.querySelector('#externalJellyseerrUrl').value;
                     config.JellyseerrApiKey = document.querySelector('#jellyseerrApiKey').value;
-                    config.RadarrUrl = document.querySelector('#radarrUrl').value.trim();
-                    config.RadarrApiKey = document.querySelector('#radarrApiKey').value.trim();
-                    config.SonarrUrl = document.querySelector('#sonarrUrl').value.trim();
-                    config.SonarrApiKey = document.querySelector('#sonarrApiKey').value.trim();
+                    saveServarrInstances('radarr', config);
+                    saveServarrInstances('sonarr', config);
                     config.JellyseerrPreferredLanguages = document.querySelector('#jellyseerrPreferredLanguages').value;
                     config.WatchRegion = document.querySelector('#watchRegion').value || 'US';
                     config.RowItemLimit = parseInt(document.querySelector('#rowItemLimit').value, 10) || 20;
@@ -2888,8 +3029,9 @@
                     if (window.seerrFinPlugin) {
                         window.seerrFinPlugin.invalidateDisplaySettings();
                     }
-                }).catch(function () {
+                }).catch(function (error) {
                     Dashboard.hideLoadingMsg();
+                    Dashboard.alert(error.message || 'Could not save SeerrFin settings.');
                 });
             });
         })();

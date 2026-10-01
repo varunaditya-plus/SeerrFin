@@ -136,6 +136,7 @@ public class JellyseerrRequestsService
                 }
 
                 mapped.Remove("externalServiceId");
+                mapped.Remove("serviceId");
             }
 
             return (200, BuildResponse(data, mappedRequests, isComingSoonFilter, take).ToString());
@@ -313,8 +314,10 @@ public class JellyseerrRequestsService
         string? avatar = requestedBy?.Value<string>("avatar");
         int? tmdbId = media?.Value<int?>("tmdbId") ?? details?.Value<int?>("id");
         int? externalServiceId = is4k
-            ? media?.Value<int?>("externalServiceId4k") ?? media?.Value<int?>("externalServiceId")
+            ? media?.Value<int?>("externalServiceId4k")
             : media?.Value<int?>("externalServiceId");
+        int? serviceId = (is4k ? media?.Value<int?>("serviceId4k") : media?.Value<int?>("serviceId"))
+            ?? req.Value<int?>("serverId");
 
         JObject mapped = new()
         {
@@ -322,6 +325,10 @@ public class JellyseerrRequestsService
             ["tmdbId"] = tmdbId,
             ["type"] = type,
             ["externalServiceId"] = externalServiceId,
+            ["serviceId"] = serviceId,
+            ["servarrUrl"] = ServarrProgressService.NormalizeBrowseUrl(is4k
+                ? media?.Value<string>("serviceUrl4k")
+                : media?.Value<string>("serviceUrl")),
             ["posterPath"] = posterPath,
             ["backdropPath"] = backdropPath,
             ["title"] = details?.Value<string>("title")

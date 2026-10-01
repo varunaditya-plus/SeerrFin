@@ -62,16 +62,12 @@ window.seerrFinLog = window.seerrFinLog || {
             dataType: 'json'
         }).then(function (config) {
             state.clientSettings = {
-                jellyseerrBrowseUrl: (config.jellyseerrBrowseUrl || '').replace(/\/+$/, ''),
-                radarrUrl: (config.radarrUrl || '').replace(/\/+$/, ''),
-                sonarrUrl: (config.sonarrUrl || '').replace(/\/+$/, '')
+                jellyseerrBrowseUrl: (config.jellyseerrBrowseUrl || '').replace(/\/+$/, '')
             };
         }).catch(function (err) {
             log.warn('client settings fetch failed', err);
             state.clientSettings = {
-                jellyseerrBrowseUrl: '',
-                radarrUrl: '',
-                sonarrUrl: ''
+                jellyseerrBrowseUrl: ''
             };
         });
     }
@@ -291,20 +287,7 @@ window.seerrFinLog = window.seerrFinLog || {
     }
 
     function getServarrOpenUrl(item) {
-        const progress = getServarrProgress(item);
-        if (progress?.openUrl) {
-            return progress.openUrl;
-        }
-
-        const mediaType = item.type === 'tv' ? 'tv' : 'movie';
-        const base = mediaType === 'tv'
-            ? state.clientSettings?.sonarrUrl
-            : state.clientSettings?.radarrUrl;
-        if (!base || !item.tmdbId) {
-            return '';
-        }
-
-        return base + '/add/new?term=tmdb:' + item.tmdbId;
+        return item.servarrUrl || getServarrProgress(item)?.openUrl || '';
     }
 
     function renderCardActions(item) {
@@ -325,7 +308,7 @@ window.seerrFinLog = window.seerrFinLog || {
             </button>` : '';
 
         let radarrBtn = '';
-        if (mediaType === 'movie' && state.clientSettings?.radarrUrl) {
+        if (mediaType === 'movie') {
             const radarrUrl = getServarrOpenUrl(item);
             if (radarrUrl) {
                 radarrBtn = `
@@ -338,7 +321,7 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         let sonarrBtn = '';
-        if (mediaType === 'tv' && state.clientSettings?.sonarrUrl) {
+        if (mediaType === 'tv') {
             const sonarrUrl = getServarrOpenUrl(item);
             if (sonarrUrl) {
                 sonarrBtn = `

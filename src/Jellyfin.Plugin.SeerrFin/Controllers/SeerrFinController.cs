@@ -614,16 +614,22 @@ public class SeerrFinController : ControllerBase
         return Ok(new
         {
             tmdbApiKey = key ?? string.Empty,
-            jellyseerrBrowseUrl = browseUrl ?? string.Empty,
-            radarrUrl = IsServarrBrowseUrlConfigured(config.RadarrUrl, config.RadarrApiKey),
-            sonarrUrl = IsServarrBrowseUrlConfigured(config.SonarrUrl, config.SonarrApiKey)
+            jellyseerrBrowseUrl = browseUrl ?? string.Empty
         });
     }
 
-    private static string IsServarrBrowseUrlConfigured(string? url, string? apiKey) =>
-        !string.IsNullOrWhiteSpace(url) && !string.IsNullOrWhiteSpace(apiKey)
-            ? url.Trim().TrimEnd('/')
-            : string.Empty;
+    [HttpGet("servarr-servers/{type}")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<ActionResult> GetServarrServers(string type, [FromServices] ServarrProgressService progressService, CancellationToken cancellationToken)
+    {
+        if (type is not ("radarr" or "sonarr"))
+        {
+            return BadRequest();
+        }
+
+        JArray servers = await progressService.GetServerOptionsAsync(type, cancellationToken).ConfigureAwait(false);
+        return Content(servers.ToString(Newtonsoft.Json.Formatting.None), "application/json");
+    }
 
     [HttpGet("details/{mediaType}/{mediaId}")]
     [Authorize]
