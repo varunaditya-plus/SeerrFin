@@ -208,18 +208,17 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             return null;
         },
 
-        isHomeTabContext: function () {
+        isHomeRoute: function () {
             const hash = window.location.hash || '';
-            const onHomeHash = hash === '' ||
+            return hash === '' ||
                 hash === '#/home' ||
                 hash === '#/home.html' ||
                 hash.indexOf('#/home?') === 0 ||
                 hash.indexOf('#/home.html?') === 0;
-            if (!onHomeHash) {
-                return false;
-            }
+        },
 
-            return !!this.findActiveHomePage();
+        isHomeTabContext: function () {
+            return this.isHomeRoute() && !!this.findActiveHomePage();
         },
 
         cleanupSeerrFinHeaderButtons: function () {
@@ -859,15 +858,27 @@ if (typeof window.seerrFinPlugin === 'undefined') {
 
         bindModernNavigation: function () {
             const self = this;
-            // menuLinks are native anchors with target=_blank, including freshly mounted More/drawer entries. Handle only our ordinary clicks and let Jellyfin's own bubbling handlers close the native menu/drawer.
+            // Handle ordinary SeerrFin navigation and keep native drawer closing behaviour.
             document.addEventListener('click', function (event) {
                 if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
                 const link = event.target.closest && event.target.closest('a[href]');
-                if (!self.getModernNavId(link)) return;
+                const tabId = self.getModernNavId(link);
+                const href = link && (link.getAttribute('href') || '');
+                const drawer = link && link.closest('.MuiDrawer-paper');
+                const hiddenDrawer = drawer && getComputedStyle(drawer).visibility === 'hidden';
+                if (!tabId && !(hiddenDrawer && href.indexOf('#/') === 0 && link.target !== '_blank')) {
+                    // React links update history without hashchange, including clicks proxied by themes.
+                    if (link && link.closest('header.MuiAppBar-root, .MuiDrawer-paper') && href.indexOf('#/') === 0) {
+                        setTimeout(function () { self.ensureNativeTabs(); }, 0);
+                    }
+                    return;
+                }
                 event.preventDefault();
-                window.location.hash = link.getAttribute('href');
+                // Themes can proxy hidden drawer links; only bubble when the drawer needs closing.
+                if (hiddenDrawer) event.stopPropagation();
+                window.location.hash = href;
                 self.syncModernNavigation();
-                self.ensureNativeTabs().then(function () { self.scheduleRender(); });
+                self.ensureNativeTabs().then(function () { if (tabId) self.scheduleRender(); });
             }, true);
         },
 
@@ -884,8 +895,9 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             }).filter(Boolean);
             const icons = { movies: 'movie', tv: 'tv', discover: 'explore', requests: 'download', watchlist: 'bookmark', letterboxd: 'bookmark' };
 
-            document.querySelectorAll('header.MuiAppBar-root .MuiToolbar-root > .MuiStack-root').forEach(function (nav) {
-                const runtimeLinks = Array.from(nav.querySelectorAll('[data-seerrfin-runtime-nav]'));
+            document.querySelectorAll('header.MuiAppBar-root .MuiToolbar-root > .MuiStack-root, .MuiDrawer-paper ul.MuiList-root').forEach(function (nav) {
+                const drawer = nav.matches('ul');
+                const runtimeLinks = Array.from(nav.querySelectorAll(':scope > [data-seerrfin-runtime-nav]'));
                 if (nav.querySelector('a[href^="#/home?seerrfinTab="]:not([data-seerrfin-runtime-nav])')) {
                     runtimeLinks.forEach(function (link) { link.remove(); });
                     return;
@@ -903,33 +915,45 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     }
                 });
 
-                let previous = favorite;
+                let previous = drawer ? favorite.parentElement : favorite;
                 desired.forEach(function (tab) {
-                    let link = nav.querySelector('[data-seerrfin-runtime-nav="' + tab.id + '"]');
+                    let link = nav.querySelector('a[data-seerrfin-runtime-nav="' + tab.id + '"]');
                     if (!link) {
                         link = favorite.cloneNode(false);
                         link.removeAttribute('data-sleekfin-current');
                         link.removeAttribute('data-sleekfin-header-link');
                         link.dataset.seerrfinRuntimeNav = tab.id;
+                        if (drawer) {
+                            const item = favorite.parentElement.cloneNode(false);
+                            item.dataset.seerrfinRuntimeNav = tab.id;
+                            item.appendChild(link);
+                        }
                     }
 
                     const title = self.resolveTabTitle(tab.id, tab.title);
                     if (link.dataset.seerrfinRuntimeTitle !== title) {
-                        const iconContainer = favorite.firstElementChild.cloneNode(false);
+                        const iconContainer = (drawer ? favorite.querySelector('.MuiListItemIcon-root') : favorite.firstElementChild).cloneNode(false);
                         const icon = document.createElement('span');
                         icon.className = 'material-icons notranslate MuiIcon-root MuiIcon-fontSizeMedium';
                         icon.setAttribute('aria-hidden', 'true');
                         icon.textContent = icons[tab.id] || 'bookmark';
                         iconContainer.appendChild(icon);
-                        link.replaceChildren(iconContainer, title);
+                        if (drawer) {
+                            const label = favorite.querySelector('.MuiListItemText-root').cloneNode(true);
+                            label.firstElementChild.textContent = title;
+                            link.replaceChildren(iconContainer, label);
+                        } else {
+                            link.replaceChildren(iconContainer, title);
+                        }
                         link.dataset.seerrfinRuntimeTitle = title;
                     }
 
                     link.setAttribute('href', '#/home?seerrfinTab=' + tab.id);
-                    if (previous.nextSibling !== link) {
-                        nav.insertBefore(link, previous.nextSibling);
+                    const node = drawer ? link.parentElement : link;
+                    if (previous.nextSibling !== node) {
+                        nav.insertBefore(node, previous.nextSibling);
                     }
-                    previous = link;
+                    previous = node;
                 });
             });
         },
@@ -984,6 +1008,42 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             }
         },
 
+        ensureModernContent: function (config) {
+            const main = document.querySelector('main');
+            if (!main) return false;
+            const modern = !!document.querySelector('header.MuiAppBar-root');
+            const slots = modern ? this.buildDesiredBarSlots(config).filter(function (slot) {
+                return slot.type === 'seerrfin';
+            }) : [];
+            const id = this.isHomeRoute() ? this.getActiveModernNavId() : null;
+            const active = slots.find(function (slot) { return slot.id === id; });
+            main.classList.toggle('seerrfin-modern-active', !!active);
+
+            let panel = null;
+            main.querySelectorAll(':scope > [data-seerrfin-modern-panel]').forEach(function (candidate) {
+                if (!slots.some(function (slot) { return slot.id === candidate.dataset.seerrfinTab; })) {
+                    candidate.remove();
+                    return;
+                }
+                if (active && candidate.dataset.seerrfinTab === id) panel = candidate;
+                else candidate.classList.remove('is-active');
+            });
+
+            if (active) {
+                if (!panel) {
+                    panel = this.createTabPanel(id);
+                    panel.classList.add('padded-bottom-page');
+                    panel.setAttribute('data-seerrfin-modern-panel', '');
+                    main.appendChild(panel);
+                }
+                if (!panel.classList.contains('is-active')) {
+                    panel.classList.add('is-active');
+                    this.onSeerrFinTabShown();
+                }
+            }
+            return modern;
+        },
+
         ensureNativeTabs: function () {
             const self = this;
             self.syncModernNavigation();
@@ -994,6 +1054,9 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             self._tabsEnsuring = self.loadTabConfig().then(function (config) {
                 self.ensureModernNavigationLinks(config);
                 self.syncModernNavigation();
+
+                // Modern uses React's main outlet; its hidden Legacy tab bar may not exist.
+                if (self.ensureModernContent(config)) return;
 
                 if (!self.isHomeTabContext()) {
                     self.cleanupSeerrFinHeaderButtons();
@@ -1096,11 +1159,11 @@ if (typeof window.seerrFinPlugin === 'undefined') {
 
             if (!self._ctButtonObserver && typeof MutationObserver !== 'undefined') {
                 self._ctButtonObserver = new MutationObserver(function (records) {
-                    const selector = '.skinHeader, .headerTabs, #indexPage, header.MuiAppBar-root, .MuiDrawer-paper, #user-view-overflow-menu, .customMenuOptions';
+                    const selector = '.skinHeader, .headerTabs, #indexPage, main, header.MuiAppBar-root, .MuiDrawer-paper, #user-view-overflow-menu, .customMenuOptions';
                     const relevant = records.some(function (record) {
                         const target = record.target;
                         if (target.nodeType === 1 && target.closest(selector)) {
-                            if (!target.closest('#indexPage') || target.id === 'indexPage') { // Card and image rendering within the page doesnt affect the tab bar
+                            if (!target.closest('main, #indexPage') || target.matches('main, #indexPage')) { // Card and image rendering within the page doesnt affect the tab bar
                                 return true;
                             }
                         }

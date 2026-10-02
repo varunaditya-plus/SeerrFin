@@ -7,6 +7,11 @@ a[data-seerrfin-menu-nav]:focus-visible {
     outline-offset: -2px;
 }
 
+main.seerrfin-modern-active > :not([data-seerrfin-modern-panel]),
+main > [data-seerrfin-modern-panel]:not(.is-active) {
+    display: none !important;
+}
+
 .seerrfin-movies-sections,
 .seerrfin-tv-sections,
 .seerrfin-discover-sections,
