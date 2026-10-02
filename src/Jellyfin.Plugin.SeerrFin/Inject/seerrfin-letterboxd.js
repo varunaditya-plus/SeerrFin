@@ -145,7 +145,9 @@ window.seerrFinLog = window.seerrFinLog || {
             return 'Unknown';
         }
 
-        return date.toLocaleString();
+        const detectedLocale = window.seerrFinI18n ? window.seerrFinI18n.getLocale() : 'en-US';
+        const locale = /^(fr|en)(-|$)/i.test(detectedLocale) ? detectedLocale : 'en-US';
+        return date.toLocaleString(locale);
     }
 
     function getSyncButtonLabel() {

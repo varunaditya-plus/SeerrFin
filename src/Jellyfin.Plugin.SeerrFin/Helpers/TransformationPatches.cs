@@ -89,6 +89,7 @@ public static class TransformationPatches
             $"<link rel=\"stylesheet\" href=\"../SeerrFin/seerrfin-account.css{cacheParam}\" />" +
             $"<link rel=\"stylesheet\" href=\"../SeerrFin/seerrfin-filters.css{cacheParam}\" />";
         string scripts =
+            $"<script defer src=\"../SeerrFin/seerrfin-i18n.js{cacheParam}\"></script>" +
             $"<script defer src=\"../SeerrFin/seerrfin-modal.js{cacheParam}\"></script>" +
             $"<script defer src=\"../SeerrFin/seerrfin-nativeui.js{cacheParam}\"></script>" +
             $"<script defer src=\"../SeerrFin/seerrfin-tabs.js{cacheParam}\"></script>" +

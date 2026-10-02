@@ -25,6 +25,10 @@ window.seerrFinLog = window.seerrFinLog || {
         return;
     }
 
+    function t(source) {
+        return window.seerrFinI18n ? window.seerrFinI18n.t(source) : source;
+    }
+
     const log = window.seerrFinLog;
 
     window.seerrFinNativeUi = {
@@ -332,17 +336,17 @@ window.seerrFinLog = window.seerrFinLog || {
         getGridMenuOptions: function (type) {
             if (type === 'view') {
                 return [
-                    { value: 'Poster', label: 'Poster' },
-                    { value: 'PosterCard', label: 'Poster Card' },
-                    { value: 'Thumb', label: 'Thumb' },
-                    { value: 'ThumbCard', label: 'Thumb Card' }
+                    { value: 'Poster', label: t('Poster') },
+                    { value: 'PosterCard', label: t('Poster Card') },
+                    { value: 'Thumb', label: t('Thumb') },
+                    { value: 'ThumbCard', label: t('Thumb Card') }
                 ];
             }
             if (type === 'sort') {
                 return [
-                    { value: 'title', label: 'Title' },
-                    { value: 'year', label: 'Release date' },
-                    { value: 'rating', label: 'Community rating' }
+                    { value: 'title', label: t('Title') },
+                    { value: 'year', label: t('Release date') },
+                    { value: 'rating', label: t('Community rating') }
                 ];
             }
             return [];
@@ -387,9 +391,9 @@ window.seerrFinLog = window.seerrFinLog || {
                             button: button,
                             query: query,
                             items: [
-                                { name: 'Name', id: 'SortName' },
-                                { name: 'Community rating', id: 'CommunityRating,SortName' },
-                                { name: 'Release date', id: 'PremiereDate,SortName' }
+                                { name: t('Name'), id: 'SortName' },
+                                { name: t('Community rating'), id: 'CommunityRating,SortName' },
+                                { name: t('Release date'), id: 'PremiereDate,SortName' }
                             ],
                             callback: function () {
                                 gridView.dataset.gridSortBy = query.SortBy;
