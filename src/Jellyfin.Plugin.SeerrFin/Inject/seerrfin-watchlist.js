@@ -4,6 +4,7 @@
     if (window.__seerrFinWatchlistInit) return;
 
     window.__seerrFinWatchlistInit = true;
+    const t = (key, parameters) => window.seerrFinI18n ? window.seerrFinI18n.t(key, parameters) : key;
 
     function escapeHtml(value) {
         const element = document.createElement('div');
@@ -22,7 +23,7 @@
     }
 
     function errorMessage(error, fallback) {
-        return error?.responseJSON?.message || fallback || 'Unable to load watchlist. Please try again.';
+        return error?.responseJSON?.message || fallback || t('Unable to load watchlist. Please try again.');
     }
 
     // This API is also used by the details modal. No membership state is shared across users.
@@ -47,7 +48,7 @@
             <div class="verticalSection seerrfin-watchlist-panel">
                 <div class="sectionTitleContainer sectionTitleContainer-cards padded-left padded-right">
                     <h2 class="sectionTitle sectionTitle-cards">${escapeHtml(title)}</h2>
-                    <button type="button" class="seerrfin-requests-reload" data-watchlist-refresh aria-label="Reload watchlist" title="Reload watchlist">
+                    <button type="button" class="seerrfin-requests-reload" data-watchlist-refresh aria-label="${t('Reload watchlist')}" title="${t('Reload watchlist')}">
                         <span class="material-icons" aria-hidden="true">refresh</span>
                     </button>
                 </div>
@@ -76,7 +77,7 @@
             return `
                 <div class="seerrfin-watchlist-entry" data-watchlist-id="${item.id}" data-watchlist-type="${escapeHtml(item.mediaType)}">
                     ${plugin.createDiscoverCards([discover], true, { interactive: false, forceBackdrop: false })}
-                    <button type="button" class="seerrfin-watchlist-remove" data-watchlist-remove aria-label="Remove ${safeTitle} from watchlist" title="Remove from watchlist">
+                    <button type="button" class="seerrfin-watchlist-remove" data-watchlist-remove aria-label="${escapeHtml(t('Remove {title} from watchlist', { title: item.title }))}" title="${t('Remove from watchlist')}">
                         <span class="material-icons" aria-hidden="true">close</span>
                     </button>
                 </div>
@@ -85,19 +86,19 @@
         const body = container.querySelector('.seerrfin-watchlist-body');
         body.innerHTML = cards ?
             `<div class="seerrfin-watchlist-grid padded-left padded-right">${cards}</div>` :
-            '<div class="seerrfin-empty-row padded-left">Your watchlist is empty.</div>';
+            `<div class="seerrfin-empty-row padded-left">${t('Your watchlist is empty.')}</div>`;
         body.querySelectorAll('.seerrfin-discover-card').forEach(function (card, index) {
             card.setAttribute('role', 'button');
             card.setAttribute('tabindex', '0');
-            card.setAttribute('aria-label', 'Open ' + items[index].title);
+            card.setAttribute('aria-label', t('Open {title}', { title: items[index].title }));
         });
 
         if (data.totalPages > 1) {
             body.insertAdjacentHTML('beforeend', `
                 <div class="seerrfin-grid-loadmore seerrfin-requests-pagination padded-left">
-                    <button type="button" class="raised emby-button" data-watchlist-page="${data.page - 1}"${data.page <= 1 ? ' disabled' : ''}>Previous</button>
-                    <span class="seerrfin-requests-page-info">Page ${data.page} of ${data.totalPages}</span>
-                    <button type="button" class="raised emby-button" data-watchlist-page="${data.page + 1}"${data.page >= data.totalPages ? ' disabled' : ''}>Next</button>
+                    <button type="button" class="raised emby-button" data-watchlist-page="${data.page - 1}"${data.page <= 1 ? ' disabled' : ''}>${t('Previous')}</button>
+                    <span class="seerrfin-requests-page-info">${t('Page {current} of {total}', { current: data.page, total: data.totalPages })}</span>
+                    <button type="button" class="raised emby-button" data-watchlist-page="${data.page + 1}"${data.page >= data.totalPages ? ' disabled' : ''}>${t('Next')}</button>
                 </div>
             `);
         }
@@ -127,7 +128,7 @@
 
         const body = container.querySelector('.seerrfin-watchlist-body');
 
-        if (!body.innerHTML) body.innerHTML = '<div role="status" class="seerrfin-empty-row padded-left">Loading watchlist…</div>';
+        if (!body.innerHTML) body.innerHTML = `<div role="status" class="seerrfin-empty-row padded-left">${t('Loading watchlist…')}</div>`;
 
         container.querySelector('[data-watchlist-message]').hidden = true;
         setLoading(container, true);
@@ -194,7 +195,7 @@
                         const message = container.querySelector('[data-watchlist-message]');
 
                         if (message) {
-                            message.textContent = errorMessage(error, 'Unable to remove this title. Please try again.');
+                            message.textContent = errorMessage(error, t('Unable to remove this title. Please try again.'));
                             message.hidden = false;
                         }
 

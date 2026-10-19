@@ -92,6 +92,10 @@ public class SeerrFinController : ControllerBase
     [Produces("application/javascript")]
     public ActionResult GetScript() => ServeEmbedded("Inject.seerrfin-tabs.js", "application/javascript");
 
+    [HttpGet("seerrfin-i18n.js")]
+    [Produces("application/javascript")]
+    public ActionResult GetLocalizationScript() => ServeEmbedded("Inject.seerrfin-i18n.js", "application/javascript");
+
     [HttpGet("seerrfin-tabs.css")]
     [Produces("text/css")]
     public ActionResult GetStylesheet() => ServeEmbedded("Inject.seerrfin-tabs.css", "text/css");

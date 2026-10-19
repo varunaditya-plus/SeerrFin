@@ -25,6 +25,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
     window.__seerrFinLetterboxdInit = true;
     const log = window.seerrFinLog;
+    const t = (key, parameters) => window.seerrFinI18n ? window.seerrFinI18n.t(key, parameters) : key;
     const DEFAULT_USERNAME_PATTERN = '^[a-zA-Z0-9_-]{1,30}$';
 
     const state = {
@@ -136,19 +137,19 @@ window.seerrFinLog = window.seerrFinLog || {
     }
 
     function formatDate(value) {
-        if (!value) { return 'Never'; }
+        if (!value) { return t('Never'); }
 
         const date = new Date(value);
 
-        if (Number.isNaN(date.getTime())) { return 'Unknown'; }
+        if (Number.isNaN(date.getTime())) { return t('Unknown'); }
 
-        return date.toLocaleString();
+        return date.toLocaleString(window.seerrFinI18n ? window.seerrFinI18n.getLocale() : 'en-US');
     }
 
     function getSyncButtonLabel() {
         if (state.syncing) { return state.syncProgressPercent + '%'; }
 
-        return state.items.length > 0 ? 'Refresh watchlist' : 'Get watchlist';
+        return state.items.length > 0 ? t('Refresh watchlist') : t('Get watchlist');
     }
 
     function updateSyncButton(container) {
@@ -261,11 +262,11 @@ window.seerrFinLog = window.seerrFinLog || {
     }
 
     function getBulkStatusLabel(status) {
-        if (status === 'requested') { return 'Requested'; }
-        if (status === 'skipped') { return 'Already requested'; }
-        if (status === 'failed') { return 'Failed'; }
+        if (status === 'requested') { return t('Requested'); }
+        if (status === 'skipped') { return t('Already requested'); }
+        if (status === 'failed') { return t('Failed'); }
 
-        return 'Waiting';
+        return t('Waiting');
     }
 
     function setBulkModalLocked(locked) {
@@ -289,18 +290,18 @@ window.seerrFinLog = window.seerrFinLog || {
         const header = panel.querySelector('.bst-quality-header h3');
 
         if (header) {
-            header.textContent = 'Requesting movies';
+            header.textContent = t('Requesting movies');
         }
 
         setBulkModalLocked(true);
         let subtitle = '';
 
         if (payload.QualityMode === 'singleProfile' && payload.ProfileName) {
-            subtitle = 'Profile: ' + payload.ProfileName;
+            subtitle = t('Profile: {name}', { name: payload.ProfileName });
         } else if (payload.QualityMode === 'highestAvailable') {
-            subtitle = 'Using highest released quality for each movie';
+            subtitle = t('Using highest released quality for each movie');
         } else if (payload.QualityMode === 'mostCommon') {
-            subtitle = 'Using most common quality for each movie';
+            subtitle = t('Using most common quality for each movie');
         }
 
         const list = panel.querySelector('.bst-quality-list');
@@ -324,7 +325,7 @@ window.seerrFinLog = window.seerrFinLog || {
                         <span class="bst-letterboxd-bulk-item-title">${escapeHtml(getItemTitle(id) || 'Movie')}</span>
                         <span class="bst-letterboxd-bulk-item-quality" data-bulk-quality></span>
                     </div>
-                    <span class="bst-letterboxd-bulk-item-status" data-bulk-status>Waiting</span>
+                    <span class="bst-letterboxd-bulk-item-status" data-bulk-status>${t('Waiting')}</span>
                 </div>
             `;
         }).join('');
@@ -338,7 +339,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 <span class="bst-letterboxd-bulk-progress-count" data-bulk-progress-count>0 of ${tmdbIds.length}</span>
             </div>
             <div class="bst-letterboxd-bulk-items" data-bulk-items>${itemsHtml}</div>
-            <button type="button" class="bst-quality-option bst-letterboxd-bulk-done" data-bulk-footer data-bulk-done hidden>Done</button>`;
+            <button type="button" class="bst-quality-option bst-letterboxd-bulk-done" data-bulk-footer data-bulk-done hidden>${t('Done')}</button>`;
     }
 
     function updateBulkItemRow(panel, item) {
@@ -393,8 +394,8 @@ window.seerrFinLog = window.seerrFinLog || {
             row.classList.remove('is-active');
             const statusEl = row.querySelector('[data-bulk-status]');
 
-            if (statusEl && statusEl.textContent === 'Requesting…') {
-                statusEl.textContent = 'Waiting';
+            if (statusEl && statusEl.textContent === t('Requesting…')) {
+                statusEl.textContent = t('Waiting');
             }
         });
 
@@ -423,7 +424,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 const statusEl = row.querySelector('[data-bulk-status]');
 
                 if (statusEl) {
-                    statusEl.textContent = 'Requesting…';
+                    statusEl.textContent = t('Requesting…');
                 }
             }
         }
@@ -433,7 +434,7 @@ window.seerrFinLog = window.seerrFinLog || {
         const header = panel.querySelector('.bst-quality-header h3');
 
         if (header) {
-            header.textContent = 'Requests complete';
+            header.textContent = t('Requests complete');
         }
 
         setBulkModalLocked(false);
@@ -455,7 +456,7 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         if (subtitle) {
-            subtitle.textContent = `Requested: ${requested}, skipped: ${skipped}, failed: ${failed}`;
+            subtitle.textContent = t('Requested: {requested}, skipped: {skipped}, failed: {failed}', { requested, skipped, failed });
         }
 
         const footer = panel.querySelector('[data-bulk-footer]');
@@ -469,7 +470,7 @@ window.seerrFinLog = window.seerrFinLog || {
         const header = panel.querySelector('.bst-quality-header h3');
 
         if (header) {
-            header.textContent = 'Request failed';
+            header.textContent = t('Request failed');
         }
 
         setBulkModalLocked(false);
@@ -607,14 +608,14 @@ window.seerrFinLog = window.seerrFinLog || {
         let metaHtml = '';
 
         if (state.syncing) {
-            metaHtml = `<div class="seerrfin-loading-row">Loading watchlist…</div>`;
+            metaHtml = `<div class="seerrfin-loading-row">${t('Loading watchlist…')}</div>`;
         } else if (lastSynced || hasWatchlist) {
-            const unresolvedHtml = unresolvedCount ? `<span>Unresolved: <strong>${escapeHtml(String(unresolvedCount))}</strong></span>` : '';
+            const unresolvedHtml = unresolvedCount ? `<span>${t('Unresolved:')} <strong>${escapeHtml(String(unresolvedCount))}</strong></span>` : '';
 
             metaHtml = `
                 <div class="seerrfin-letterboxd-meta">
-                    <span>Last synced: <strong>${escapeHtml(formatDate(lastSynced))}</strong></span>
-                    <span>Gotten: <strong>${escapeHtml(String(resolvedCount))}</strong></span>
+                    <span>${t('Last synced:')} <strong>${escapeHtml(formatDate(lastSynced))}</strong></span>
+                    <span>${t('Gotten:')} <strong>${escapeHtml(String(resolvedCount))}</strong></span>
                     ${unresolvedHtml}
                 </div>
             `;
@@ -623,8 +624,8 @@ window.seerrFinLog = window.seerrFinLog || {
         const toolbarHtml = showToolbar ? `
             <div class="seerrfin-letterboxd-toolbar">
                 <div class="seerrfin-letterboxd-toolbar-actions">
-                    <button type="button" class="seerrfin-letterboxd-toolbar-btn" data-select-all>Select all</button>
-                    <button type="button" class="seerrfin-letterboxd-toolbar-btn" data-select-none>Select none</button>
+                    <button type="button" class="seerrfin-letterboxd-toolbar-btn" data-select-all>${t('Select all')}</button>
+                    <button type="button" class="seerrfin-letterboxd-toolbar-btn" data-select-none>${t('Select none')}</button>
                 </div>
                 <span class="seerrfin-letterboxd-toolbar-separator" aria-hidden="true"></span>
                 <span class="seerrfin-letterboxd-selected-count" data-selected-count>${selectedCount} selected</span>
@@ -633,19 +634,19 @@ window.seerrFinLog = window.seerrFinLog || {
 
         const actionbarHtml = showToolbar ? `
             <div class="seerrfin-letterboxd-actionbar${state.requesting ? ' seerrfin-letterboxd-disabled' : ''}">
-                <button type="button" data-request-selected${selectedCount === 0 || state.requesting ? ' disabled' : ''}>Request selected</button>
+                <button type="button" data-request-selected${selectedCount === 0 || state.requesting ? ' disabled' : ''}>${t('Request selected')}</button>
             </div>
         ` : '';
 
         return `
             <div class="verticalSection seerrfin-letterboxd-panel padded-left padded-right">
                 <div class="sectionTitleContainer sectionTitleContainer-cards">
-                    <h2 class="sectionTitle sectionTitle-cards">Letterboxd Watchlist</h2>
+                    <h2 class="sectionTitle sectionTitle-cards">${t('Letterboxd Watchlist')}</h2>
                 </div>
                 <div class="seerrfin-letterboxd-header">
                     <form data-letterboxd-form>
                         <div>
-                            <label for="seerrfin-letterboxd-username">Letterboxd username</label>
+                            <label for="seerrfin-letterboxd-username">${t('Letterboxd username')}</label>
                             <input id="seerrfin-letterboxd-username" type="text" autocomplete="username"
                                 placeholder="your-letterboxd-username" value="${escapeHtml(state.username)}"${disabledAttr} />
                         </div>
@@ -843,7 +844,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 <div class="bst-quality-panel" role="dialog" aria-modal="true">
                     <div class="bst-quality-header">
                         <h3>${escapeHtml(title)}</h3>
-                        <button type="button" class="bst-quality-close" aria-label="Close">&times;</button>
+                        <button type="button" class="bst-quality-close" aria-label="${t('Close')}">&times;</button>
                     </div>
                     <div class="bst-quality-list"></div>
                 </div>
@@ -899,15 +900,15 @@ window.seerrFinLog = window.seerrFinLog || {
         return `
             <button type="button" class="bst-quality-option" data-quality-mode="singleProfile">
                 Use one quality profile for all
-                <span class="bst-quality-option-sub">Choose a single Radarr profile for every selected movie.</span>
+                <span class="bst-quality-option-sub">${t('Choose a single Radarr profile for every selected movie.')}</span>
             </button>
             <button type="button" class="bst-quality-option" data-quality-mode="highestAvailable">
                 Highest quality for each
-                <span class="bst-quality-option-sub">Use the highest released streaming quality recommendation per movie.</span>
+                <span class="bst-quality-option-sub">${t('Use the highest released streaming quality recommendation per movie.')}</span>
             </button>
             <button type="button" class="bst-quality-option" data-quality-mode="mostCommon">
                 Most common quality for each
-                <span class="bst-quality-option-sub">Use the most common streaming quality recommendation per movie.</span>
+                <span class="bst-quality-option-sub">${t('Use the most common streaming quality recommendation per movie.')}</span>
             </button>
             <div data-profile-list hidden></div>
         `;
@@ -920,7 +921,7 @@ window.seerrFinLog = window.seerrFinLog || {
         const header = panel.querySelector('.bst-quality-header h3');
 
         if (header) {
-            header.textContent = 'Request selected movies';
+            header.textContent = t('Request selected movies');
         }
 
         const list = panel.querySelector('.bst-quality-list');
@@ -960,25 +961,25 @@ window.seerrFinLog = window.seerrFinLog || {
                     <div class="bst-letterboxd-bulk-item-main">
                         <span class="bst-letterboxd-bulk-item-title">${escapeHtml(getItemTitle(id) || 'Movie')}</span>
                     </div>
-                    <span class="bst-letterboxd-bulk-item-status">Already requested</span>
+                    <span class="bst-letterboxd-bulk-item-status">${t('Already requested')}</span>
                 </div>
             `;
         }).join('');
 
         return `
             <div class="bst-letterboxd-bulk-subtitle">
-                ${escapeHtml(`${count} of ${total} selected ${movieWord}.`)}
+                ${escapeHtml(t(`${count} of ${total} selected ${movieWord}.`))}
             </div>
             <div class="bst-letterboxd-bulk-items bst-letterboxd-bulk-items--prompt">${itemsHtml}</div>
             <button type="button" class="bst-quality-option" data-skip-requested>
-                Skip them and continue
-                <span class="bst-quality-option-sub">Request only the ${remaining} remaining ${remainingWord}.</span>
+                ${t('Skip them and continue')}
+                <span class="bst-quality-option-sub">${t(`Request only the ${remaining} remaining ${remainingWord}.`)}</span>
             </button>
             <button type="button" class="bst-quality-option" data-request-all>
-                Request all anyway
-                <span class="bst-quality-option-sub">Include already requested movies in this batch.</span>
+                ${t('Request all anyway')}
+                <span class="bst-quality-option-sub">${t('Include already requested movies in this batch.')}</span>
             </button>
-            <button type="button" class="bst-quality-option bst-letterboxd-bulk-cancel" data-cancel-request>Cancel</button>
+            <button type="button" class="bst-quality-option bst-letterboxd-bulk-cancel" data-cancel-request>${t('Cancel')}</button>
         `;
     }
 
@@ -986,7 +987,7 @@ window.seerrFinLog = window.seerrFinLog || {
         const header = panel.querySelector('.bst-quality-header h3');
 
         if (header) {
-            header.textContent = 'Already requested';
+            header.textContent = t('Already requested');
         }
 
         const list = panel.querySelector('.bst-quality-list');
@@ -1003,7 +1004,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 updateSelectionUi(container);
 
                 if (!remaining.length) {
-                    list.innerHTML = `<div class="bst-quality-empty">No movies left to request.</div>`;
+                    list.innerHTML = `<div class="bst-quality-empty">${t('No movies left to request.')}</div>`;
                     return;
                 }
 
@@ -1092,7 +1093,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 const list = panel.querySelector('.bst-quality-list');
 
                 if (list) {
-                    list.innerHTML = `<div class="bst-quality-empty">No movies left to request.</div>`;
+                    list.innerHTML = `<div class="bst-quality-empty">${t('No movies left to request.')}</div>`;
                 }
 
                 return;
@@ -1115,7 +1116,7 @@ window.seerrFinLog = window.seerrFinLog || {
         const list = panel.querySelector('.bst-quality-list');
 
         if (list) {
-            list.innerHTML = `<div class="bst-quality-loading">Checking for existing requests…</div>`;
+            list.innerHTML = `<div class="bst-quality-loading">${t('Checking for existing requests…')}</div>`;
         }
 
         checkAlreadyRequested(selectedIds)
@@ -1131,7 +1132,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 log.error('Letterboxd request check failed', err);
 
                 if (list) {
-                    list.innerHTML = `<div class="bst-quality-empty">Could not check existing requests.</div>`;
+                    list.innerHTML = `<div class="bst-quality-empty">${t('Could not check existing requests.')}</div>`;
                 }
             });
     }
@@ -1168,13 +1169,13 @@ window.seerrFinLog = window.seerrFinLog || {
         if (!list) { return; }
 
         list.hidden = false;
-        list.innerHTML = `<div class="bst-quality-loading">Loading profiles…</div>`;
+        list.innerHTML = `<div class="bst-quality-loading">${t('Loading profiles…')}</div>`;
 
         ApiClient.ajax({ url: ApiClient.getUrl('SeerrFin/request-options/movie'), type: 'GET', dataType: 'json' }).then(function (data) {
             const payload = normalizeRequestOptionsPayload(data);
 
             if (!payload.canRequestAdvanced || !payload.options.length) {
-                list.innerHTML = `<div class="bst-quality-empty">No quality profiles available.</div>`;
+                list.innerHTML = `<div class="bst-quality-empty">${t('No quality profiles available.')}</div>`;
                 return;
             }
 
@@ -1198,7 +1199,7 @@ window.seerrFinLog = window.seerrFinLog || {
             });
         }).catch(function (err) {
             log.error('Letterboxd profiles load failed', err);
-            list.innerHTML = `<div class="bst-quality-empty">Failed to load quality profiles.</div>`;
+            list.innerHTML = `<div class="bst-quality-empty">${t('Failed to load quality profiles.')}</div>`;
         });
     }
 
