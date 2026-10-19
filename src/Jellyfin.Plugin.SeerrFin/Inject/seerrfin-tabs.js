@@ -22,21 +22,22 @@ window.seerrFinLog = window.seerrFinLog || {
 
 if (typeof window.seerrFinPlugin === 'undefined') {
     const log = window.seerrFinLog;
+    const t = (key, parameters) => window.seerrFinI18n ? window.seerrFinI18n.t(key, parameters) : key;
 
     window.seerrFinPlugin = {
         movieRows: [
-            { title: 'Trending movies this week', path: 'discover/movies/trending' },
-            { title: 'Popular movies', path: 'discover/movies/popular' },
-            { title: 'Top rated movies', path: 'discover/movies/top-rated' },
-            { title: 'Upcoming movies', path: 'discover/movies/upcoming' }
+            { title: t('Trending movies this week'), path: 'discover/movies/trending' },
+            { title: t('Popular movies'), path: 'discover/movies/popular' },
+            { title: t('Top rated movies'), path: 'discover/movies/top-rated' },
+            { title: t('Upcoming movies'), path: 'discover/movies/upcoming' }
         ],
 
         tvRows: [
-            { title: 'Trending shows this week', path: 'discover/tv/trending' },
-            { title: 'Popular shows', path: 'discover/tv/popular' },
-            { title: 'Top rated series', path: 'discover/tv/top-rated' },
-            { title: 'Upcoming series', path: 'discover/tv/upcoming' },
-            { title: 'Anime series', path: 'discover/tv/anime' }
+            { title: t('Trending shows this week'), path: 'discover/tv/trending' },
+            { title: t('Popular shows'), path: 'discover/tv/popular' },
+            { title: t('Top rated series'), path: 'discover/tv/top-rated' },
+            { title: t('Upcoming series'), path: 'discover/tv/upcoming' },
+            { title: t('Anime series'), path: 'discover/tv/anime' }
         ],
 
         _watchersReady: false,
@@ -162,7 +163,8 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         resolveTabTitle: function (id, title) {
             const value = String(title || '').trim();
             const tabDef = this.TAB_DEFS[id];
-            return value || (tabDef && tabDef.defaultTitle) || id;
+            const defaultTitle = (tabDef && tabDef.defaultTitle) || id;
+            return !value || value === defaultTitle ? t(defaultTitle) : value;
         },
 
         normalizeTabConfig: function (tabs) {
@@ -1316,11 +1318,11 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 window.seerrFinFilters?.mount(container, mediaType, self.resolveTabTitle(type, self._tabConfig?.tabs?.find(tab => tab.id === type)?.title));
             };
 
-            const browseTitle = mediaType === 'movie' ? 'Browse by studio' : 'Browse by network';
+            const browseTitle = mediaType === 'movie' ? t('Browse by studio') : t('Browse by network');
             const browseKind = mediaType === 'movie' ? 'studio' : 'network';
             const carouselDefs = [
-                { title: 'Browse by genre', path: 'genres/' + mediaType, kind: 'genre' },
-                { title: 'Browse by streaming service', path: 'providers/' + mediaType, kind: 'provider' },
+                { title: t('Browse by genre'), path: 'genres/' + mediaType, kind: 'genre' },
+                { title: t('Browse by streaming service'), path: 'providers/' + mediaType, kind: 'provider' },
                 { title: browseTitle, path: mediaType === 'movie' ? 'studios/movie' : 'networks/tv', kind: browseKind }
             ];
 
@@ -1448,15 +1450,15 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             container.innerHTML = `
                 <div class="verticalSection seerrfin-discover-panel">
                     <div class="sectionTitleContainer sectionTitleContainer-cards padded-left padded-right">
-                        <h2 class="sectionTitle sectionTitle-cards">Discover</h2>
-                        <button type="button" class="seerrfin-discover-requests emby-tab-button emby-button" aria-label="View requests">
+                        <h2 class="sectionTitle sectionTitle-cards">${t('Discover')}</h2>
+                        <button type="button" class="seerrfin-discover-requests emby-tab-button emby-button" aria-label="${t('View requests')}">
                             <span class="material-icons" aria-hidden="true">download</span>
-                            <span class="emby-button-foreground">Requests</span>
+                            <span class="emby-button-foreground">${t('Requests')}</span>
                         </button>
                     </div>
-                    <div class="seerrfin-discover-filters padded-left padded-right" role="tablist" aria-label="Discover media type">
-                        <button type="button" id="${panelId}-movies-tab" class="seerrfin-discover-filter is-active" data-discover-type="movies" role="tab" aria-controls="${panelId}-movies" aria-selected="true" tabindex="0">Movies</button>
-                        <button type="button" id="${panelId}-tv-tab" class="seerrfin-discover-filter" data-discover-type="tv" role="tab" aria-controls="${panelId}-tv" aria-selected="false" tabindex="-1">Shows</button>
+                    <div class="seerrfin-discover-filters padded-left padded-right" role="tablist" aria-label="${t('Discover media type')}">
+                        <button type="button" id="${panelId}-movies-tab" class="seerrfin-discover-filter is-active" data-discover-type="movies" role="tab" aria-controls="${panelId}-movies" aria-selected="true" tabindex="0">${t('Movies')}</button>
+                        <button type="button" id="${panelId}-tv-tab" class="seerrfin-discover-filter" data-discover-type="tv" role="tab" aria-controls="${panelId}-tv" aria-selected="false" tabindex="-1">${t('Shows')}</button>
                     </div>
                 </div>
                 <div id="${panelId}-movies" class="seerrfin-discover-body" data-discover-panel="movies" role="tabpanel" aria-labelledby="${panelId}-movies-tab" tabindex="0"></div>
@@ -1896,7 +1898,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 </span>
                 <div class="seerrfin-request-card-actions">
                     <button type="button" class="seerrfin-request-action-btn seerrfin-request-modal-btn"
-                        aria-label="Open request modal" title="Open request modal">
+                        aria-label="${t('Open request modal')}" title="${t('Open request modal')}">
                         <span class="material-icons" aria-hidden="true">download</span>
                     </button>
                 </div>
@@ -1949,7 +1951,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                         <div class="sectionTitleContainer sectionTitleContainer-cards padded-left">
                             <h2 class="sectionTitle sectionTitle-cards">${safeTitle}</h2>
                         </div>
-                        <div class="seerrfin-empty-row padded-left">No items to show</div>
+                        <div class="seerrfin-empty-row padded-left">${t('No items to show')}</div>
                     </div>
                 `);
             }
@@ -2174,7 +2176,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                         <div class="sectionTitleContainer sectionTitleContainer-cards padded-left">
                             <h2 class="sectionTitle sectionTitle-cards">${safeTitle}</h2>
                         </div>
-                        <div class="seerrfin-empty-row padded-left">No items to show</div>
+                        <div class="seerrfin-empty-row padded-left">${t('No items to show')}</div>
                     </div>
                 `);
             }
@@ -3037,7 +3039,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             return `
                 <div class="seerrfin-grid-view" data-seerrfin-grid-view="true" data-grid-shell="legacy">
                     <div class="seerrfin-grid-header padded-left padded-right">
-                        <button type="button" class="seerrfin-grid-back paper-icon-button-light emby-button" title="Back" aria-label="Back" data-grid-nav="back">
+                        <button type="button" class="seerrfin-grid-back paper-icon-button-light emby-button" title="${t('Back')}" aria-label="${t('Back')}" data-grid-nav="back">
                             <span class="material-icons" aria-hidden="true">arrow_back</span>
                         </button>
                         <h2 class="seerrfin-grid-title sectionTitle sectionTitle-cards"></h2>
@@ -3046,7 +3048,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                         <div is="emby-itemscontainer" class="itemsContainer padded-left padded-right vertical-wrap focuscontainer-x" data-monitor="videoplayback,markplayed"></div>
                     </div>
                     <div data-seerrfin-loadmore style="display:none" class="seerrfin-grid-loadmore">
-                        <button type="button" class="raised emby-button">Load more</button>
+                        <button type="button" class="raised emby-button">${t('Load more')}</button>
                     </div>
                     <div data-seerrfin-status style="display:none" class="seerrfin-grid-status"></div>
                 </div>
@@ -3232,10 +3234,10 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             gridView.dataset.loading = 'true';
 
             if (isInitial) {
-                status.textContent = 'Loading...';
+                status.textContent = t('Loading...');
                 status.style.display = '';
             } else {
-                loadMoreBtn.textContent = 'Loading...';
+                loadMoreBtn.textContent = t('Loading...');
                 loadMoreBtn.disabled = true;
             }
 
@@ -3248,7 +3250,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 status.style.display = 'none';
 
                 if (!result.items.length && loadedCount === 0) {
-                    itemsContainer.innerHTML = `<div class="seerrfin-empty-row">No items to show</div>`;
+                    itemsContainer.innerHTML = `<div class="seerrfin-empty-row">${t('No items to show')}</div>`;
                     loadMore.style.display = 'none';
 
                     if (useNativeCards) {
@@ -3284,7 +3286,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 const hasMore = result.items.length === pageSize &&
                     (total === 0 || newCount < total);
                 loadMore.style.display = hasMore ? '' : 'none';
-                loadMoreBtn.textContent = 'Load more';
+                loadMoreBtn.textContent = t('Load more');
                 loadMoreBtn.disabled = false;
 
                 if (useNativeCards) {
@@ -3299,12 +3301,12 @@ if (typeof window.seerrFinPlugin === 'undefined') {
 
                 gridView.dataset.loading = 'false';
                 status.style.display = 'none';
-                loadMoreBtn.textContent = 'Load more';
+                loadMoreBtn.textContent = t('Load more');
                 loadMoreBtn.disabled = false;
                 log.error('grid load failed for ' + path, err);
 
                 if (loadedCount === 0) {
-                    itemsContainer.innerHTML = `<div class="seerrfin-empty-row">Failed to load items.</div>`;
+                    itemsContainer.innerHTML = `<div class="seerrfin-empty-row">${t('Failed to load items.')}</div>`;
                 }
 
                 if (useNativeCards) {
@@ -3512,14 +3514,14 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             const section = useNativeCards ?
                 this.mountFromHtml(`
                     <div class="verticalSection seerrfin-poster-section seerrfin-search-section seerrfin-section-fadein" data-query="${safeQuery}">
-                        <h2 class="sectionTitle sectionTitle-cards focuscontainer-x padded-left padded-right">Seerr results</h2>
+                        <h2 class="sectionTitle sectionTitle-cards focuscontainer-x padded-left padded-right">${t('Seerr results')}</h2>
                         <div is="emby-itemscontainer" class="itemsContainer scrollSlider focuscontainer-x animatedScrollX" data-monitor="videoplayback,markplayed"></div>
                     </div>
                 `) :
                 this.mountFromHtml(`
                     <div class="verticalSection seerrfin-poster-section seerrfin-search-section seerrfin-section-fadein" data-query="${safeQuery}">
                         <div class="sectionTitleContainer sectionTitleContainer-cards padded-left">
-                            <h2 class="sectionTitle sectionTitle-cards">Seerr results</h2>
+                            <h2 class="sectionTitle sectionTitle-cards">${t('Seerr results')}</h2>
                         </div>
                         <div is="emby-itemscontainer" class="itemsContainer scrollSlider focuscontainer-x"></div>
                     </div>

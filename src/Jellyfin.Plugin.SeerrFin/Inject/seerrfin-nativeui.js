@@ -22,6 +22,7 @@ window.seerrFinLog = window.seerrFinLog || {
     if (window.seerrFinNativeUi) { return; }
 
     const log = window.seerrFinLog;
+    const t = (key, parameters) => window.seerrFinI18n ? window.seerrFinI18n.t(key, parameters) : key;
 
     window.seerrFinNativeUi = {
         // Picks best backdrop url for native Seerr result card
@@ -236,7 +237,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 <div data-seerrfin-grid-view="true" data-grid-shell="native">
                     <div class="verticalSection">
                         <div class="sectionTitleContainer sectionTitleContainer-cards padded-left padded-right">
-                            <button type="button" is="paper-icon-button-light" class="paper-icon-button-light" title="Back" aria-label="Back" data-grid-nav="back">
+                            <button type="button" is="paper-icon-button-light" class="paper-icon-button-light" title="${t('Back')}" aria-label="${t('Back')}" data-grid-nav="back">
                                 <span class="material-icons arrow_back" aria-hidden="true"></span>
                             </button>
                             <h2 class="sectionTitle sectionTitle-cards"></h2>
@@ -245,16 +246,16 @@ window.seerrFinLog = window.seerrFinLog || {
                             <div class="paging">
                                 <div class="listPaging"><span data-seerrfin-paging-text style="vertical-align:middle;"></span></div>
                             </div>
-                            <button type="button" is="paper-icon-button-light" class="btnSelectView autoSize paper-icon-button-light" title="Select view" disabled data-grid-menu="view">
+                            <button type="button" is="paper-icon-button-light" class="btnSelectView autoSize paper-icon-button-light" title="${t('Select view')}" disabled data-grid-menu="view">
                                 <span class="material-icons view_comfy" aria-hidden="true"></span>
                             </button>
-                            <button type="button" is="paper-icon-button-light" class="btnSort autoSize paper-icon-button-light" title="Sort" disabled data-grid-menu="sort">
+                            <button type="button" is="paper-icon-button-light" class="btnSort autoSize paper-icon-button-light" title="${t('Sort')}" disabled data-grid-menu="sort">
                                 <span class="material-icons sort_by_alpha" aria-hidden="true"></span>
                             </button>
                         </div>
                         <div is="emby-itemscontainer" class="itemsContainer padded-left padded-right vertical-wrap focuscontainer-x" data-monitor="videoplayback,markplayed"></div>
                         <div data-seerrfin-loadmore style="display:none" class="paging padded-left padded-right">
-                            <button type="button" class="raised emby-button">Load more</button>
+                            <button type="button" class="raised emby-button">${t('Load more')}</button>
                         </div>
                         <div data-seerrfin-status style="display:none" class="listItemBodyText secondary padded-left padded-right"></div>
                     </div>
@@ -349,18 +350,18 @@ window.seerrFinLog = window.seerrFinLog || {
         getGridMenuOptions: function (type) {
             if (type === 'view') {
                 return [
-                    { value: 'Poster', label: 'Poster' },
-                    { value: 'PosterCard', label: 'Poster Card' },
-                    { value: 'Thumb', label: 'Thumb' },
-                    { value: 'ThumbCard', label: 'Thumb Card' }
+                    { value: 'Poster', label: t('Poster') },
+                    { value: 'PosterCard', label: t('Poster Card') },
+                    { value: 'Thumb', label: t('Thumb') },
+                    { value: 'ThumbCard', label: t('Thumb Card') }
                 ];
             }
 
             if (type === 'sort') {
                 return [
-                    { value: 'title', label: 'Title' },
-                    { value: 'year', label: 'Release date' },
-                    { value: 'rating', label: 'Community rating' }
+                    { value: 'title', label: t('Title') },
+                    { value: 'year', label: t('Release date') },
+                    { value: 'rating', label: t('Community rating') }
                 ];
             }
 
@@ -412,9 +413,9 @@ window.seerrFinLog = window.seerrFinLog || {
                             button: button,
                             query: query,
                             items: [
-                                { name: 'Name', id: 'SortName' },
-                                { name: 'Community rating', id: 'CommunityRating,SortName' },
-                                { name: 'Release date', id: 'PremiereDate,SortName' }
+                                { name: t('Name'), id: 'SortName' },
+                                { name: t('Community rating'), id: 'CommunityRating,SortName' },
+                                { name: t('Release date'), id: 'PremiereDate,SortName' }
                             ],
                             callback: function () {
                                 gridView.dataset.gridSortBy = query.SortBy;

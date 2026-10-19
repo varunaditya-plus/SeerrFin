@@ -719,15 +719,15 @@
     <div class="content-primary">
         <div class="bst-container">
             <div class="bst-page-banner">
-                <span>SeerrFin</span>
-                <a href="https://github.com/varunaditya-plus/SeerrFin" target="_blank" rel="noopener">Help</a>
+                <span data-seerrfin-i18n="SeerrFin">SeerrFin</span>
+                <a href="https://github.com/varunaditya-plus/SeerrFin" target="_blank" rel="noopener" data-seerrfin-i18n="Help">Help</a>
             </div>
-            <div id="bstVersionWarning" class="bst-version-warning" role="alert" hidden>Please update to Jellyfin 12.0. SeerrFin is no longer supported on this version, stuff might break.</div>
+            <div id="bstVersionWarning" class="bst-version-warning" role="alert" hidden data-seerrfin-i18n="Please update to Jellyfin 12.0. SeerrFin is no longer supported on this version, stuff might break.">Please update to Jellyfin 12.0. SeerrFin is no longer supported on this version, stuff might break.</div>
 
-            <nav class="bst-page-nav" aria-label="SeerrFin configuration sections">
-                <button type="button" class="bst-page-nav-btn is-active" data-bst-panel="overview">Overview</button>
+            <nav class="bst-page-nav" aria-label="SeerrFin configuration sections" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="SeerrFin configuration sections">
+                <button type="button" class="bst-page-nav-btn is-active" data-bst-panel="overview" data-seerrfin-i18n="Overview">Overview</button>
                 <button type="button" class="bst-page-nav-btn bst-page-nav-btn--config" data-bst-panel="configurations">
-                    <span>Configurations</span>
+                    <span data-seerrfin-i18n="Configurations">Configurations</span>
                     <span class="bst-page-nav-btn-icons" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
                             <circle cx="52" cy="52" r="28" fill="#131928" />
@@ -777,37 +777,37 @@
                         </svg>
                     </span>
                 </button>
-                <button type="button" class="bst-page-nav-btn" data-bst-panel="display">Settings</button>
-                <button type="button" class="bst-page-nav-btn" data-bst-panel="advanced">Advanced</button>
+                <button type="button" class="bst-page-nav-btn" data-bst-panel="display" data-seerrfin-i18n="Settings">Settings</button>
+                <button type="button" class="bst-page-nav-btn" data-bst-panel="advanced" data-seerrfin-i18n="Advanced">Advanced</button>
             </nav>
 
             <div class="bst-page-panel is-active" data-bst-panel="overview">
                 <!-- Dependencies Section -->
                 <div class="bst-section-container">
-                    <div class="bst-section-title">Dependencies</div>
+                    <div class="bst-section-title" data-seerrfin-i18n="Dependencies">Dependencies</div>
                     <div class="bst-card">
                         <div id="bstDepFileTransformation" class="bst-dep-item is-missing">
-                            <span class="bst-icon">✕</span>
-                            <span>File transformation</span>
+                            <span class="bst-icon" data-seerrfin-i18n="✕">✕</span>
+                            <span data-seerrfin-i18n="File transformation">File transformation</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="bst-section-container">
-                    <div class="bst-section-title">Turn on the tabs you want</div>
+                    <div class="bst-section-title" data-seerrfin-i18n="Turn on the tabs you want">Turn on the tabs you want</div>
                     <div class="bst-card">
                         <div class="bst-tabs-grid">
                             <div class="bst-card bst-seerrfin-tab-card" data-bst-tab-id="movies">
                                 <div class="bst-toggle-row">
                                     <div class="bst-toggle-copy">
                                         <label class="bst-tab-enable-label" for="bstTabTitle_movies">
-                                            <span>Enable</span>
-                                            <input id="bstTabTitle_movies" type="text" class="bst-tab-title-input" data-bst-tab-title="movies" value="Movies" maxlength="40" aria-label="Movies tab name" />
-                                            <span>tab</span>
+                                            <span data-seerrfin-i18n="Enable">Enable</span>
+                                            <input id="bstTabTitle_movies" type="text" class="bst-tab-title-input" data-bst-tab-title="movies" value="Movies" maxlength="40" aria-label="Movies tab name" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Movies tab name" />
+                                            <span data-seerrfin-i18n="tab">tab</span>
                                         </label>
                                     </div>
                                     <div class="bst-toggle-actions">
-                                        <label class="bst-toggle" for="bstTabEnabled_movies" aria-label="Enable Movies tab">
+                                        <label class="bst-toggle" for="bstTabEnabled_movies" aria-label="Enable Movies tab" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Enable Movies tab">
                                             <input id="bstTabEnabled_movies" type="checkbox" data-bst-tab-enabled="movies" checked />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
@@ -818,13 +818,13 @@
                                 <div class="bst-toggle-row">
                                     <div class="bst-toggle-copy">
                                         <label class="bst-tab-enable-label" for="bstTabTitle_tv">
-                                            <span>Enable</span>
-                                            <input id="bstTabTitle_tv" type="text" class="bst-tab-title-input" data-bst-tab-title="tv" value="TV Shows" maxlength="40" aria-label="TV Shows tab name" />
-                                            <span>tab</span>
+                                            <span data-seerrfin-i18n="Enable">Enable</span>
+                                            <input id="bstTabTitle_tv" type="text" class="bst-tab-title-input" data-bst-tab-title="tv" value="TV Shows" maxlength="40" aria-label="TV Shows tab name" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="TV Shows tab name" />
+                                            <span data-seerrfin-i18n="tab">tab</span>
                                         </label>
                                     </div>
                                     <div class="bst-toggle-actions">
-                                        <label class="bst-toggle" for="bstTabEnabled_tv" aria-label="Enable TV Shows tab">
+                                        <label class="bst-toggle" for="bstTabEnabled_tv" aria-label="Enable TV Shows tab" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Enable TV Shows tab">
                                             <input id="bstTabEnabled_tv" type="checkbox" data-bst-tab-enabled="tv" checked />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
@@ -835,13 +835,13 @@
                                 <div class="bst-toggle-row">
                                     <div class="bst-toggle-copy">
                                         <label class="bst-tab-enable-label" for="bstTabTitle_discover">
-                                            <span>Enable</span>
-                                            <input id="bstTabTitle_discover" type="text" class="bst-tab-title-input" data-bst-tab-title="discover" value="Discover" maxlength="40" aria-label="Discover tab name" />
-                                            <span>tab</span>
+                                            <span data-seerrfin-i18n="Enable">Enable</span>
+                                            <input id="bstTabTitle_discover" type="text" class="bst-tab-title-input" data-bst-tab-title="discover" value="Discover" maxlength="40" aria-label="Discover tab name" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Discover tab name" />
+                                            <span data-seerrfin-i18n="tab">tab</span>
                                         </label>
                                     </div>
                                     <div class="bst-toggle-actions">
-                                        <label class="bst-toggle" for="bstTabEnabled_discover" aria-label="Enable Discover tab">
+                                        <label class="bst-toggle" for="bstTabEnabled_discover" aria-label="Enable Discover tab" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Enable Discover tab">
                                             <input id="bstTabEnabled_discover" type="checkbox" data-bst-tab-enabled="discover" />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
@@ -852,13 +852,13 @@
                                 <div class="bst-toggle-row">
                                     <div class="bst-toggle-copy">
                                         <label class="bst-tab-enable-label" for="bstTabTitle_requests">
-                                            <span>Enable</span>
-                                            <input id="bstTabTitle_requests" type="text" class="bst-tab-title-input" data-bst-tab-title="requests" value="Requests" maxlength="40" aria-label="Requests tab name" />
-                                            <span>tab</span>
+                                            <span data-seerrfin-i18n="Enable">Enable</span>
+                                            <input id="bstTabTitle_requests" type="text" class="bst-tab-title-input" data-bst-tab-title="requests" value="Requests" maxlength="40" aria-label="Requests tab name" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Requests tab name" />
+                                            <span data-seerrfin-i18n="tab">tab</span>
                                         </label>
                                     </div>
                                     <div class="bst-toggle-actions">
-                                        <label class="bst-toggle" for="bstTabEnabled_requests" aria-label="Enable Requests tab">
+                                        <label class="bst-toggle" for="bstTabEnabled_requests" aria-label="Enable Requests tab" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Enable Requests tab">
                                             <input id="bstTabEnabled_requests" type="checkbox" data-bst-tab-enabled="requests" checked />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
@@ -869,13 +869,13 @@
                                 <div class="bst-toggle-row">
                                     <div class="bst-toggle-copy">
                                         <label class="bst-tab-enable-label" for="bstTabTitle_watchlist">
-                                            <span>Enable</span>
-                                            <input id="bstTabTitle_watchlist" type="text" class="bst-tab-title-input" data-bst-tab-title="watchlist" value="Watchlist" maxlength="40" aria-label="Watchlist tab name" />
-                                            <span>tab</span>
+                                            <span data-seerrfin-i18n="Enable">Enable</span>
+                                            <input id="bstTabTitle_watchlist" type="text" class="bst-tab-title-input" data-bst-tab-title="watchlist" value="Watchlist" maxlength="40" aria-label="Watchlist tab name" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Watchlist tab name" />
+                                            <span data-seerrfin-i18n="tab">tab</span>
                                         </label>
                                     </div>
                                     <div class="bst-toggle-actions">
-                                        <label class="bst-toggle" for="bstTabEnabled_watchlist" aria-label="Enable Watchlist tab">
+                                        <label class="bst-toggle" for="bstTabEnabled_watchlist" aria-label="Enable Watchlist tab" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Enable Watchlist tab">
                                             <input id="bstTabEnabled_watchlist" type="checkbox" data-bst-tab-enabled="watchlist" checked />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
@@ -886,13 +886,13 @@
                                 <div class="bst-toggle-row">
                                     <div class="bst-toggle-copy">
                                         <label class="bst-tab-enable-label" for="bstTabTitle_letterboxd">
-                                            <span>Enable</span>
-                                            <input id="bstTabTitle_letterboxd" type="text" class="bst-tab-title-input" data-bst-tab-title="letterboxd" value="Letterboxd" maxlength="40" aria-label="Letterboxd tab name" />
-                                            <span>tab</span>
+                                            <span data-seerrfin-i18n="Enable">Enable</span>
+                                            <input id="bstTabTitle_letterboxd" type="text" class="bst-tab-title-input" data-bst-tab-title="letterboxd" value="Letterboxd" maxlength="40" aria-label="Letterboxd tab name" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Letterboxd tab name" />
+                                            <span data-seerrfin-i18n="tab">tab</span>
                                         </label>
                                     </div>
                                     <div class="bst-toggle-actions">
-                                        <label class="bst-toggle" for="bstTabEnabled_letterboxd" aria-label="Enable Letterboxd tab">
+                                        <label class="bst-toggle" for="bstTabEnabled_letterboxd" aria-label="Enable Letterboxd tab" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Enable Letterboxd tab">
                                             <input id="bstTabEnabled_letterboxd" type="checkbox" data-bst-tab-enabled="letterboxd" checked />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
@@ -901,30 +901,30 @@
                             </div>
                         </div>
 
-                        <div class="bst-section-title" style="margin-top: 1.5em; margin-bottom: 0.65em;">Tab order (drag to reorder)</div>
-                        <div id="bstTabOrderList" class="bst-tab-order-list" aria-label="Tab order"></div>
+                        <div class="bst-section-title" style="margin-top: 1.5em; margin-bottom: 0.65em;" data-seerrfin-i18n="Tab order (drag to reorder)">Tab order (drag to reorder)</div>
+                        <div id="bstTabOrderList" class="bst-tab-order-list" aria-label="Tab order" data-seerrfin-i18n-attrs="aria-label" data-seerrfin-i18n-aria-label="Tab order"></div>
                     </div>
                 </div>
 
                 <!-- Configurations Summary -->
                 <div class="bst-section-container">
-                    <div class="bst-section-title">Configurations</div>
+                    <div class="bst-section-title" data-seerrfin-i18n="Configurations">Configurations</div>
                     <div class="bst-card bst-config-summary">
                         <div id="bstCfgSeerr" class="bst-dep-item is-missing bst-config-summary-row" data-bst-goto="configurations" role="button" tabindex="0">
-                            <span class="bst-icon">✕</span>
-                            <span>Seerr</span>
+                            <span class="bst-icon" data-seerrfin-i18n="✕">✕</span>
+                            <span data-seerrfin-i18n="Seerr">Seerr</span>
                         </div>
                         <div id="bstCfgTmdb" class="bst-dep-item is-missing bst-config-summary-row" data-bst-goto="configurations" role="button" tabindex="0">
-                            <span class="bst-icon">✕</span>
-                            <span>TMDB</span>
+                            <span class="bst-icon" data-seerrfin-i18n="✕">✕</span>
+                            <span data-seerrfin-i18n="TMDB">TMDB</span>
                         </div>
                         <div id="bstCfgRadarr" class="bst-dep-item is-missing bst-config-summary-row" data-bst-goto="configurations" role="button" tabindex="0">
-                            <span class="bst-icon">✕</span>
-                            <span>Radarr</span>
+                            <span class="bst-icon" data-seerrfin-i18n="✕">✕</span>
+                            <span data-seerrfin-i18n="Radarr">Radarr</span>
                         </div>
                         <div id="bstCfgSonarr" class="bst-dep-item is-missing bst-config-summary-row" data-bst-goto="configurations" role="button" tabindex="0">
-                            <span class="bst-icon">✕</span>
-                            <span>Sonarr</span>
+                            <span class="bst-icon" data-seerrfin-i18n="✕">✕</span>
+                            <span data-seerrfin-i18n="Sonarr">Sonarr</span>
                         </div>
                     </div>
                 </div>
@@ -934,60 +934,60 @@
             <form class="seerrFinConfigurationForm">
                 <div class="bst-page-panel" data-bst-panel="configurations">
                     <div class="bst-section-container">
-                        <div class="bst-section-title">Seerr configuration</div>
+                        <div class="bst-section-title" data-seerrfin-i18n="Seerr configuration">Seerr configuration</div>
                         <div class="bst-card">
                             <div class="bst-input-group">
                                 <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="jellyseerrUrl">Seerr URL</label>
+                                    <label class="bst-label bst-label--side bst-label--required" for="jellyseerrUrl" data-seerrfin-i18n="Seerr URL">Seerr URL</label>
                                     <div class="bst-input-stack">
-                                        <input id="jellyseerrUrl" name="jellyseerrUrl" type="text" class="bst-input" placeholder="http://192.168.1.170:5055" />
-                                        <div class="bst-field-desc">Internal URL used by the server (e.g. http://localhost:5055)</div>
+                                        <input id="jellyseerrUrl" name="jellyseerrUrl" type="text" class="bst-input" placeholder="http://192.168.1.170:5055" data-seerrfin-i18n-attrs="placeholder" data-seerrfin-i18n-placeholder="http://192.168.1.170:5055" />
+                                        <div class="bst-field-desc" data-seerrfin-i18n="Internal URL used by the server (e.g. http://localhost:5055)">Internal URL used by the server (e.g. http://localhost:5055)</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="bst-input-group">
                                 <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side" for="externalJellyseerrUrl">External Seerr URL</label>
+                                    <label class="bst-label bst-label--side" for="externalJellyseerrUrl" data-seerrfin-i18n="External Seerr URL">External Seerr URL</label>
                                     <div class="bst-input-stack">
-                                        <input id="externalJellyseerrUrl" name="externalJellyseerrUrl" type="text" class="bst-input" placeholder="http://192.168.1.170:5055" />
-                                        <div class="bst-field-desc">The URL you usually use to access Seerr (defaults to Seerr URL above)</div>
+                                        <input id="externalJellyseerrUrl" name="externalJellyseerrUrl" type="text" class="bst-input" placeholder="http://192.168.1.170:5055" data-seerrfin-i18n-attrs="placeholder" data-seerrfin-i18n-placeholder="http://192.168.1.170:5055" />
+                                        <div class="bst-field-desc" data-seerrfin-i18n="The URL you usually use to access Seerr (defaults to Seerr URL above)">The URL you usually use to access Seerr (defaults to Seerr URL above)</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="bst-input-group">
                                 <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="jellyseerrApiKey">Seerr API Key</label>
+                                    <label class="bst-label bst-label--side bst-label--required" for="jellyseerrApiKey" data-seerrfin-i18n="Seerr API Key">Seerr API Key</label>
                                     <div class="bst-input-stack">
                                         <input id="jellyseerrApiKey" name="jellyseerrApiKey" type="password" class="bst-input" />
-                                        <div class="bst-field-desc">Access Key for Seerr which you can get by going to Seerr → Settings → API Key</div>
+                                        <div class="bst-field-desc" data-seerrfin-i18n="Access Key for Seerr which you can get by going to Seerr → Settings → API Key">Access Key for Seerr which you can get by going to Seerr → Settings → API Key</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="bst-input-row">
                                 <div class="bst-input-group">
                                     <div class="bst-field-main">
-                                        <label class="bst-label bst-label--side" for="jellyseerrPreferredLanguages">Preferred languages</label>
+                                        <label class="bst-label bst-label--side" for="jellyseerrPreferredLanguages" data-seerrfin-i18n="Preferred languages">Preferred languages</label>
                                         <div class="bst-input-stack">
                                             <input id="jellyseerrPreferredLanguages" name="jellyseerrPreferredLanguages" type="text" class="bst-input" />
-                                            <div class="bst-field-desc">Comma-separated ISO codes.</div>
+                                            <div class="bst-field-desc" data-seerrfin-i18n="Comma-separated ISO codes.">Comma-separated ISO codes.</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="bst-input-group">
                                     <div class="bst-field-main">
-                                        <label class="bst-label bst-label--side" for="watchRegion">Watch region</label>
+                                        <label class="bst-label bst-label--side" for="watchRegion" data-seerrfin-i18n="Watch region">Watch region</label>
                                         <div class="bst-input-stack">
                                             <input id="watchRegion" name="watchRegion" type="text" class="bst-input" />
-                                            <div class="bst-field-desc">Region for streaming provider carousel.</div>
+                                            <div class="bst-field-desc" data-seerrfin-i18n="Region for streaming provider carousel.">Region for streaming provider carousel.</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="bst-input-group">
                                     <div class="bst-field-main">
-                                        <label class="bst-label bst-label--side" for="rowItemLimit">Items per row</label>
+                                        <label class="bst-label bst-label--side" for="rowItemLimit" data-seerrfin-i18n="Items per row">Items per row</label>
                                         <div class="bst-input-stack">
                                             <input id="rowItemLimit" name="rowItemLimit" type="number" class="bst-input" />
-                                            <div class="bst-field-desc">Less items means carousels load faster.</div>
+                                            <div class="bst-field-desc" data-seerrfin-i18n="Less items means carousels load faster.">Less items means carousels load faster.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -996,35 +996,35 @@
                     </div>
 
                     <div class="bst-section-container">
-                        <div class="bst-section-title">Radarr/Sonarr configuration for download progress on Requests page</div>
+                        <div class="bst-section-title" data-seerrfin-i18n="Radarr/Sonarr configuration for download progress on Requests page">Radarr/Sonarr configuration for download progress on Requests page</div>
                         <div class="bst-card">
                             <div class="bst-servarr-heading">
-                                <h3>Radarr instances</h3>
-                                <button type="button" class="bst-servarr-icon-btn" id="addRadarrInstance" aria-label="Add Radarr server" title="Add Radarr server">
+                                <h3 data-seerrfin-i18n="Radarr instances">Radarr instances</h3>
+                                <button type="button" class="bst-servarr-icon-btn" id="addRadarrInstance" aria-label="Add Radarr server" title="Add Radarr server" data-seerrfin-i18n-attrs="aria-label,title" data-seerrfin-i18n-aria-label="Add Radarr server" data-seerrfin-i18n-title="Add Radarr server">
                                     <span class="material-icons add" aria-hidden="true"></span>
                                 </button>
                             </div>
                             <div class="bst-servarr-table">
                                 <div class="bst-servarr-grid" aria-hidden="true">
-                                    <span>Seerr server</span>
-                                    <span>Server URL</span>
-                                    <span>API key</span>
-                                    <span>Browser URL (optional)</span>
+                                    <span data-seerrfin-i18n="Seerr server">Seerr server</span>
+                                    <span data-seerrfin-i18n="Server URL">Server URL</span>
+                                    <span data-seerrfin-i18n="API key">API key</span>
+                                    <span data-seerrfin-i18n="Browser URL (optional)">Browser URL (optional)</span>
                                 </div>
                                 <div id="radarrInstances"></div>
                             </div>
                             <div class="bst-servarr-heading">
-                                <h3>Sonarr instances</h3>
-                                <button type="button" class="bst-servarr-icon-btn" id="addSonarrInstance" aria-label="Add Sonarr server" title="Add Sonarr server">
+                                <h3 data-seerrfin-i18n="Sonarr instances">Sonarr instances</h3>
+                                <button type="button" class="bst-servarr-icon-btn" id="addSonarrInstance" aria-label="Add Sonarr server" title="Add Sonarr server" data-seerrfin-i18n-attrs="aria-label,title" data-seerrfin-i18n-aria-label="Add Sonarr server" data-seerrfin-i18n-title="Add Sonarr server">
                                     <span class="material-icons add" aria-hidden="true"></span>
                                 </button>
                             </div>
                             <div class="bst-servarr-table">
                                 <div class="bst-servarr-grid" aria-hidden="true">
-                                    <span>Seerr server</span>
-                                    <span>Server URL</span>
-                                    <span>API key</span>
-                                    <span>Browser URL (optional)</span>
+                                    <span data-seerrfin-i18n="Seerr server">Seerr server</span>
+                                    <span data-seerrfin-i18n="Server URL">Server URL</span>
+                                    <span data-seerrfin-i18n="API key">API key</span>
+                                    <span data-seerrfin-i18n="Browser URL (optional)">Browser URL (optional)</span>
                                 </div>
                                 <div id="sonarrInstances"></div>
                             </div>
@@ -1032,18 +1032,18 @@
                     </div>
 
                     <div class="bst-section-container">
-                        <div class="bst-section-title">TMDB configuration</div>
+                        <div class="bst-section-title" data-seerrfin-i18n="TMDB configuration">TMDB configuration</div>
                         <div class="bst-card">
                             <div class="bst-input-group">
                                 <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side bst-label--required" for="tmdbApiKey">TMDB API Key</label>
+                                    <label class="bst-label bst-label--side bst-label--required" for="tmdbApiKey" data-seerrfin-i18n="TMDB API Key">TMDB API Key</label>
                                     <div class="bst-input-stack">
                                         <input id="tmdbApiKey" name="tmdbApiKey" type="password" class="bst-input" autocomplete="off" />
                                         <div class="bst-section-header bst-section-header--footer">
                                             <div class="bst-field-desc bst-field-desc--footer">
                                                 Optional, but recommended. This loads movie/tv details directly, meaning data in modals will load faster. Requesting still uses Seerr.
                                             </div>
-                                            <a class="bst-link" href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">Get an API key</a>
+                                            <a class="bst-link" href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener" data-seerrfin-i18n="Get an API key">Get an API key</a>
                                         </div>
                                     </div>
                                 </div>
@@ -1054,15 +1054,15 @@
 
                 <div class="bst-page-panel" data-bst-panel="display">
                     <div class="bst-section-container">
-                        <div class="bst-section-title">Display settings</div>
+                        <div class="bst-section-title" data-seerrfin-i18n="Display settings">Display settings</div>
                         <div class="bst-card">
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="streamingServiceUseImages">Streaming services logos</label>
-                                    <div class="bst-field-desc">Show streaming service logos instead of text in browse carousels.</div>
+                                    <label class="bst-toggle-label" for="streamingServiceUseImages" data-seerrfin-i18n="Streaming services logos">Streaming services logos</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Show streaming service logos instead of text in browse carousels.">Show streaming service logos instead of text in browse carousels.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
-                                    <button type="button" class="bst-customize-btn" data-customize-key="streamingService">Customize</button>
+                                    <button type="button" class="bst-customize-btn" data-customize-key="streamingService" data-seerrfin-i18n="Customize">Customize</button>
                                     <label class="bst-toggle">
                                         <input id="streamingServiceUseImages" name="streamingServiceUseImages" type="checkbox" checked />
                                         <span class="bst-toggle-slider"></span>
@@ -1071,11 +1071,11 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="studioNetworkUseImages">Studio / Network logos</label>
-                                    <div class="bst-field-desc">Show studio and network logos instead of text in browse carousels.</div>
+                                    <label class="bst-toggle-label" for="studioNetworkUseImages" data-seerrfin-i18n="Studio / Network logos">Studio / Network logos</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Show studio and network logos instead of text in browse carousels.">Show studio and network logos instead of text in browse carousels.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
-                                    <button type="button" class="bst-customize-btn" data-customize-key="studioNetwork">Customize</button>
+                                    <button type="button" class="bst-customize-btn" data-customize-key="studioNetwork" data-seerrfin-i18n="Customize">Customize</button>
                                     <label class="bst-toggle">
                                         <input id="studioNetworkUseImages" name="studioNetworkUseImages" type="checkbox" checked />
                                         <span class="bst-toggle-slider"></span>
@@ -1084,11 +1084,11 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="genreUseBackdrops">Genre box background</label>
-                                    <div class="bst-field-desc">Show a random movie or show background behind each genre box.</div>
+                                    <label class="bst-toggle-label" for="genreUseBackdrops" data-seerrfin-i18n="Genre box background">Genre box background</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Show a random movie or show background behind each genre box.">Show a random movie or show background behind each genre box.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
-                                    <button type="button" class="bst-customize-btn" data-customize-key="genreBackdrop">Customize</button>
+                                    <button type="button" class="bst-customize-btn" data-customize-key="genreBackdrop" data-seerrfin-i18n="Customize">Customize</button>
                                     <label class="bst-toggle">
                                         <input id="genreUseBackdrops" name="genreUseBackdrops" type="checkbox" checked />
                                         <span class="bst-toggle-slider"></span>
@@ -1097,11 +1097,11 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="discoverUsePosters">Poster thumbnails</label>
-                                    <div class="bst-field-desc">Use portrait posters in discovery rows instead of landscape thumbnails. (Landscape thumbnails need TMDB API Key)</div>
+                                    <label class="bst-toggle-label" for="discoverUsePosters" data-seerrfin-i18n="Poster thumbnails">Poster thumbnails</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Use portrait posters in discovery rows instead of landscape thumbnails. (Landscape thumbnails need TMDB API Key)">Use portrait posters in discovery rows instead of landscape thumbnails. (Landscape thumbnails need TMDB API Key)</div>
                                 </div>
                                 <div class="bst-toggle-actions">
-                                    <button type="button" class="bst-customize-btn" data-customize-key="discoverBackdrop">Customize</button>
+                                    <button type="button" class="bst-customize-btn" data-customize-key="discoverBackdrop" data-seerrfin-i18n="Customize">Customize</button>
                                     <label class="bst-toggle">
                                         <input id="discoverUsePosters" name="discoverUsePosters" type="checkbox" checked />
                                         <span class="bst-toggle-slider"></span>
@@ -1110,8 +1110,8 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="nativeCarousels">Native carousels</label>
-                                    <div class="bst-field-desc">Use Jellyfin's default carousel styles for cards in carousels (in discovery tabs).</div>
+                                    <label class="bst-toggle-label" for="nativeCarousels" data-seerrfin-i18n="Native carousels">Native carousels</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Use Jellyfin's default carousel styles for cards in carousels (in discovery tabs).">Use Jellyfin's default carousel styles for cards in carousels (in discovery tabs).</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1122,8 +1122,8 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="nativeGridPages">Native grid pages</label>
-                                    <div class="bst-field-desc">Use Jellyfin's default carousel styles for cards in grid pages.</div>
+                                    <label class="bst-toggle-label" for="nativeGridPages" data-seerrfin-i18n="Native grid pages">Native grid pages</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Use Jellyfin's default carousel styles for cards in grid pages.">Use Jellyfin's default carousel styles for cards in grid pages.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1134,8 +1134,8 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="nativeSearchResults">Native search results</label>
-                                    <div class="bst-field-desc">Use Jellyfin's default carousel styles for cards in Seerr search results.</div>
+                                    <label class="bst-toggle-label" for="nativeSearchResults" data-seerrfin-i18n="Native search results">Native search results</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Use Jellyfin's default carousel styles for cards in Seerr search results.">Use Jellyfin's default carousel styles for cards in Seerr search results.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1148,12 +1148,12 @@
                     </div>
 
                     <div class="bst-section-container">
-                        <div class="bst-section-title">Tweaks</div>
+                        <div class="bst-section-title" data-seerrfin-i18n="Tweaks">Tweaks</div>
                         <div class="bst-card">
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="qualityRecommendations">Quality recommendations</label>
-                                    <div class="bst-field-desc">Show quality recommendations in the request modal to help you choose a quality profile. (uses JustWatch for qualities)</div>
+                                    <label class="bst-toggle-label" for="qualityRecommendations" data-seerrfin-i18n="Quality recommendations">Quality recommendations</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Show quality recommendations in the request modal to help you choose a quality profile. (uses JustWatch for qualities)">Show quality recommendations in the request modal to help you choose a quality profile. (uses JustWatch for qualities)</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1164,40 +1164,40 @@
                             </div>
                             <div class="bst-toggle-row bst-toggle-row--release-types">
                                 <div class="bst-toggle-copy">
-                                    <span class="bst-toggle-label">Upcoming release types</span>
-                                    <div class="bst-field-desc">Filter movies/tv shows by release type. Leave all unselected to include all of them. (Needs a TMDB API key)</div>
+                                    <span class="bst-toggle-label" data-seerrfin-i18n="Upcoming release types">Upcoming release types</span>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Filter movies/tv shows by release type. Leave all unselected to include all of them. (Needs a TMDB API key)">Filter movies/tv shows by release type. Leave all unselected to include all of them. (Needs a TMDB API key)</div>
                                 </div>
                                 <div class="bst-toggle-actions bst-release-type-actions" id="discoverReleaseTypes">
-                                    <label class="bst-release-type-btn" title="Premiere">
+                                    <label class="bst-release-type-btn" title="Premiere" data-seerrfin-i18n-attrs="title" data-seerrfin-i18n-title="Premiere">
                                         <input type="checkbox" value="1" data-release-type />
-                                        <span>Premiere</span>
+                                        <span data-seerrfin-i18n="Premiere">Premiere</span>
                                     </label>
-                                    <label class="bst-release-type-btn" title="Theatrical (limited)">
+                                    <label class="bst-release-type-btn" title="Theatrical (limited)" data-seerrfin-i18n-attrs="title" data-seerrfin-i18n-title="Theatrical (limited)">
                                         <input type="checkbox" value="2" data-release-type />
-                                        <span>Theatrical (limited)</span>
+                                        <span data-seerrfin-i18n="Theatrical (limited)">Theatrical (limited)</span>
                                     </label>
-                                    <label class="bst-release-type-btn" title="Theatrical">
+                                    <label class="bst-release-type-btn" title="Theatrical" data-seerrfin-i18n-attrs="title" data-seerrfin-i18n-title="Theatrical">
                                         <input type="checkbox" value="3" data-release-type />
-                                        <span>Theatrical</span>
+                                        <span data-seerrfin-i18n="Theatrical">Theatrical</span>
                                     </label>
-                                    <label class="bst-release-type-btn" title="Digital">
+                                    <label class="bst-release-type-btn" title="Digital" data-seerrfin-i18n-attrs="title" data-seerrfin-i18n-title="Digital">
                                         <input type="checkbox" value="4" data-release-type />
-                                        <span>Digital</span>
+                                        <span data-seerrfin-i18n="Digital">Digital</span>
                                     </label>
-                                    <label class="bst-release-type-btn" title="Physical">
+                                    <label class="bst-release-type-btn" title="Physical" data-seerrfin-i18n-attrs="title" data-seerrfin-i18n-title="Physical">
                                         <input type="checkbox" value="5" data-release-type />
-                                        <span>Physical</span>
+                                        <span data-seerrfin-i18n="Physical">Physical</span>
                                     </label>
-                                    <label class="bst-release-type-btn" title="TV">
+                                    <label class="bst-release-type-btn" title="TV" data-seerrfin-i18n-attrs="title" data-seerrfin-i18n-title="TV">
                                         <input type="checkbox" value="6" data-release-type />
-                                        <span>TV</span>
+                                        <span data-seerrfin-i18n="TV">TV</span>
                                     </label>
                                 </div>
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="elegantFinFixes">ElegantFin fixes</label>
-                                    <div class="bst-field-desc">Some fixes to correct card sizing and spacing if you use the ElegantFin theme.</div>
+                                    <label class="bst-toggle-label" for="elegantFinFixes" data-seerrfin-i18n="ElegantFin fixes">ElegantFin fixes</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Some fixes to correct card sizing and spacing if you use the ElegantFin theme.">Some fixes to correct card sizing and spacing if you use the ElegantFin theme.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1210,12 +1210,12 @@
                     </div>
 
                     <div class="bst-section-container">
-                        <div class="bst-section-title">Hide unwanted content</div>
+                        <div class="bst-section-title" data-seerrfin-i18n="Hide unwanted content">Hide unwanted content</div>
                         <div class="bst-card">
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="advHideRequestedMedia">Hide requested media</label>
-                                    <div class="bst-field-desc">Hide movies/shows that already have been requested through Seerr.</div>
+                                    <label class="bst-toggle-label" for="advHideRequestedMedia" data-seerrfin-i18n="Hide requested media">Hide requested media</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Hide movies/shows that already have been requested through Seerr.">Hide movies/shows that already have been requested through Seerr.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1226,8 +1226,8 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="advHideAvailableInLibrary">Hide available in library</label>
-                                    <div class="bst-field-desc">Hide movies/shows that are "Available" or "Partially Available".</div>
+                                    <label class="bst-toggle-label" for="advHideAvailableInLibrary" data-seerrfin-i18n="Hide available in library">Hide available in library</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Hide movies/shows that are &quot;Available&quot; or &quot;Partially Available&quot;.">Hide movies/shows that are "Available" or "Partially Available".</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1238,8 +1238,8 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="advHideAdultContent">Hide adult content</label>
-                                    <div class="bst-field-desc">Exclude adult movies/shows from discovery rows (porn).</div>
+                                    <label class="bst-toggle-label" for="advHideAdultContent" data-seerrfin-i18n="Hide adult content">Hide adult content</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Exclude adult movies/shows from discovery rows (porn).">Exclude adult movies/shows from discovery rows (porn).</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1250,8 +1250,8 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="advHideBlocklistedMedia">Hide blocklisted content</label>
-                                    <div class="bst-field-desc">Hide movies/shows blocklisted in Seerr from discovery rows and search.</div>
+                                    <label class="bst-toggle-label" for="advHideBlocklistedMedia" data-seerrfin-i18n="Hide blocklisted content">Hide blocklisted content</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Hide movies/shows blocklisted in Seerr from discovery rows and search.">Hide movies/shows blocklisted in Seerr from discovery rows and search.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1264,12 +1264,12 @@
                     </div>
 
                     <div class="bst-section-container">
-                        <div class="bst-section-title">Search</div>
+                        <div class="bst-section-title" data-seerrfin-i18n="Search">Search</div>
                         <div class="bst-card">
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="addSeerrResultsInSearch">Add Seerr results in Search</label>
-                                    <div class="bst-field-desc">Add Seerr movie/tv show results to Jellyfin search results to let you request specific content from Seerr.</div>
+                                    <label class="bst-toggle-label" for="addSeerrResultsInSearch" data-seerrfin-i18n="Add Seerr results in Search">Add Seerr results in Search</label>
+                                    <div class="bst-field-desc" data-seerrfin-i18n="Add Seerr movie/tv show results to Jellyfin search results to let you request specific content from Seerr.">Add Seerr movie/tv show results to Jellyfin search results to let you request specific content from Seerr.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
@@ -1284,19 +1284,19 @@
 
                 <div class="bst-page-panel" data-bst-panel="advanced">
                     <div class="bst-section-container">
-                        <div class="bst-section-title">Advanced settings (this can break stuff)</div>
+                        <div class="bst-section-title" data-seerrfin-i18n="Advanced settings (this can break stuff)">Advanced settings (this can break stuff)</div>
                         <div class="bst-card">
                             <div class="bst-advanced-subsections">
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">Discovery</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="Discovery">Discovery</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advApplyLanguageFilter">Apply language filter</label>
-                                                <div class="bst-field-desc">Filter discovery carousels by the preferred language from Seerr settings.</div>
+                                                <label class="bst-toggle-label" for="advApplyLanguageFilter" data-seerrfin-i18n="Apply language filter">Apply language filter</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Filter discovery carousels by the preferred language from Seerr settings.">Filter discovery carousels by the preferred language from Seerr settings.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advApplyLanguageFilter" type="checkbox" checked />
@@ -1305,8 +1305,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advUseSeerrMappingForAnime">Seerr mapping for anime</label>
-                                                <div class="bst-field-desc">Use Seerr filters for the anime carousel to properly get anime.</div>
+                                                <label class="bst-toggle-label" for="advUseSeerrMappingForAnime" data-seerrfin-i18n="Seerr mapping for anime">Seerr mapping for anime</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Use Seerr filters for the anime carousel to properly get anime.">Use Seerr filters for the anime carousel to properly get anime.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advUseSeerrMappingForAnime" type="checkbox" checked />
@@ -1314,32 +1314,32 @@
                                             </label>
                                         </div>
                                         <div class="bst-input-group">
-                                            <label class="bst-label" for="advAnimeDiscoverPath">Anime discover path</label>
+                                            <label class="bst-label" for="advAnimeDiscoverPath" data-seerrfin-i18n="Anime discover path">Anime discover path</label>
                                             <div class="bst-input-stack">
                                                 <input id="advAnimeDiscoverPath" type="text" class="bst-input" />
-                                                <div class="bst-field-desc">Seerr API path used for the anime carousel row.</div>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Seerr API path used for the anime carousel row.">Seerr API path used for the anime carousel row.</div>
                                             </div>
                                         </div>
                                         <div class="bst-input-row">
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advCarouselMaxPages">Maximum carousel length</label>
+                                                <label class="bst-label" for="advCarouselMaxPages" data-seerrfin-i18n="Maximum carousel length">Maximum carousel length</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advCarouselMaxPages" type="number" class="bst-input" min="1" max="50" />
-                                                    <div class="bst-field-desc">Max Seerr pages fetched per horizontal carousel row.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Max Seerr pages fetched per horizontal carousel row.">Max Seerr pages fetched per horizontal carousel row.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advGridMaxPages">Maximum grid length</label>
+                                                <label class="bst-label" for="advGridMaxPages" data-seerrfin-i18n="Maximum grid length">Maximum grid length</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advGridMaxPages" type="number" class="bst-input" min="1" max="100" />
-                                                    <div class="bst-field-desc">Max Seerr pages fetched for grid views.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Max Seerr pages fetched for grid views.">Max Seerr pages fetched for grid views.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advGridPageSize">Grid page size</label>
+                                                <label class="bst-label" for="advGridPageSize" data-seerrfin-i18n="Grid page size">Grid page size</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advGridPageSize" type="number" class="bst-input" min="1" max="200" />
-                                                    <div class="bst-field-desc">Items loaded per page in grid views.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Items loaded per page in grid views.">Items loaded per page in grid views.</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1348,14 +1348,14 @@
 
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">Carousel</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="Carousel">Carousel</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advEnableRowInfiniteScroll">Row infinite scroll</label>
-                                                <div class="bst-field-desc">Load more items when scrolling near the end of a row.</div>
+                                                <label class="bst-toggle-label" for="advEnableRowInfiniteScroll" data-seerrfin-i18n="Row infinite scroll">Row infinite scroll</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Load more items when scrolling near the end of a row.">Load more items when scrolling near the end of a row.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advEnableRowInfiniteScroll" type="checkbox" checked />
@@ -1364,8 +1364,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advDiscoverRowFocusScale">Focus scale on discover rows</label>
-                                                <div class="bst-field-desc">Enlarge the centered card on home discover rows.</div>
+                                                <label class="bst-toggle-label" for="advDiscoverRowFocusScale" data-seerrfin-i18n="Focus scale on discover rows">Focus scale on discover rows</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Enlarge the centered card on home discover rows.">Enlarge the centered card on home discover rows.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advDiscoverRowFocusScale" type="checkbox" checked />
@@ -1374,8 +1374,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advBrowseCarouselFocusScale">Focus scale on browse carousels</label>
-                                                <div class="bst-field-desc">Enlarge the centered card on browse tab carousels.</div>
+                                                <label class="bst-toggle-label" for="advBrowseCarouselFocusScale" data-seerrfin-i18n="Focus scale on browse carousels">Focus scale on browse carousels</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Enlarge the centered card on browse tab carousels.">Enlarge the centered card on browse tab carousels.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advBrowseCarouselFocusScale" type="checkbox" />
@@ -1384,8 +1384,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advEnableCenterFocus">Center focus on scrollers</label>
-                                                <div class="bst-field-desc">Keep the focused card centered while scrolling.</div>
+                                                <label class="bst-toggle-label" for="advEnableCenterFocus" data-seerrfin-i18n="Center focus on scrollers">Center focus on scrollers</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Keep the focused card centered while scrolling.">Keep the focused card centered while scrolling.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advEnableCenterFocus" type="checkbox" checked />
@@ -1394,17 +1394,17 @@
                                         </div>
                                         <div class="bst-input-row">
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advCarouselScrollThreshold">Scroll threshold (px)</label>
+                                                <label class="bst-label" for="advCarouselScrollThreshold" data-seerrfin-i18n="Scroll threshold (px)">Scroll threshold (px)</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advCarouselScrollThreshold" type="number" class="bst-input" min="100" max="10000" />
-                                                    <div class="bst-field-desc">Pixels from row edge before loading the next page.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Pixels from row edge before loading the next page.">Pixels from row edge before loading the next page.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advRowScrollBindRetries">Scroll bind retries</label>
+                                                <label class="bst-label" for="advRowScrollBindRetries" data-seerrfin-i18n="Scroll bind retries">Scroll bind retries</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advRowScrollBindRetries" type="number" class="bst-input" min="1" max="50" />
-                                                    <div class="bst-field-desc">How many times to retry binding row scroll listeners.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="How many times to retry binding row scroll listeners.">How many times to retry binding row scroll listeners.</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1413,39 +1413,39 @@
 
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">Requests page</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="Requests page">Requests page</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-input-row">
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advRequestsPageSize">Page size</label>
+                                                <label class="bst-label" for="advRequestsPageSize" data-seerrfin-i18n="Page size">Page size</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advRequestsPageSize" type="number" class="bst-input" min="1" max="100" />
-                                                    <div class="bst-field-desc">Requests shown per page in the Requests tab.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Requests shown per page in the Requests tab.">Requests shown per page in the Requests tab.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advRequestsFetchSize">Fetch size</label>
+                                                <label class="bst-label" for="advRequestsFetchSize" data-seerrfin-i18n="Fetch size">Fetch size</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advRequestsFetchSize" type="number" class="bst-input" min="1" max="500" />
-                                                    <div class="bst-field-desc">How many requests to fetch from Seerr per API call.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="How many requests to fetch from Seerr per API call.">How many requests to fetch from Seerr per API call.</div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="bst-input-row">
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advRequestsAutoRefreshInterval">Auto-refresh interval (seconds)</label>
+                                                <label class="bst-label" for="advRequestsAutoRefreshInterval" data-seerrfin-i18n="Auto-refresh interval (seconds)">Auto-refresh interval (seconds)</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advRequestsAutoRefreshInterval" type="number" class="bst-input" min="0" max="3600" />
-                                                    <div class="bst-field-desc">How often the Requests tab will be reloaded while it is open. Set to 0 to disable automatic refreshing.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="How often the Requests tab will be reloaded while it is open. Set to 0 to disable automatic refreshing.">How often the Requests tab will be reloaded while it is open. Set to 0 to disable automatic refreshing.</div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advRequestsRefreshOnVisibility">Refresh when returning to the page</label>
-                                                <div class="bst-field-desc">Reload requests when the you return to this browser tab.</div>
+                                                <label class="bst-toggle-label" for="advRequestsRefreshOnVisibility" data-seerrfin-i18n="Refresh when returning to the page">Refresh when returning to the page</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Reload requests when the you return to this browser tab.">Reload requests when the you return to this browser tab.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advRequestsRefreshOnVisibility" type="checkbox" checked />
@@ -1454,8 +1454,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advRequestsRefreshOnTabShow">Refresh when switching to Requests</label>
-                                                <div class="bst-field-desc">Reload requests when switching to the Requests tab (in Jellyfin).</div>
+                                                <label class="bst-toggle-label" for="advRequestsRefreshOnTabShow" data-seerrfin-i18n="Refresh when switching to Requests">Refresh when switching to Requests</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Reload requests when switching to the Requests tab (in Jellyfin).">Reload requests when switching to the Requests tab (in Jellyfin).</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advRequestsRefreshOnTabShow" type="checkbox" checked />
@@ -1464,8 +1464,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advOpenExternalLinksInModal">Open external links in modal</label>
-                                                <div class="bst-field-desc">Open Seerr, Radarr and Sonarr links inside Jellyfin from Requests. Close the modal to return to the same page.</div>
+                                                <label class="bst-toggle-label" for="advOpenExternalLinksInModal" data-seerrfin-i18n="Open external links in modal">Open external links in modal</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Open Seerr, Radarr and Sonarr links inside Jellyfin from Requests. Close the modal to return to the same page.">Open Seerr, Radarr and Sonarr links inside Jellyfin from Requests. Close the modal to return to the same page.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advOpenExternalLinksInModal" type="checkbox" />
@@ -1474,8 +1474,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advRequestsCardsInteractive">Interactive request cards</label>
-                                                <div class="bst-field-desc">Enable hover actions and card interactivity on the Requests tab.</div>
+                                                <label class="bst-toggle-label" for="advRequestsCardsInteractive" data-seerrfin-i18n="Interactive request cards">Interactive request cards</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Enable hover actions and card interactivity on the Requests tab.">Enable hover actions and card interactivity on the Requests tab.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advRequestsCardsInteractive" type="checkbox" />
@@ -1484,8 +1484,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advRequestsCardsIncludeMetaText">Show metadata on request cards</label>
-                                                <div class="bst-field-desc">Show year and status text under request cards.</div>
+                                                <label class="bst-toggle-label" for="advRequestsCardsIncludeMetaText" data-seerrfin-i18n="Show metadata on request cards">Show metadata on request cards</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Show year and status text under request cards.">Show year and status text under request cards.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advRequestsCardsIncludeMetaText" type="checkbox" />
@@ -1494,8 +1494,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advIncludePartialsInProcessingFilter">Include partials in Processing filter</label>
-                                                <div class="bst-field-desc">Include partially available titles in the Processing filter.</div>
+                                                <label class="bst-toggle-label" for="advIncludePartialsInProcessingFilter" data-seerrfin-i18n="Include partials in Processing filter">Include partials in Processing filter</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Include partially available titles in the Processing filter.">Include partially available titles in the Processing filter.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advIncludePartialsInProcessingFilter" type="checkbox" />
@@ -1504,8 +1504,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advSplitPartiallyAvailableFilter">Split Partially Available filter</label>
-                                                <div class="bst-field-desc">When on, Available filter excludes partially available titles.</div>
+                                                <label class="bst-toggle-label" for="advSplitPartiallyAvailableFilter" data-seerrfin-i18n="Split Partially Available filter">Split Partially Available filter</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="When on, Available filter excludes partially available titles.">When on, Available filter excludes partially available titles.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advSplitPartiallyAvailableFilter" type="checkbox" />
@@ -1517,14 +1517,14 @@
 
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">Request modal</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="Request modal">Request modal</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advTvSeasonPickerEnabled">TV season picker</label>
-                                                <div class="bst-field-desc">Show a season picker before choosing a quality profile for TV.</div>
+                                                <label class="bst-toggle-label" for="advTvSeasonPickerEnabled" data-seerrfin-i18n="TV season picker">TV season picker</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Show a season picker before choosing a quality profile for TV.">Show a season picker before choosing a quality profile for TV.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advTvSeasonPickerEnabled" type="checkbox" checked />
@@ -1533,8 +1533,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advIncludeSpecialsSeason">Include specials (season 0)</label>
-                                                <div class="bst-field-desc">Allow season 0 (specials) in the TV season picker.</div>
+                                                <label class="bst-toggle-label" for="advIncludeSpecialsSeason" data-seerrfin-i18n="Include specials (season 0)">Include specials (season 0)</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Allow season 0 (specials) in the TV season picker.">Allow season 0 (specials) in the TV season picker.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advIncludeSpecialsSeason" type="checkbox" />
@@ -1543,8 +1543,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advRequireExplicitSeasonSelection">Require explicit season selection</label>
-                                                <div class="bst-field-desc">Require at least one season before continuing; off requests all seasons.</div>
+                                                <label class="bst-toggle-label" for="advRequireExplicitSeasonSelection" data-seerrfin-i18n="Require explicit season selection">Require explicit season selection</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Require at least one season before continuing; off requests all seasons.">Require at least one season before continuing; off requests all seasons.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advRequireExplicitSeasonSelection" type="checkbox" />
@@ -1553,8 +1553,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advShowRequest4kButton">Show Request 4K button</label>
-                                                <div class="bst-field-desc">Show the separate Request 4K button in the details modal.</div>
+                                                <label class="bst-toggle-label" for="advShowRequest4kButton" data-seerrfin-i18n="Show Request 4K button">Show Request 4K button</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Show the separate Request 4K button in the details modal.">Show the separate Request 4K button in the details modal.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advShowRequest4kButton" type="checkbox" checked />
@@ -1563,8 +1563,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advShowRootFolderSelector">Show root folder selector</label>
-                                                <div class="bst-field-desc">Let users with Seerr advanced request permissions choose a Radarr or Sonarr root folder when requesting.</div>
+                                                <label class="bst-toggle-label" for="advShowRootFolderSelector" data-seerrfin-i18n="Show root folder selector">Show root folder selector</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Let users with Seerr advanced request permissions choose a Radarr or Sonarr root folder when requesting.">Let users with Seerr advanced request permissions choose a Radarr or Sonarr root folder when requesting.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advShowRootFolderSelector" type="checkbox" />
@@ -1576,14 +1576,14 @@
 
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">Radarr / Sonarr progress</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="Radarr / Sonarr progress">Radarr / Sonarr progress</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advDownloadedProgressIsActive">Downloaded progress is active</label>
-                                                <div class="bst-field-desc">Treat downloaded items as active for progress bar styling.</div>
+                                                <label class="bst-toggle-label" for="advDownloadedProgressIsActive" data-seerrfin-i18n="Downloaded progress is active">Downloaded progress is active</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Treat downloaded items as active for progress bar styling.">Treat downloaded items as active for progress bar styling.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advDownloadedProgressIsActive" type="checkbox" checked />
@@ -1592,8 +1592,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advIncludeSpecialsInSeriesProgress">Include specials in series progress</label>
-                                                <div class="bst-field-desc">Count season 0 episodes when calculating series download progress.</div>
+                                                <label class="bst-toggle-label" for="advIncludeSpecialsInSeriesProgress" data-seerrfin-i18n="Include specials in series progress">Include specials in series progress</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Count season 0 episodes when calculating series download progress.">Count season 0 episodes when calculating series download progress.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advIncludeSpecialsInSeriesProgress" type="checkbox" />
@@ -1605,54 +1605,54 @@
 
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">TMDB images</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="TMDB images">TMDB images</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-input-row">
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advBackdropBatchConcurrency">Backdrop batch concurrency</label>
+                                                <label class="bst-label" for="advBackdropBatchConcurrency" data-seerrfin-i18n="Backdrop batch concurrency">Backdrop batch concurrency</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advBackdropBatchConcurrency" type="number" class="bst-input" min="1" max="20" />
-                                                    <div class="bst-field-desc">How many TMDB backdrop fetches run in parallel.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="How many TMDB backdrop fetches run in parallel.">How many TMDB backdrop fetches run in parallel.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advBackdropImageSize">Backdrop image size</label>
+                                                <label class="bst-label" for="advBackdropImageSize" data-seerrfin-i18n="Backdrop image size">Backdrop image size</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advBackdropImageSize" type="text" class="bst-input" />
-                                                    <div class="bst-field-desc">TMDB size token for landscape backdrops (e.g. w780).</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="TMDB size token for landscape backdrops (e.g. w780).">TMDB size token for landscape backdrops (e.g. w780).</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advPosterImageSize">Poster image size</label>
+                                                <label class="bst-label" for="advPosterImageSize" data-seerrfin-i18n="Poster image size">Poster image size</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advPosterImageSize" type="text" class="bst-input" />
-                                                    <div class="bst-field-desc">TMDB size token for portrait posters.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="TMDB size token for portrait posters.">TMDB size token for portrait posters.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advGenreBackdropSelectionMode">Genre backdrop mode</label>
+                                                <label class="bst-label" for="advGenreBackdropSelectionMode" data-seerrfin-i18n="Genre backdrop mode">Genre backdrop mode</label>
                                                 <div class="bst-input-stack">
                                                     <select id="advGenreBackdropSelectionMode" class="bst-input">
-                                                        <option value="random">Random</option>
-                                                        <option value="first">First</option>
+                                                        <option value="random" data-seerrfin-i18n="Random">Random</option>
+                                                        <option value="first" data-seerrfin-i18n="First">First</option>
                                                     </select>
-                                                    <div class="bst-field-desc">Pick a random or first backdrop for genre boxes.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Pick a random or first backdrop for genre boxes.">Pick a random or first backdrop for genre boxes.</div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="bst-input-group">
-                                            <label class="bst-label" for="advBackdropLanguageFilter">Backdrop language filter</label>
+                                            <label class="bst-label" for="advBackdropLanguageFilter" data-seerrfin-i18n="Backdrop language filter">Backdrop language filter</label>
                                             <div class="bst-input-stack">
                                                 <input id="advBackdropLanguageFilter" type="text" class="bst-input" />
-                                                <div class="bst-field-desc">TMDB include_image_language value for backdrop and logo fetches.</div>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="TMDB include_image_language value for backdrop and logo fetches.">TMDB include_image_language value for backdrop and logo fetches.</div>
                                             </div>
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advPreferOriginalLanguageImages">Prefer original language images</label>
-                                                <div class="bst-field-desc">Prefer original-language backdrops over filtered languages.</div>
+                                                <label class="bst-toggle-label" for="advPreferOriginalLanguageImages" data-seerrfin-i18n="Prefer original language images">Prefer original language images</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Prefer original-language backdrops over filtered languages.">Prefer original-language backdrops over filtered languages.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advPreferOriginalLanguageImages" type="checkbox" />
@@ -1661,8 +1661,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advFallbackToOriginalImageUrl">Fallback to original image URL</label>
-                                                <div class="bst-field-desc">Use the source TMDB URL when image caching fails.</div>
+                                                <label class="bst-toggle-label" for="advFallbackToOriginalImageUrl" data-seerrfin-i18n="Fallback to original image URL">Fallback to original image URL</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Use the source TMDB URL when image caching fails.">Use the source TMDB URL when image caching fails.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advFallbackToOriginalImageUrl" type="checkbox" checked />
@@ -1671,8 +1671,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advDirectBrowserImages">Directly request TMDB images from browser (no cache, open API key)</label>
-                                                <div class="bst-field-desc">Skip image caching and load posters/backdrops directly from image.tmdb.org in the browser.</div>
+                                                <label class="bst-toggle-label" for="advDirectBrowserImages" data-seerrfin-i18n="Directly request TMDB images from browser (no cache, open API key)">Directly request TMDB images from browser (no cache, open API key)</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Skip image caching and load posters/backdrops directly from image.tmdb.org in the browser.">Skip image caching and load posters/backdrops directly from image.tmdb.org in the browser.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advDirectBrowserImages" type="checkbox" />
@@ -1684,14 +1684,14 @@
 
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">JustWatch</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="JustWatch">JustWatch</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advJwUseWatchRegion">Use watch region for country</label>
-                                                <div class="bst-field-desc">Use the Watch region setting instead of the country below.</div>
+                                                <label class="bst-toggle-label" for="advJwUseWatchRegion" data-seerrfin-i18n="Use watch region for country">Use watch region for country</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Use the Watch region setting instead of the country below.">Use the Watch region setting instead of the country below.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advJwUseWatchRegion" type="checkbox" />
@@ -1700,31 +1700,31 @@
                                         </div>
                                         <div class="bst-input-row">
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advJwCountry">Country</label>
+                                                <label class="bst-label" for="advJwCountry" data-seerrfin-i18n="Country">Country</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advJwCountry" type="text" class="bst-input" />
-                                                    <div class="bst-field-desc">JustWatch country code for quality lookups.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="JustWatch country code for quality lookups.">JustWatch country code for quality lookups.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advJwLanguage">Language</label>
+                                                <label class="bst-label" for="advJwLanguage" data-seerrfin-i18n="Language">Language</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advJwLanguage" type="text" class="bst-input" />
-                                                    <div class="bst-field-desc">JustWatch language code for quality lookups.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="JustWatch language code for quality lookups.">JustWatch language code for quality lookups.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advJwSearchResultLimit">Search result limit</label>
+                                                <label class="bst-label" for="advJwSearchResultLimit" data-seerrfin-i18n="Search result limit">Search result limit</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advJwSearchResultLimit" type="number" class="bst-input" min="1" max="50" />
-                                                    <div class="bst-field-desc">Max JustWatch results to consider per title.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Max JustWatch results to consider per title.">Max JustWatch results to consider per title.</div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advJwFallbackToDefaultProfile">Fallback to default profile</label>
-                                                <div class="bst-field-desc">Use the default Radarr profile when no quality match is found.</div>
+                                                <label class="bst-toggle-label" for="advJwFallbackToDefaultProfile" data-seerrfin-i18n="Fallback to default profile">Fallback to default profile</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Use the default Radarr profile when no quality match is found.">Use the default Radarr profile when no quality match is found.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advJwFallbackToDefaultProfile" type="checkbox" checked />
@@ -1733,8 +1733,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advJwPrefer4kServerForUltraHd">Prefer 4K server for Ultra-HD</label>
-                                                <div class="bst-field-desc">Route Ultra-HD matches to a 4K Radarr server when available.</div>
+                                                <label class="bst-toggle-label" for="advJwPrefer4kServerForUltraHd" data-seerrfin-i18n="Prefer 4K server for Ultra-HD">Prefer 4K server for Ultra-HD</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Route Ultra-HD matches to a 4K Radarr server when available.">Route Ultra-HD matches to a 4K Radarr server when available.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advJwPrefer4kServerForUltraHd" type="checkbox" checked />
@@ -1742,10 +1742,10 @@
                                             </label>
                                         </div>
                                         <div class="bst-input-group">
-                                            <label class="bst-label" for="advJwQualityAliasJson">Quality alias JSON (optional)</label>
+                                            <label class="bst-label" for="advJwQualityAliasJson" data-seerrfin-i18n="Quality alias JSON (optional)">Quality alias JSON (optional)</label>
                                             <div class="bst-input-stack">
                                                 <textarea id="advJwQualityAliasJson" class="bst-input bst-textarea" rows="3" placeholder='{"Ultra-HD":["4K","UHD"]}'></textarea>
-                                                <div class="bst-field-desc">Custom label aliases merged over built-in JustWatch-to-Radarr mappings.</div>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Custom label aliases merged over built-in JustWatch-to-Radarr mappings.">Custom label aliases merged over built-in JustWatch-to-Radarr mappings.</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1753,69 +1753,69 @@
 
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">Letterboxd</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="Letterboxd">Letterboxd</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-input-group">
-                                            <label class="bst-label" for="advLbUsernamePattern">Username pattern (regex)</label>
+                                            <label class="bst-label" for="advLbUsernamePattern" data-seerrfin-i18n="Username pattern (regex)">Username pattern (regex)</label>
                                             <div class="bst-input-stack">
                                                 <input id="advLbUsernamePattern" type="text" class="bst-input" />
-                                                <div class="bst-field-desc">Regex used to validate Letterboxd usernames before sync.</div>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Regex used to validate Letterboxd usernames before sync.">Regex used to validate Letterboxd usernames before sync.</div>
                                             </div>
                                         </div>
                                         <div class="bst-input-row">
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advLbHttpTimeoutSeconds">HTTP timeout (seconds)</label>
+                                                <label class="bst-label" for="advLbHttpTimeoutSeconds" data-seerrfin-i18n="HTTP timeout (seconds)">HTTP timeout (seconds)</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advLbHttpTimeoutSeconds" type="number" class="bst-input" min="10" max="300" />
-                                                    <div class="bst-field-desc">Timeout for Letterboxd page scraping requests.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Timeout for Letterboxd page scraping requests.">Timeout for Letterboxd page scraping requests.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advLbSyncPagesProgressWeight">Sync pages progress weight (%)</label>
+                                                <label class="bst-label" for="advLbSyncPagesProgressWeight" data-seerrfin-i18n="Sync pages progress weight (%)">Sync pages progress weight (%)</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advLbSyncPagesProgressWeight" type="number" class="bst-input" min="0" max="100" />
-                                                    <div class="bst-field-desc">How much of the sync progress bar reflects page fetching.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="How much of the sync progress bar reflects page fetching.">How much of the sync progress bar reflects page fetching.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advLbDefaultBulkQualityMode">Default bulk quality mode</label>
+                                                <label class="bst-label" for="advLbDefaultBulkQualityMode" data-seerrfin-i18n="Default bulk quality mode">Default bulk quality mode</label>
                                                 <div class="bst-input-stack">
                                                     <select id="advLbDefaultBulkQualityMode" class="bst-input">
-                                                        <option value="singleProfile">Single profile</option>
-                                                        <option value="highestAvailable">Highest available</option>
-                                                        <option value="mostCommon">Most common</option>
+                                                        <option value="singleProfile" data-seerrfin-i18n="Single profile">Single profile</option>
+                                                        <option value="highestAvailable" data-seerrfin-i18n="Highest available">Highest available</option>
+                                                        <option value="mostCommon" data-seerrfin-i18n="Most common">Most common</option>
                                                     </select>
-                                                    <div class="bst-field-desc">Default quality strategy when bulk-requesting from Letterboxd.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Default quality strategy when bulk-requesting from Letterboxd.">Default quality strategy when bulk-requesting from Letterboxd.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advLbAlreadyRequestedMode">Already requested mode</label>
+                                                <label class="bst-label" for="advLbAlreadyRequestedMode" data-seerrfin-i18n="Already requested mode">Already requested mode</label>
                                                 <div class="bst-input-stack">
                                                     <select id="advLbAlreadyRequestedMode" class="bst-input">
-                                                        <option value="prompt">Prompt</option>
-                                                        <option value="skip">Auto-skip</option>
-                                                        <option value="requestAll">Request all</option>
+                                                        <option value="prompt" data-seerrfin-i18n="Prompt">Prompt</option>
+                                                        <option value="skip" data-seerrfin-i18n="Auto-skip">Auto-skip</option>
+                                                        <option value="requestAll" data-seerrfin-i18n="Request all">Request all</option>
                                                     </select>
-                                                    <div class="bst-field-desc">How to handle movies already requested during bulk request.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="How to handle movies already requested during bulk request.">How to handle movies already requested during bulk request.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advLbAlreadyRequestedStatusScope">Already requested scope</label>
+                                                <label class="bst-label" for="advLbAlreadyRequestedStatusScope" data-seerrfin-i18n="Already requested scope">Already requested scope</label>
                                                 <div class="bst-input-stack">
                                                     <select id="advLbAlreadyRequestedStatusScope" class="bst-input">
-                                                        <option value="anyMediaInfo">Any media info</option>
-                                                        <option value="availableOnly">Available only</option>
+                                                        <option value="anyMediaInfo" data-seerrfin-i18n="Any media info">Any media info</option>
+                                                        <option value="availableOnly" data-seerrfin-i18n="Available only">Available only</option>
                                                     </select>
-                                                    <div class="bst-field-desc">Which Seerr statuses count as already requested.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Which Seerr statuses count as already requested.">Which Seerr statuses count as already requested.</div>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advLbRequestCardsInteractive">Interactive Letterboxd cards</label>
-                                                <div class="bst-field-desc">Enable hover actions on Letterboxd watchlist cards.</div>
+                                                <label class="bst-toggle-label" for="advLbRequestCardsInteractive" data-seerrfin-i18n="Interactive Letterboxd cards">Interactive Letterboxd cards</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Enable hover actions on Letterboxd watchlist cards.">Enable hover actions on Letterboxd watchlist cards.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advLbRequestCardsInteractive" type="checkbox" />
@@ -1824,8 +1824,8 @@
                                         </div>
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advLbRequestCardsIncludeMetaText">Show metadata on Letterboxd cards</label>
-                                                <div class="bst-field-desc">Show year and status text under Letterboxd cards.</div>
+                                                <label class="bst-toggle-label" for="advLbRequestCardsIncludeMetaText" data-seerrfin-i18n="Show metadata on Letterboxd cards">Show metadata on Letterboxd cards</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Show year and status text under Letterboxd cards.">Show year and status text under Letterboxd cards.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advLbRequestCardsIncludeMetaText" type="checkbox" checked />
@@ -1837,14 +1837,14 @@
 
                                 <div class="bst-advanced-subsection is-collapsed">
                                     <button type="button" class="bst-subsection-toggle" aria-expanded="false">
-                                        <span class="bst-subsection-title">Cache / developer</span>
-                                        <span class="bst-subsection-chevron" aria-hidden="true">▼</span>
+                                        <span class="bst-subsection-title" data-seerrfin-i18n="Cache / developer">Cache / developer</span>
+                                        <span class="bst-subsection-chevron" aria-hidden="true" data-seerrfin-i18n="▼">▼</span>
                                     </button>
                                     <div class="bst-card">
                                         <div class="bst-toggle-row">
                                             <div class="bst-toggle-copy">
-                                                <label class="bst-toggle-label" for="advDeveloperMode">Developer mode</label>
-                                                <div class="bst-field-desc">Bust asset cache on every page load.</div>
+                                                <label class="bst-toggle-label" for="advDeveloperMode" data-seerrfin-i18n="Developer mode">Developer mode</label>
+                                                <div class="bst-field-desc" data-seerrfin-i18n="Bust asset cache on every page load.">Bust asset cache on every page load.</div>
                                             </div>
                                             <label class="bst-toggle">
                                                 <input id="advDeveloperMode" type="checkbox" />
@@ -1853,17 +1853,17 @@
                                         </div>
                                         <div class="bst-input-row">
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advCacheTimeoutSeconds">Cache timeout (seconds)</label>
+                                                <label class="bst-label" for="advCacheTimeoutSeconds" data-seerrfin-i18n="Cache timeout (seconds)">Cache timeout (seconds)</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advCacheTimeoutSeconds" type="number" class="bst-input" min="60" max="604800" />
-                                                    <div class="bst-field-desc">How long cached TMDB images are kept before refetch.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="How long cached TMDB images are kept before refetch.">How long cached TMDB images are kept before refetch.</div>
                                                 </div>
                                             </div>
                                             <div class="bst-input-group">
-                                                <label class="bst-label" for="advMaxImageCacheEntries">Max image cache entries</label>
+                                                <label class="bst-label" for="advMaxImageCacheEntries" data-seerrfin-i18n="Max image cache entries">Max image cache entries</label>
                                                 <div class="bst-input-stack">
                                                     <input id="advMaxImageCacheEntries" type="number" class="bst-input" min="100" max="50000" />
-                                                    <div class="bst-field-desc">Maximum number of images stored in the disk cache.</div>
+                                                    <div class="bst-field-desc" data-seerrfin-i18n="Maximum number of images stored in the disk cache.">Maximum number of images stored in the disk cache.</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1874,7 +1874,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="bst-save-btn" id="bstSaveBtn">Save</button>
+                <button type="submit" class="bst-save-btn" id="bstSaveBtn" data-seerrfin-i18n="Save">Save</button>
             </form>
         </div>
     </div>
@@ -1883,23 +1883,23 @@
         <div class="bst-modal" role="dialog" aria-modal="true" aria-labelledby="bstCustomizeModalTitle">
             <h3 id="bstCustomizeModalTitle" class="bst-modal-title"></h3>
             <div class="bst-modal-row">
-                <span class="bst-modal-row-label">Duotone filter</span>
+                <span class="bst-modal-row-label" data-seerrfin-i18n="Duotone filter">Duotone filter</span>
                 <div class="bst-duotone-controls">
                     <label class="bst-toggle">
                         <input id="bstCustomizeDuotone" type="checkbox" />
                         <span class="bst-toggle-slider"></span>
                     </label>
-                    <label class="bst-color-swatch" title="Color 1 (shadows)">
+                    <label class="bst-color-swatch" title="Color 1 (shadows)" data-seerrfin-i18n-attrs="title" data-seerrfin-i18n-title="Color 1 (shadows)">
                         <input id="bstCustomizeDuotoneDark" type="color" value="#969696" />
                     </label>
-                    <label class="bst-color-swatch" title="Color 2 (highlights)">
+                    <label class="bst-color-swatch" title="Color 2 (highlights)" data-seerrfin-i18n-attrs="title" data-seerrfin-i18n-title="Color 2 (highlights)">
                         <input id="bstCustomizeDuotoneLight" type="color" value="#ffffff" />
                     </label>
                 </div>
             </div>
             <div class="bst-modal-actions">
-                <button type="button" class="bst-modal-btn" id="bstCustomizeCancel">Cancel</button>
-                <button type="button" class="bst-modal-btn bst-modal-btn--primary" id="bstCustomizeApply">Apply</button>
+                <button type="button" class="bst-modal-btn" id="bstCustomizeCancel" data-seerrfin-i18n="Cancel">Cancel</button>
+                <button type="button" class="bst-modal-btn bst-modal-btn--primary" id="bstCustomizeApply" data-seerrfin-i18n="Apply">Apply</button>
             </div>
         </div>
     </div>
@@ -1909,6 +1909,14 @@
             const pluginId = 'c8e4f2a1-9b3d-4e7f-a6c2-1d5e8f0a3b7c';
             const customTabsPluginId = 'fbacd0b6-fd46-4a05-b0a4-2045d6a135b0';
             const form = document.querySelector('.seerrFinConfigurationForm');
+
+            function t(key, parameters) {
+                return window.seerrFinI18n ? window.seerrFinI18n.t(key, parameters) : key;
+            }
+
+            if (window.seerrFinI18n) {
+                window.seerrFinI18n.apply(form);
+            }
 
             function switchBstPage(pageId) {
                 document.querySelectorAll('.bst-page-nav-btn[data-bst-panel]').forEach(function (btn) {
@@ -2097,8 +2105,14 @@
 
             function resolveTabTitle(id, title) {
                 const value = String(title || '').trim();
+                const defaultTitle = TAB_TITLES[id] || id;
+                return !value || value === defaultTitle ? t(defaultTitle) : value;
+            }
 
-                return value || TAB_TITLES[id] || id;
+            function canonicalizeTabTitle(id, title) {
+                const value = String(title || '').trim();
+                const defaultTitle = TAB_TITLES[id] || id;
+                return !value || value === defaultTitle || value === t(defaultTitle) ? defaultTitle : value;
             }
 
             let tabSettings = createDefaultTabs();
@@ -2273,7 +2287,7 @@
 
             function buildTabsPayload() {
                 return tabSettings.map(function (tab) {
-                    return { Id: tab.Id, Enabled: tab.Enabled !== false, Title: resolveTabTitle(tab.Id, tab.Title) };
+                    return { Id: tab.Id, Enabled: tab.Enabled !== false, Title: canonicalizeTabTitle(tab.Id, tab.Title) };
                 });
             }
 

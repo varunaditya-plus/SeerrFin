@@ -4,6 +4,7 @@
     if (window.__seerrFinAccountInit) return;
 
     window.__seerrFinAccountInit = true;
+    const t = (key, parameters) => window.seerrFinI18n ? window.seerrFinI18n.t(key, parameters) : key;
 
     let pending;
     let pendingUser;
@@ -37,30 +38,30 @@
         const allowed = key => data.permissions.find(permission => permission.key === key)?.allowed === true;
         const quotas = ['movie', 'tv'].map(function (type) {
             const quota = data[type];
-            const label = type === 'movie' ? 'Movies' : 'TV seasons';
-            const remaining = quota.limit > 0 ? `${quota.remaining} of ${quota.limit} remaining` : 'Unlimited';
-            const period = quota.days > 0 ? `Over the past ${quota.days} ${quota.days === 1 ? 'day' : 'days'}` : 'Across all request history';
+            const label = type === 'movie' ? t('Movies') : t('TV seasons');
+            const remaining = quota.limit > 0 ? t('{remaining} of {limit} remaining', quota) : t('Unlimited');
+            const period = quota.days > 0 ? t('Over the past {days} {unit}', { days: quota.days, unit: t(quota.days === 1 ? 'day' : 'days') }) : t('Across all request history');
 
             return `
                 <div class="seerrfin-account-quota${quota.restricted ? ' is-restricted' : ''}">
                     <strong>${label}</strong><span>${escapeHtml(remaining)}</span>
-                    ${quota.limit > 0 ? `<small>${quota.used} used · ${period}${quota.restricted ? ' · Limit reached' : ''}</small>` : ''}
-                    <small>HD requests: ${allowed('request-' + type) ? 'Allowed' : 'Not allowed'} · 4K requests: ${allowed('request4k-' + type) ? 'Allowed' : 'Not allowed'}</small>
+                    ${quota.limit > 0 ? `<small>${t('{count} used', { count: quota.used })} · ${period}${quota.restricted ? ' · ' + t('Limit reached') : ''}</small>` : ''}
+                    <small>${t('HD requests:')} ${allowed('request-' + type) ? t('Allowed') : t('Not allowed')} · ${t('4K requests:')} ${allowed('request4k-' + type) ? t('Allowed') : t('Not allowed')}</small>
                 </div>
             `;
         }).join('');
 
         return `
             <div class="seerrfin-account-heading">
-                <h3>Request limits</h3>
-                <button type="button" class="emby-button raised" data-seerrfin-account-refresh>Refresh</button>
+                <h3>${t('Request limits')}</h3>
+                <button type="button" class="emby-button raised" data-seerrfin-account-refresh>${t('Refresh')}</button>
             </div>
             <div class="seerrfin-account-quotas" role="status" aria-live="polite">${quotas}</div>
             <p class="seerrfin-account-note">TV limits count seasons. HD and 4K share these limits. ${data.bypassQuota ? 'Quota exemption enabled.' : ''}</p>
             <details class="seerrfin-account-permissions">
-                <summary>Permissions</summary>
+                <summary>${t('Permissions')}</summary>
                 <ul>${data.permissions.map(permission => `
-                    <li><span>${escapeHtml(permission.label)}</span><strong>${permission.allowed ? 'Allowed' : 'Not allowed'}</strong></li>
+                    <li><span>${escapeHtml(permission.label)}</span><strong>${permission.allowed ? t('Allowed') : t('Not allowed')}</strong></li>
                 `).join('')}</ul>
             </details>
         `;
@@ -83,7 +84,7 @@
 
         const permissionsOpen = !!container.querySelector('details[open]');
 
-        container.innerHTML = '<p role="status">Loading your limits and permissions…</p>';
+        container.innerHTML = `<p role="status">${t('Loading your limits and permissions…')}</p>`;
         getAccount().then(function (data) {
             if (!container.isConnected || container._accountRequestId !== requestId || ApiClient.getCurrentUserId() !== userId) return;
 
@@ -95,7 +96,7 @@
 
             if (!container.isConnected || container._accountRequestId !== requestId || ApiClient.getCurrentUserId() !== userId) return;
 
-            container.innerHTML = `<p role="alert">${escapeHtml(message)}</p><button type="button" class="emby-button raised" data-seerrfin-account-refresh>Retry</button>`;
+            container.innerHTML = `<p role="alert">${escapeHtml(message)}</p><button type="button" class="emby-button raised" data-seerrfin-account-refresh>${t('Retry')}</button>`;
         });
     }
 
@@ -153,8 +154,8 @@
         root.className = 'seerrfin-profile-view';
         root.innerHTML = `
             <div class="seerrfin-profile-backdrop" data-profile-close></div>
-            <section role="dialog" aria-modal="true" aria-label="Seerr Profile &amp; Limits" class="seerrfin-profile-panel">
-                <button type="button" class="paper-icon-button-light seerrfin-profile-close" data-profile-close aria-label="Close profile"><span class="material-icons" aria-hidden="true">close</span></button>
+            <section role="dialog" aria-modal="true" aria-label="${t('Seerr Profile & Limits')}" class="seerrfin-profile-panel">
+                <button type="button" class="paper-icon-button-light seerrfin-profile-close" data-profile-close aria-label="${t('Close profile')}"><span class="material-icons" aria-hidden="true">close</span></button>
                 <div data-profile-content></div>
             </section>
         `;
@@ -182,7 +183,7 @@
                 .join('');
             const defaultName = (key, items, fallback) => (data.defaults[key] || '').split('|').map(x => items.find(i => i.id === x)?.name || x).filter(Boolean).join(' · ') || fallback;
             const select = (key, label, items, fallback, all) => `
-                <label>${label}<select name="${key}"><option value="">Server default (${escapeHtml(defaultName(key, items, fallback))})</option>${all ? `<option value="all">${all}</option>` : ''}${options(items)}</select>
+                <label>${label}<select name="${key}"><option value="">${t('Server default ({value})', { value: escapeHtml(defaultName(key, items, fallback)) })}</option>${all ? `<option value="all">${all}</option>` : ''}${options(items)}</select>
                 </label>
             `;
 
@@ -194,29 +195,29 @@
                     </div>
                     <div><strong data-profile-name>${escapeHtml(data.displayName)}</strong><span>${escapeHtml(data.role)}${data.jellyfinUsername ? ` · ${escapeHtml(data.jellyfinUsername)}` : ''}</span></div>
                 </div>
-                <div class="seerrfin-profile-tabs" role="tablist" aria-label="Profile sections">
-                    <button type="button" role="tab" aria-selected="true" data-profile-tab="preferences">Profile</button>
-                    <button type="button" role="tab" aria-selected="false" data-profile-tab="limits">Limits &amp; permissions</button>
+                <div class="seerrfin-profile-tabs" role="tablist" aria-label="${t('Profile sections')}">
+                    <button type="button" role="tab" aria-selected="true" data-profile-tab="preferences">${t('Profile')}</button>
+                    <button type="button" role="tab" aria-selected="false" data-profile-tab="limits">${t('Limits & permissions')}</button>
                 </div>
                 <div data-profile-section="preferences">
                     <form>
                         <div class="seerrfin-profile-fields">
-                            <label>Display name<input name="username" type="text" maxlength="100" autocomplete="nickname">
+                            <label>${t('Display name')}<input name="username" type="text" maxlength="100" autocomplete="nickname">
                             </label>
-                            <label>Email<input name="email" type="email" maxlength="254" autocomplete="email"${data.emailEditable ? '' : ' disabled'}${data.emailRequired && data.emailEditable ? ' required' : ''}>
+                            <label>${t('Email')}<input name="email" type="email" maxlength="254" autocomplete="email"${data.emailEditable ? '' : ' disabled'}${data.emailRequired && data.emailEditable ? ' required' : ''}>
                             </label>
                             ${select('locale', 'Seerr locale', data.locales, 'English')}
                             ${select('discoverRegion', 'Discovery region', data.regions, 'All regions', 'All regions')}
                             ${select('streamingRegion', 'Streaming region', data.streamingRegions, 'Seerr default')}
-                            <label>Original-language preference<select name="languageMode"><option value="">Server default (${escapeHtml(defaultName('originalLanguage', data.languages, 'All languages'))})</option><option value="all">All languages</option><option value="custom">Choose languages</option></select>
+                            <label>${t('Original-language preference')}<select name="languageMode"><option value="">${t('Server default ({value})', { value: escapeHtml(defaultName('originalLanguage', data.languages, t('All languages'))) })}</option><option value="all">${t('All languages')}</option><option value="custom">${t('Choose languages')}</option></select>
                             </label>
-                            <label data-profile-languages>Preferred original languages (up to 20)<select name="languages" multiple size="5">${options(data.languages)}</select>
+                            <label data-profile-languages>${t('Preferred original languages (up to 20)')}<select name="languages" multiple size="5">${options(data.languages)}</select>
                             </label>
                         </div>
-                        <p class="seerrfin-profile-note">Preferences sync with your Seerr account.</p>
+                        <p class="seerrfin-profile-note">${t('Preferences sync with your Seerr account.')}</p>
                         <div class="seerrfin-profile-actions">
-                            <button type="submit" class="emby-button raised">Save profile</button>
-                            <button type="button" class="emby-button raised" data-profile-defaults>Use server preferences</button>
+                            <button type="submit" class="emby-button raised">${t('Save profile')}</button>
+                            <button type="button" class="emby-button raised" data-profile-defaults>${t('Use server preferences')}</button>
                         </div>
                         <p data-profile-status role="status" aria-live="polite"></p>
                     </form>
@@ -287,7 +288,7 @@
 
                 const status = content.querySelector('[data-profile-status]');
                 status.setAttribute('role', 'status');
-                status.textContent = 'Server preferences selected.';
+                status.textContent = t('Server preferences selected.');
             });
             form.addEventListener('submit', async event => {
                 event.preventDefault();
@@ -299,7 +300,7 @@
 
                 if (form.elements.languageMode.value === 'custom' && (selected.length < 1 || selected.length > 20)) {
                     status.setAttribute('role', 'alert');
-                    status.textContent = 'Choose between 1 and 20 original languages.';
+                    status.textContent = t('Choose between 1 and 20 original languages.');
 
                     return;
                 }
@@ -312,7 +313,7 @@
                 state.saving = true;
                 root.querySelectorAll('button, input, select').forEach(x => { x.disabled = true; });
                 status.setAttribute('role', 'status');
-                status.textContent = 'Saving your profile…';
+                status.textContent = t('Saving your profile…');
 
                 try {
                     const saved = await profileApi(values);
@@ -323,7 +324,7 @@
                     renderProfile(saved);
 
                     const message = content.querySelector('[data-profile-status]');
-                    message.textContent = 'Profile saved.';
+                    message.textContent = t('Profile saved.');
                     message.tabIndex = -1;
                     message.focus();
                 } catch (error) {
@@ -345,7 +346,7 @@
         }
 
         async function load() {
-            content.innerHTML = '<p role="status">Loading your profile…</p>';
+            content.innerHTML = `<p role="status">${t('Loading your profile…')}</p>`;
 
             try {
                 const data = await profileApi();
@@ -354,7 +355,7 @@
             } catch (error) {
                 const message = await errorMessage(error, 'Unable to load your profile. Please try again.');
 
-                if (current()) content.innerHTML = `<p role="alert">${escapeHtml(message)}</p><button type="button" class="emby-button raised" data-profile-retry>Retry profile</button>`;
+                if (current()) content.innerHTML = `<p role="alert">${escapeHtml(message)}</p><button type="button" class="emby-button raised" data-profile-retry>${t('Retry profile')}</button>`;
             }
         }
 
@@ -469,7 +470,7 @@
                     <button type="button" class="paper-icon-button-light" data-app-close aria-label="Close ${externalUrl ? label : 'Seerr'} page"><span class="material-icons" aria-hidden="true">close</span></button>
                 </header>
                 <div data-app-body>
-                    <p role="status">Loading…</p>
+                    <p role="status">${t('Loading…')}</p>
                 </div>
             </section>
         `;
@@ -488,7 +489,7 @@
 
         async function loadApp() {
             const body = root.querySelector('[data-app-body]');
-            body.innerHTML = '<p role="status">Loading…</p>';
+            body.innerHTML = `<p role="status">${t('Loading…')}</p>`;
             root.querySelector('[data-app-refresh]').disabled = true;
             revokeApp(state);
 
@@ -580,7 +581,7 @@
 
         if (event.data?.type === 'seerrfin-app-close') closeApp();
         else if (event.data?.type === 'seerrfin-app-error') {
-            appState.root.querySelector('[data-app-body]').innerHTML = '<p role="alert">Unable to load the Seerr page. Try reloading.</p>';
+            appState.root.querySelector('[data-app-body]').innerHTML = `<p role="alert">${t('Unable to load the Seerr page. Try reloading.')}</p>`;
             revokeApp(appState);
         }
     });

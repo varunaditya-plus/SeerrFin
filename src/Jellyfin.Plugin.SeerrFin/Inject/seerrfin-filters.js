@@ -2,6 +2,7 @@
 
 (function () {
     if (window.seerrFinFilters) return;
+    const t = (key, parameters) => window.seerrFinI18n ? window.seerrFinI18n.t(key, parameters) : key;
 
     let nextId = 0;
     let openState = null;
@@ -27,11 +28,11 @@
 
         if (typeof error?.clone === 'function') {
             try {
-                return (await error.clone().json()).message || 'Unable to load discovery. Please try again.';
+                return (await error.clone().json()).message || t('Unable to load discovery. Please try again.');
             } catch (_) {}
         }
 
-        return 'Unable to load discovery. Please try again.';
+        return t('Unable to load discovery. Please try again.');
     }
 
     function optionsHtml(items) {
@@ -39,12 +40,13 @@
     }
 
     function picker(name, label, options = '') {
+        const translatedLabel = t(label);
         return `
             <div class="seerrfin-filter-field" data-filter-pick="${name}">
-                <span class="seerrfin-filter-label">${label}</span>
-                <button type="button" class="seerrfin-filter-select" data-filter-pick-toggle aria-label="Select ${label.toLowerCase()}" aria-expanded="false"><span data-filter-pick-text>Any</span><span class="material-icons" aria-hidden="true">expand_more</span></button>
+                <span class="seerrfin-filter-label">${translatedLabel}</span>
+                <button type="button" class="seerrfin-filter-select" data-filter-pick-toggle aria-label="${t('Select {label}', { label: translatedLabel.toLowerCase() })}" aria-expanded="false"><span data-filter-pick-text>${t('Any')}</span><span class="material-icons" aria-hidden="true">expand_more</span></button>
                 <div class="seerrfin-filter-pick-options" hidden>
-                    <input type="search" placeholder="Search…" aria-label="Search ${label.toLowerCase()}" autocomplete="off">
+                    <input type="search" placeholder="${t('Search…')}" aria-label="${t('Search {label}', { label: translatedLabel.toLowerCase() })}" autocomplete="off">
                     <div data-filter-pick-items>${options}</div>
                 </div>
             </div>
@@ -61,12 +63,13 @@
     }
 
     function searchField(id, name, label, kind) {
+        const translatedLabel = t(label);
         return `
             <div class="seerrfin-filter-field" data-filter-search="${name}" data-kind="${kind}">
-                <label class="seerrfin-filter-label" for="${id}-${name}">${label}</label>
+                <label class="seerrfin-filter-label" for="${id}-${name}">${translatedLabel}</label>
                 <div class="seerrfin-filter-search-control">
-                    <input id="${id}-${name}" type="search" role="combobox" aria-autocomplete="list" aria-controls="${id}-${name}-options" aria-expanded="false" maxlength="80" autocomplete="off" placeholder="Search ${label.toLowerCase()}…">
-                    <div id="${id}-${name}-options" class="seerrfin-filter-suggestions" role="listbox" aria-label="${label}" hidden></div>
+                    <input id="${id}-${name}" type="search" role="combobox" aria-autocomplete="list" aria-controls="${id}-${name}-options" aria-expanded="false" maxlength="80" autocomplete="off" placeholder="${t('Search {label}…', { label: translatedLabel.toLowerCase() })}">
+                    <div id="${id}-${name}-options" class="seerrfin-filter-suggestions" role="listbox" aria-label="${translatedLabel}" hidden></div>
                 </div>
                 <div class="seerrfin-filter-tags"></div>
                 <input type="hidden" name="${name}">
@@ -76,14 +79,15 @@
     }
 
     function range(prefix, label, min, max, step, suffix) {
+        const translatedLabel = t(label);
         return `
             <fieldset class="seerrfin-filter-range" data-filter-range="${prefix}" data-suffix="${suffix}">
-                <legend>${label}</legend>
+                <legend>${translatedLabel}</legend>
                 <output>${min} – ${max}${suffix}</output>
                 <div class="seerrfin-filter-range-track">
                     <div class="seerrfin-filter-range-fill"></div>
-                    <input type="range" min="${min}" max="${max}" step="${step}" value="${min}" data-range-min aria-label="Minimum ${label.toLowerCase()}">
-                    <input type="range" min="${min}" max="${max}" step="${step}" value="${max}" data-range-max aria-label="Maximum ${label.toLowerCase()}">
+                    <input type="range" min="${min}" max="${max}" step="${step}" value="${min}" data-range-min aria-label="${t('Minimum {label}', { label: translatedLabel.toLowerCase() })}">
+                    <input type="range" min="${min}" max="${max}" step="${step}" value="${max}" data-range-max aria-label="${t('Maximum {label}', { label: translatedLabel.toLowerCase() })}">
                 </div>
                 <input type="hidden" name="${prefix}Gte">
                 <input type="hidden" name="${prefix}Lte">
@@ -115,23 +119,23 @@
             <section class="seerrfin-filter-panel" role="dialog" aria-modal="true" aria-labelledby="${id}-title">
                 <header>
                     <div>
-                        <h2 id="${id}-title">Filters</h2>
-                        <span data-filter-modal-count>0 active filters</span>
+                        <h2 id="${id}-title">${t('Filters')}</h2>
+                        <span data-filter-modal-count>${t('0 active filters')}</span>
                     </div>
-                    <button type="button" class="paper-icon-button-light" data-filter-close aria-label="Close filters"><span class="material-icons" aria-hidden="true">close</span></button>
+                    <button type="button" class="paper-icon-button-light" data-filter-close aria-label="${t('Close filters')}"><span class="material-icons" aria-hidden="true">close</span></button>
                 </header>
                 <form>
                     <div class="seerrfin-filter-fields">
                         <label class="seerrfin-filter-field seerrfin-filter-wide">
-                            <span class="seerrfin-filter-label">Sort by</span>
-                            <select name="sortBy">${sorts.map(([value, name]) => `<option value="${value}">${name}</option>`).join('')}</select>
+                            <span class="seerrfin-filter-label">${t('Sort by')}</span>
+                            <select name="sortBy">${sorts.map(([value, name]) => `<option value="${value}">${t(name)}</option>`).join('')}</select>
                         </label>
                         <fieldset class="seerrfin-filter-dates seerrfin-filter-wide">
-                            <legend>${movie ? 'Release date' : 'First air date'}</legend>
+                            <legend>${movie ? t('Release date') : t('First air date')}</legend>
                             <div>
-                                <label>From<input name="${date}Gte" type="date">
+                                <label>${t('From')}<input name="${date}Gte" type="date">
                                 </label>
-                                <label>To<input name="${date}Lte" type="date">
+                                <label>${t('To')}<input name="${date}Lte" type="date">
                                 </label>
                             </div>
                         </fieldset>
@@ -142,18 +146,18 @@
                             'Ended',
                             'Cancelled',
                             'Pilot'
-                        ].map((name, id) => ({ id, name })), 'status'))}
+                        ].map((name, id) => ({ id, name: t(name) })), 'status'))}
                         ${picker('genre', 'Genres')}
                         ${searchField(id, 'keywords', 'Keywords', 'keyword')}
                         ${searchField(id, 'excludeKeywords', 'Exclude keywords', 'keyword')}
                         <div class="seerrfin-filter-field seerrfin-filter-wide">
-                            <label class="seerrfin-filter-label" for="${id}-language-mode">Original language</label>
-                            <select id="${id}-language-mode" data-filter-language-mode><option value="server">Default</option><option value="all">All languages</option><option value="custom">Select languages</option></select>
+                            <label class="seerrfin-filter-label" for="${id}-language-mode">${t('Original language')}</label>
+                            <select id="${id}-language-mode" data-filter-language-mode><option value="server">${t('Default')}</option><option value="all">${t('All languages')}</option><option value="custom">${t('Select languages')}</option></select>
                             <div data-filter-languages hidden>${picker('languageChoices', 'Languages')}</div>
                             <input type="hidden" name="language">
                         </div>
                         <fieldset class="seerrfin-filter-certifications seerrfin-filter-wide">
-                            <legend>Content rating <span>(US)</span></legend>
+                            <legend>${t('Content rating')} <span>(US)</span></legend>
                             <div>${certificates.map(value => `
                                 <label>
                                     <input type="checkbox" name="certification" value="${value}">
@@ -165,18 +169,18 @@
                         ${range('voteAverage', 'TMDB user score', 1, 10, .1, '')}
                         ${range('voteCount', 'TMDB user vote count', 0, 1000, 1, '')}
                         <div class="seerrfin-filter-field seerrfin-filter-wide">
-                            <label class="seerrfin-filter-label" for="${id}-region">Streaming services</label>
-                            <select id="${id}-region" name="watchRegion" aria-label="Streaming region"></select>
+                            <label class="seerrfin-filter-label" for="${id}-region">${t('Streaming services')}</label>
+                            <select id="${id}-region" name="watchRegion" aria-label="${t('Streaming region')}"></select>
                             <div class="seerrfin-filter-providers" data-filter-providers></div>
-                            <button type="button" class="seerrfin-filter-more" data-filter-providers-more hidden>Show more</button>
+                            <button type="button" class="seerrfin-filter-more" data-filter-providers-more hidden>${t('Show more')}</button>
                             <p data-filter-providers-status role="status"></p>
                         </div>
                     </div>
                     <p class="seerrfin-filter-status" data-filter-choices-status role="status"></p>
                     <p class="seerrfin-filter-status" data-filter-form-status role="alert"></p>
                     <footer>
-                        <button type="button" class="emby-button raised" data-filter-clear disabled>Clear filters</button>
-                        <button type="submit" class="emby-button raised" data-filter-apply disabled>Apply filters</button>
+                        <button type="button" class="emby-button raised" data-filter-clear disabled>${t('Clear filters')}</button>
+                        <button type="submit" class="emby-button raised" data-filter-apply disabled>${t('Apply filters')}</button>
                     </footer>
                 </form>
             </section>
@@ -217,7 +221,7 @@
         host.innerHTML = `
             <div class="seerrfin-filter-heading sectionTitleContainer-cards">
                 <h2 class="sectionTitle">${escapeHtml(title || (type === 'movie' ? 'Movies' : 'TV Shows'))}</h2>
-                <button type="button" class="seerrfin-filter-icon" data-filter-open aria-label="${type === 'movie' ? 'Movie' : 'TV'} filters" title="Filters"><span class="material-icons" aria-hidden="true">settings</span><span data-filter-count hidden></span></button>
+                <button type="button" class="seerrfin-filter-icon" data-filter-open aria-label="${t(type === 'movie' ? 'Movie filters' : 'TV filters')}" title="${t('Filters')}"><span class="material-icons" aria-hidden="true">settings</span><span data-filter-count hidden></span></button>
             </div>
             <div class="seerrfin-filter-results" aria-live="polite"></div>
         `;
@@ -369,13 +373,13 @@
 
             const more = form.querySelector('[data-filter-providers-more]');
             more.hidden = true;
-            more.textContent = 'Show more';
+            more.textContent = t('Show more');
 
             const providerStatus = form.querySelector('[data-filter-providers-status]');
 
             if (!region) return;
 
-            providerStatus.textContent = 'Loading streaming services…';
+            providerStatus.textContent = t('Loading streaming services…');
             api(type, true, new URLSearchParams({ kind: 'providers', region })).then(function (items) {
                 if (!current() || requestId !== state.providerId) return;
 
@@ -390,21 +394,21 @@
                     `;
                 }).join('');
                 more.hidden = items.length <= 24;
-                providerStatus.textContent = items.length ? '' : 'No streaming services in this region.';
+                providerStatus.textContent = items.length ? '' : t('No streaming services in this region.');
                 updateCount();
             }).catch(async function (error) {
                 const message = await errorMessage(error);
 
                 if (!current() || requestId !== state.providerId) return;
 
-                providerStatus.innerHTML = `${escapeHtml(message)} <button type="button" class="emby-button" data-filter-providers-retry>Retry</button>`;
+                providerStatus.innerHTML = `${escapeHtml(message)} <button type="button" class="emby-button" data-filter-providers-retry>${t('Retry')}</button>`;
             });
         }
 
         function choices() {
             const requestId = ++state.choicesId;
             const choicesStatus = form.querySelector('[data-filter-choices-status]');
-            choicesStatus.textContent = 'Loading filters…';
+            choicesStatus.textContent = t('Loading filters…');
             api(type, true, '').then(function (data) {
                 if (!current() || requestId !== state.choicesId) return;
 
@@ -421,7 +425,7 @@
                     const names = data.originalLanguage.split('|').map(code => data.languages.find(x => x.id === code)?.name || code).join(', ');
 
                     form.querySelector('[data-filter-language-mode] option[value="server"]').textContent =
-                        'Default (' + (data.originalLanguage === 'all' ? 'All languages' : names) + ')';
+                        t('Default ({value})', { value: data.originalLanguage === 'all' ? t('All languages') : names });
                 }
 
                 state.choicesReady = true;
@@ -433,7 +437,7 @@
 
                 if (!current() || requestId !== state.choicesId) return;
 
-                choicesStatus.innerHTML = `${escapeHtml(message)} <button type="button" class="emby-button" data-filter-choices-retry>Retry</button>`;
+                choicesStatus.innerHTML = `${escapeHtml(message)} <button type="button" class="emby-button" data-filter-choices-retry>${t('Retry')}</button>`;
             });
         }
 
@@ -445,7 +449,7 @@
             const query = new URLSearchParams(state.applied);
             query.set('page', page);
             parent.dataset.seerrfinFilterActive = 'true';
-            results.innerHTML = '<p role="status">Loading titles…</p>';
+            results.innerHTML = `<p role="status">${t('Loading titles…')}</p>`;
             api(type, false, query).then(function (data) {
                 if (!current() || requestId !== state.requestId) return;
 
@@ -456,11 +460,11 @@
 
                 results.classList.toggle('uses-backdrops', plugin.shouldUseBackdropThumbnails());
                 results.innerHTML = `
-${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'}<div class="seerrfin-filter-grid itemsContainer">${plugin.createDiscoverCards(data.items, true, { nativeCards })}</div>
+${data.items.length ? '' : `<p role="status">${t('No titles match these filters.')}</p>`}<div class="seerrfin-filter-grid itemsContainer">${plugin.createDiscoverCards(data.items, true, { nativeCards })}</div>
                     <div class="seerrfin-filter-pagination">
-                        <button type="button" class="emby-button raised" data-filter-page="${data.page - 1}"${data.page <= 1 ? ' disabled' : ''}>Previous</button>
-                        <span>Page ${data.page} of ${data.totalPages}</span>
-                        <button type="button" class="emby-button raised" data-filter-page="${data.page + 1}"${data.page >= data.totalPages ? ' disabled' : ''}>Next</button>
+                        <button type="button" class="emby-button raised" data-filter-page="${data.page - 1}"${data.page <= 1 ? ' disabled' : ''}>${t('Previous')}</button>
+                        <span>${t('Page {current} of {total}', { current: data.page, total: data.totalPages })}</span>
+                        <button type="button" class="emby-button raised" data-filter-page="${data.page + 1}"${data.page >= data.totalPages ? ' disabled' : ''}>${t('Next')}</button>
                     </div>
                 `;
                 plugin.initNativeOrCustomCards(results.querySelector('.itemsContainer'), nativeCards);
@@ -469,7 +473,7 @@ ${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'
 
                 if (!current() || requestId !== state.requestId) return;
 
-                results.innerHTML = `<p role="alert">${escapeHtml(message)}</p><button type="button" class="emby-button raised" data-filter-results-retry>Retry</button>`;
+                results.innerHTML = `<p role="alert">${escapeHtml(message)}</p><button type="button" class="emby-button raised" data-filter-results-retry>${t('Retry')}</button>`;
             });
         }
 
@@ -551,7 +555,7 @@ ${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'
             const mode = form.querySelector('[data-filter-language-mode]');
 
             if (mode.value === 'custom' && checked('languageChoices').length === 0) {
-                status.textContent = 'Select at least one language.';
+                status.textContent = t('Select at least one language.');
                 mode.focus();
 
                 return;
@@ -587,7 +591,7 @@ ${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'
 
             if (input.type === 'checkbox' && ['genre', 'languageChoices', 'watchProviders'].includes(input.name) && checked(input.name).length > 20) {
                 input.checked = false;
-                status.textContent = 'Select up to 20 options.';
+                status.textContent = t('Select up to 20 options.');
             } else status.textContent = '';
 
             const picker = input.closest('[data-filter-pick]');
@@ -639,10 +643,10 @@ ${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'
             if (button.hasAttribute('data-filter-providers-retry')) providers();
 
             if (button.hasAttribute('data-filter-providers-more')) {
-                const showing = button.textContent === 'Show more';
+                const showing = button.textContent === t('Show more');
 
                 form.querySelectorAll('[data-filter-extra-provider]').forEach(item => { item.hidden = !showing; });
-                button.textContent = showing ? 'Show less' : 'Show more';
+                button.textContent = showing ? t('Show less') : t('Show more');
             }
 
             const picker = button.closest('[data-filter-pick]');
@@ -673,7 +677,7 @@ ${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'
                 const searchStatus = field.querySelector('[data-search-status]');
 
                 if (selected.length >= 20 && field.dataset.filterSearch !== 'studio') {
-                    searchStatus.textContent = 'Select up to 20 keywords.';
+                    searchStatus.textContent = t('Select up to 20 keywords.');
 
                     return;
                 }
@@ -714,7 +718,7 @@ ${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'
                         suggestions.innerHTML = items.map(x => `<button type="button" role="option" aria-selected="false" data-filter-choose="${x.id}">${escapeHtml(x.name)}</button>`).join('');
                         suggestions.hidden = items.length === 0;
                         input.setAttribute('aria-expanded', String(items.length > 0));
-                        searchStatus.textContent = items.length ? '' : 'No matches.';
+                        searchStatus.textContent = items.length ? '' : t('No matches.');
                     }).catch(async function (error) {
                         const message = await errorMessage(error);
 
