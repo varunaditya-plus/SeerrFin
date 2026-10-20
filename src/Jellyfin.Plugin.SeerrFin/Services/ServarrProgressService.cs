@@ -615,8 +615,21 @@ public sealed class ServarrProgressService
         bool isMovie
     )
     {
-        double totalSize = queueItems.Sum(item => item.Value<double?>("size") ?? 0);
-        double sizeLeft = queueItems.Sum(item => item.Value<double?>("sizeleft") ?? 0);
+        // Sonarr returns a queue row for each episode in a season-pack torrent.
+        // Those rows share a downloadId and repeat the torrent's full size, so
+        // count each client download once when calculating request progress.
+        HashSet<string> seenDownloadIds = new(StringComparer.OrdinalIgnoreCase);
+        List<JObject> uniqueDownloads = queueItems
+            .Where(item =>
+            {
+                string? downloadId = item.Value<string>("downloadId");
+
+                return string.IsNullOrWhiteSpace(downloadId) || seenDownloadIds.Add(downloadId);
+            })
+            .ToList();
+
+        double totalSize = uniqueDownloads.Sum(item => item.Value<double?>("size") ?? 0);
+        double sizeLeft = uniqueDownloads.Sum(item => item.Value<double?>("sizeleft") ?? 0);
         double downloaded = Math.Max(0, totalSize - sizeLeft);
         int percent = totalSize > 0 ? (int)Math.Round(downloaded / totalSize * 100) : 0;
         string? titleSlug =
