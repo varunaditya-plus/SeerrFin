@@ -1206,7 +1206,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         },
 
         isContainerPopulated: function (container) {
-            return container.querySelector('.seerrfin-poster-section, .seerrfin-filter-host') !== null;
+            return container.dataset.seerrfinEmptyLayout === 'true' || container.querySelector('.seerrfin-poster-section, .seerrfin-carousel-section, .seerrfin-filter-host') !== null;
         },
 
         isGridViewOpen: function (container) {
@@ -1245,6 +1245,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                         container.innerHTML = '';
                         delete container.dataset.seerrfinLoaded;
                         delete container.dataset.seerrfinLoading;
+                        delete container.dataset.seerrfinEmptyLayout;
                     }
                 }
 
@@ -1258,6 +1259,33 @@ if (typeof window.seerrFinPlugin === 'undefined') {
 
                 self.loadTab(type, container);
             }).catch(function (err) { log.error(type + ' tab render aborted: display settings failed', err); });
+        },
+
+        getActiveCarouselDefinitions: function (type, container, definitions) {
+            const page = container.closest('.seerrfin-discover-sections') ? 'discover' : type;
+            const layouts = (this._displaySettings || {}).CarouselLayouts || {};
+            const layout = Array.isArray(layouts[page]) ? layouts[page] : [];
+            const seen = new Set();
+            const active = [];
+            const self = this;
+
+            layout.forEach(function (item) {
+                const id = item && (item.id ?? item.Id);
+                const definition = definitions.find(function (def) { return def.path === id; });
+
+                if (!definition || seen.has(id)) { return; }
+
+                seen.add(id);
+
+                if (self.readConfigBool(item, 'Enabled', 'enabled', true)) {
+                    active.push(definition);
+                }
+            });
+            definitions.forEach(function (definition) {
+                if (!seen.has(definition.path)) { active.push(definition); }
+            });
+
+            return active;
         },
 
         loadTab: function (type, container) {
@@ -1290,6 +1318,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             container.dataset.seerrfinLoading = 'true';
             container.dataset.seerrfinLoadId = loadId;
             delete container.dataset.seerrfinLoaded;
+            delete container.dataset.seerrfinEmptyLayout;
 
             // Ignore results if user switched tabs or theres a newer load.
             const finishLoading = function () {
@@ -1336,19 +1365,20 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 const useNativeCarousels = self.shouldUseNativeCarousels();
                 log.info(type + ' tab using ' + (useNativeCarousels ? 'native' : 'custom') + ' carousels');
 
-                const rowSlots = rows.map(function (row) {
-                    const skeleton = self.buildRowSkeleton(row.title, 'poster');
-                    container.appendChild(skeleton);
-                    return { row: row, skeleton: skeleton };
-                });
-
-                const carouselSlots = carouselDefs.map(function (def) {
-                    const skeleton = self.buildRowSkeleton(def.title, 'carousel');
+                const definitions = self.getActiveCarouselDefinitions(type, container, rows.concat(carouselDefs));
+                const slots = definitions.map(function (def) {
+                    const skeleton = self.buildRowSkeleton(def.title, def.kind ? 'carousel' : 'poster');
                     container.appendChild(skeleton);
                     return { def: def, skeleton: skeleton };
                 });
 
-                const totalSlots = rowSlots.length + carouselSlots.length;
+                if (!slots.length) {
+                    container.dataset.seerrfinEmptyLayout = 'true';
+                    finishLoading();
+                    return;
+                }
+
+                const totalSlots = slots.length;
                 let completedSlots = 0;
                 let anySuccess = false;
 
@@ -1385,27 +1415,27 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     }
                 };
 
-                rowSlots.forEach(function (slot) {
-                    self.fetchDiscover(slot.row.path).then(function (result) {
+                slots.filter(function (slot) { return !slot.def.kind; }).forEach(function (slot) {
+                    self.fetchDiscover(slot.def.path).then(function (result) {
                         if (isStale()) { return; }
 
                         anySuccess = true;
 
                         try {
-                            replaceSkeleton(slot.skeleton, self.buildPosterRow(slot.row.title, result.items, slot.row.path, {
+                            replaceSkeleton(slot.skeleton, self.buildPosterRow(slot.def.title, result.items, slot.def.path, {
                                 total: result.total
                             }));
                         } catch (err) {
-                            log.warn('row render failed: ' + slot.row.title, err);
+                            log.warn('row render failed: ' + slot.def.title, err);
                             replaceSkeleton(slot.skeleton, null);
                         }
                     }).catch(function (err) {
-                        log.warn('row failed: ' + slot.row.path, err);
+                        log.warn('row failed: ' + slot.def.path, err);
                         replaceSkeleton(slot.skeleton, null);
                     }).finally(checkAllDone);
                 });
 
-                carouselSlots.forEach(function (slot) {
+                slots.filter(function (slot) { return !!slot.def.kind; }).forEach(function (slot) {
                     self.fetchJson(slot.def.path).then(function (data) {
                         if (isStale()) { return; }
 
@@ -1564,6 +1594,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     NativeCarousels: self.readConfigBool(data, 'NativeCarousels', 'nativeCarousels', false),
                     NativeGridPages: self.readConfigBool(data, 'NativeGridPages', 'nativeGridPages', false),
                     NativeSearchResults: self.readConfigBool(data, 'NativeSearchResults', 'nativeSearchResults', false),
+                    CarouselLayouts: (data && (data.CarouselLayouts || data.carouselLayouts)) || {},
                     DisplayCustomizations: self.parseDisplayCustomizations(data),
                     Advanced: self.parseAdvancedSettings(data)
                 };
@@ -1591,6 +1622,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     NativeCarousels: false,
                     NativeGridPages: false,
                     NativeSearchResults: false,
+                    CarouselLayouts: {},
                     DisplayCustomizations: self.parseDisplayCustomizations(null),
                     Advanced: self.parseAdvancedSettings(null)
                 };
@@ -1720,6 +1752,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 settings.NativeCarousels,
                 settings.NativeGridPages,
                 settings.NativeSearchResults,
+                JSON.stringify(settings.CarouselLayouts || {}),
                 JSON.stringify(settings.DisplayCustomizations || {}),
                 JSON.stringify(settings.Advanced || {})
             ].join(':');
@@ -1843,8 +1876,10 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             this._tabConfig = null;
             this._tabConfigPromise = null;
             this.clearBackdropCaches();
-            document.querySelectorAll('.seerrfin-movies-sections, .seerrfin-tv-sections, .seerrfin-discover-sections, .seerrfin-search-section').forEach(function (section) {
+            document.querySelectorAll('.seerrfin-movies-sections, .seerrfin-tv-sections, .seerrfin-discover-sections, .seerrfin-discover-body, .seerrfin-search-section').forEach(function (section) {
                 delete section.dataset.seerrfinDisplaySettings;
+                delete section.dataset.seerrfinLoadId;
+                delete section.dataset.seerrfinLoading;
             });
             Promise.all([pendingSettings, pendingTabConfig]).then(function () {
                 self._displaySettings = null;

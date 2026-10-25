@@ -492,6 +492,45 @@
             outline: none;
         }
 
+        .bst-carousel-edit-btn,
+        .bst-carousel-drag-handle {
+            display: grid;
+            place-items: center;
+            width: 26px;
+            height: 26px;
+            padding: 0;
+            border-radius: 0;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .bst-carousel-edit-btn .material-icons { font-size: 18px; }
+
+        .bst-carousel-group-title { margin: 1.25em 0 0.65em; font-size: 1em; font-weight: 400; }
+
+        .bst-carousel-list { display: flex; flex-direction: column; gap: 0.65em; }
+
+        .bst-carousel-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75em;
+            padding: 0.75em;
+            border: 1px solid var(--divider, rgba(255, 255, 255, 0.2));
+            background: var(--cardBackground, rgba(255, 255, 255, 0.06));
+        }
+
+        .bst-carousel-item.is-dragging { border-color: var(--accent, #00a4dc); }
+
+        .bst-carousel-item-label { flex: 1; min-width: 0; line-height: 1.4; }
+
+        .bst-carousel-item.is-disabled .bst-carousel-item-label { opacity: 0.55; }
+
+        .bst-carousel-drag-handle { cursor: grab; touch-action: none; font-size: 18px; }
+
+        .bst-carousel-item.is-dragging .bst-carousel-drag-handle { cursor: grabbing; }
+
+        #bstCarouselDescription { margin: 0 0 1.25em; }
+
         .bst-chip-grid,
         .bst-release-type-actions {
             display: flex;
@@ -714,6 +753,10 @@
                 padding-top: 0;
             }
         }
+
+        @media (max-width: 600px) {
+            .bst-tabs-grid { grid-template-columns: 1fr; }
+        }
     </style>
 
     <div class="content-primary">
@@ -794,7 +837,7 @@
                 </div>
 
                 <div class="bst-section-container">
-                    <div class="bst-section-title">Turn on the tabs you want</div>
+                    <div class="bst-section-title">Manage active tabs</div>
                     <div class="bst-card">
                         <div class="bst-tabs-grid">
                             <div class="bst-card bst-seerrfin-tab-card" data-bst-tab-id="movies">
@@ -811,6 +854,7 @@
                                             <input id="bstTabEnabled_movies" type="checkbox" data-bst-tab-enabled="movies" checked />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
+                                        <button type="button" class="bst-customize-btn bst-carousel-edit-btn" data-bst-edit-carousels="movies" aria-label="Manage Movies carousels" title="Manage carousels"><span class="material-icons edit" aria-hidden="true"></span></button>
                                     </div>
                                 </div>
                             </div>
@@ -828,6 +872,7 @@
                                             <input id="bstTabEnabled_tv" type="checkbox" data-bst-tab-enabled="tv" checked />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
+                                        <button type="button" class="bst-customize-btn bst-carousel-edit-btn" data-bst-edit-carousels="tv" aria-label="Manage TV Shows carousels" title="Manage carousels"><span class="material-icons edit" aria-hidden="true"></span></button>
                                     </div>
                                 </div>
                             </div>
@@ -845,6 +890,7 @@
                                             <input id="bstTabEnabled_discover" type="checkbox" data-bst-tab-enabled="discover" />
                                             <span class="bst-toggle-slider bst-tab-slider"></span>
                                         </label>
+                                        <button type="button" class="bst-customize-btn bst-carousel-edit-btn" data-bst-edit-carousels="discover" aria-label="Manage Discover carousels" title="Manage carousels"><span class="material-icons edit" aria-hidden="true"></span></button>
                                     </div>
                                 </div>
                             </div>
@@ -1879,6 +1925,18 @@
         </div>
     </div>
 
+    <div id="bstCarouselModal" class="bst-modal-overlay" aria-hidden="true">
+        <div class="bst-modal" role="dialog" aria-modal="true" aria-labelledby="bstCarouselTitle" aria-describedby="bstCarouselDescription" tabindex="-1">
+            <h3 id="bstCarouselTitle" class="bst-modal-title"></h3>
+            <p id="bstCarouselDescription" class="bst-field-desc"></p>
+            <div id="bstCarouselList"></div>
+            <div class="bst-modal-actions">
+                <button type="button" class="bst-modal-btn" id="bstCarouselCancel">Cancel</button>
+                <button type="button" class="bst-modal-btn bst-modal-btn--primary" id="bstCarouselApply">Apply</button>
+            </div>
+        </div>
+    </div>
+
     <div id="bstCustomizeModal" class="bst-modal-overlay" aria-hidden="true">
         <div class="bst-modal" role="dialog" aria-modal="true" aria-labelledby="bstCustomizeModalTitle">
             <h3 id="bstCustomizeModalTitle" class="bst-modal-title"></h3>
@@ -2090,6 +2148,264 @@
                 watchlist: 'Watchlist',
                 letterboxd: 'Letterboxd'
             };
+
+            const CAROUSEL_DEFS = {
+                movies: [
+                    { id: 'discover/movies/trending', title: 'Trending movies this week' },
+                    { id: 'discover/movies/popular', title: 'Popular movies' },
+                    { id: 'discover/movies/top-rated', title: 'Top rated movies' },
+                    { id: 'discover/movies/upcoming', title: 'Upcoming movies' },
+                    { id: 'genres/movie', title: 'Browse by genre' },
+                    { id: 'providers/movie', title: 'Browse by streaming service' },
+                    { id: 'studios/movie', title: 'Browse by studio' }
+                ],
+                tv: [
+                    { id: 'discover/tv/trending', title: 'Trending shows this week' },
+                    { id: 'discover/tv/popular', title: 'Popular shows' },
+                    { id: 'discover/tv/top-rated', title: 'Top rated series' },
+                    { id: 'discover/tv/upcoming', title: 'Upcoming series' },
+                    { id: 'discover/tv/anime', title: 'Anime series' },
+                    { id: 'genres/tv', title: 'Browse by genre' },
+                    { id: 'providers/tv', title: 'Browse by streaming service' },
+                    { id: 'networks/tv', title: 'Browse by network' }
+                ]
+            };
+
+            function carouselDefinitions(pageId) {
+                return pageId === 'discover' ? CAROUSEL_DEFS.movies.concat(CAROUSEL_DEFS.tv) : CAROUSEL_DEFS[pageId] || [];
+            }
+
+            function normalizeCarouselLayout(pageId, layout) {
+                const definitions = carouselDefinitions(pageId);
+                const knownIds = new Set(definitions.map(function (item) { return item.id; }));
+                const result = [];
+                const byId = new Map();
+
+                (Array.isArray(layout) ? layout : []).forEach(function (item) {
+                    const id = String(item && (item.id || item.Id) || '').trim().toLowerCase();
+
+                    if (!knownIds.has(id)) { return; }
+
+                    const enabled = item.enabled !== false && item.Enabled !== false;
+
+                    if (byId.has(id)) {
+                        byId.get(id).enabled = enabled;
+                        return;
+                    }
+
+                    const entry = { id: id, enabled: enabled };
+
+                    byId.set(id, entry);
+                    result.push(entry);
+                });
+                definitions.forEach(function (item) {
+                    if (!byId.has(item.id)) {
+                        result.push({ id: item.id, enabled: true });
+                    }
+                });
+
+                return result;
+            }
+
+            let carouselLayouts = {};
+            let activeCarouselTab = null;
+            let carouselDraft = [];
+            let carouselDrag = null;
+            let carouselOpener = null;
+            const carouselModal = document.getElementById('bstCarouselModal');
+            const carouselList = document.getElementById('bstCarouselList');
+            const carouselApply = document.getElementById('bstCarouselApply');
+
+            function loadCarouselLayoutsFromConfig(config) {
+                let root = {};
+
+                try {
+                    root = JSON.parse(config.CarouselLayoutsJson || config.carouselLayoutsJson || '{}') || {};
+                } catch (err) {
+                    root = {};
+                }
+
+                carouselLayouts = {};
+                ['movies', 'tv', 'discover'].forEach(function (pageId) {
+                    const key = Object.keys(root).filter(function (name) { return name.trim().toLowerCase() === pageId && Array.isArray(root[name]); }).pop();
+
+                    carouselLayouts[pageId] = normalizeCarouselLayout(pageId, root[key]);
+                });
+            }
+
+            function renderCarouselList() {
+                carouselList.innerHTML = '';
+                const groups = activeCarouselTab === 'discover' ? ['movies', 'tv'] : [activeCarouselTab];
+
+                groups.forEach(function (group) {
+                    const definitions = CAROUSEL_DEFS[group] || [];
+
+                    if (!definitions.length) { return; }
+
+                    if (activeCarouselTab === 'discover') {
+                        const title = document.createElement('h4');
+                        title.className = 'bst-carousel-group-title';
+                        title.textContent = TAB_TITLES[group];
+                        carouselList.appendChild(title);
+                    }
+
+                    const list = document.createElement('div');
+                    list.className = 'bst-carousel-list';
+                    list.dataset.bstCarouselGroup = group;
+
+                    carouselDraft.forEach(function (item) {
+                        const definition = definitions.find(function (entry) { return entry.id === item.id; });
+
+                        if (!definition) { return; }
+
+                        const row = document.createElement('div');
+                        row.className = 'bst-carousel-item' + (item.enabled ? '' : ' is-disabled');
+                        row.dataset.bstCarouselId = item.id;
+                        row.innerHTML = `
+                            <button type="button" class="bst-customize-btn bst-carousel-drag-handle"><span aria-hidden="true">⠿</span></button>
+                            <label class="bst-carousel-item-label"></label>
+                            <label class="bst-toggle"><input type="checkbox" /><span class="bst-toggle-slider"></span></label>
+                        `;
+                        const handle = row.querySelector('button');
+                        handle.setAttribute('aria-label', 'Move ' + definition.title + '. Use Up and Down arrow keys.');
+                        handle.title = 'Drag to reorder';
+                        const input = row.querySelector('input');
+                        input.id = 'bstCarouselEnabled_' + item.id.replace(/[^a-z0-9]/g, '_');
+                        input.checked = item.enabled;
+                        input.setAttribute('aria-label', 'Show ' + definition.title);
+                        row.querySelector('.bst-toggle').htmlFor = input.id;
+                        const label = row.querySelector('.bst-carousel-item-label');
+                        label.textContent = definition.title;
+                        label.htmlFor = input.id;
+                        list.appendChild(row);
+                    });
+                    carouselList.appendChild(list);
+                });
+            }
+
+            function closeCarouselModal() {
+                carouselModal.classList.remove('is-open');
+                carouselModal.setAttribute('aria-hidden', 'true');
+                activeCarouselTab = null;
+                carouselDraft = [];
+                carouselDrag = null;
+                if (carouselOpener) carouselOpener.focus();
+            }
+
+            function openCarouselModal(pageId, opener) {
+                if (!carouselDefinitions(pageId).length) { return; }
+
+                activeCarouselTab = pageId;
+                carouselOpener = opener;
+                carouselDraft = normalizeCarouselLayout(pageId, carouselLayouts[pageId]);
+                document.getElementById('bstCarouselTitle').textContent = 'Manage ' + resolveTabTitle(pageId, getTabById(pageId)?.Title) + ' carousels';
+                document.getElementById('bstCarouselDescription').textContent = 'Drag carousels to reorder, or focus a handle and use the arrow keys. Use the switches to show or hide carousels.';
+                renderCarouselList();
+                carouselModal.classList.add('is-open');
+                carouselModal.setAttribute('aria-hidden', 'false');
+                (carouselList.querySelector('button') || document.getElementById('bstCarouselCancel')).focus();
+            }
+
+            function moveCarousel(fromRow, toRow, before) {
+                if (!fromRow || !toRow || fromRow === toRow || fromRow.parentNode !== toRow.parentNode) { return; }
+
+                const fromIndex = carouselDraft.findIndex(function (item) { return item.id === fromRow.dataset.bstCarouselId; });
+                const moved = carouselDraft.splice(fromIndex, 1)[0];
+                const toIndex = carouselDraft.findIndex(function (item) { return item.id === toRow.dataset.bstCarouselId; });
+
+                carouselDraft.splice(toIndex + (before ? 0 : 1), 0, moved);
+                toRow.parentNode.insertBefore(fromRow, before ? toRow : toRow.nextSibling);
+            }
+
+            document.querySelectorAll('[data-bst-edit-carousels]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    openCarouselModal(button.dataset.bstEditCarousels, button);
+                });
+            });
+            carouselList.addEventListener('change', function (event) {
+                const row = event.target.closest('[data-bst-carousel-id]');
+
+                if (!row || !event.target.matches('input[type="checkbox"]')) { return; }
+
+                const item = carouselDraft.find(function (entry) { return entry.id === row.dataset.bstCarouselId; });
+                item.enabled = event.target.checked;
+                row.classList.toggle('is-disabled', !item.enabled);
+            });
+            carouselList.addEventListener('pointerdown', function (event) {
+                const handle = event.target.closest('.bst-carousel-drag-handle');
+
+                if (!handle || event.button !== 0) { return; }
+
+                const row = handle.closest('[data-bst-carousel-id]');
+                carouselDrag = { row: row, pointerId: event.pointerId };
+                row.classList.add('is-dragging');
+                handle.focus();
+                carouselList.setPointerCapture(event.pointerId);
+                event.preventDefault();
+            });
+            carouselList.addEventListener('pointermove', function (event) {
+                if (!carouselDrag || carouselDrag.pointerId !== event.pointerId) { return; }
+
+                const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-bst-carousel-id]');
+
+                if (!target || !carouselList.contains(target)) { return; }
+
+                const rect = target.getBoundingClientRect();
+                moveCarousel(carouselDrag.row, target, event.clientY < rect.top + rect.height / 2);
+            });
+            function finishCarouselDrag() {
+                if (!carouselDrag) { return; }
+
+                carouselDrag.row.classList.remove('is-dragging');
+                carouselDrag = null;
+            }
+            carouselList.addEventListener('pointerup', finishCarouselDrag);
+            carouselList.addEventListener('pointercancel', finishCarouselDrag);
+            carouselList.addEventListener('lostpointercapture', finishCarouselDrag);
+            carouselList.addEventListener('keydown', function (event) {
+                const handle = event.target.closest('.bst-carousel-drag-handle');
+
+                if (!handle || !['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) { return; }
+
+                event.preventDefault();
+                const row = handle.closest('[data-bst-carousel-id]');
+                const target = event.key === 'Home' ? row.parentNode.firstElementChild : event.key === 'End' ? row.parentNode.lastElementChild :
+                    event.key === 'ArrowUp' ? row.previousElementSibling : row.nextElementSibling;
+
+                moveCarousel(row, target, event.key === 'ArrowUp' || event.key === 'Home');
+                handle.focus();
+            });
+            document.getElementById('bstCarouselCancel').addEventListener('click', closeCarouselModal);
+            carouselApply.addEventListener('click', function () {
+                if (activeCarouselTab && carouselDraft.length) {
+                    carouselLayouts[activeCarouselTab] = carouselDraft.map(function (item) { return { id: item.id, enabled: item.enabled }; });
+                }
+
+                closeCarouselModal();
+            });
+            carouselModal.addEventListener('click', function (event) {
+                if (event.target === carouselModal) closeCarouselModal();
+            });
+            document.addEventListener('keydown', function (event) {
+                if (!carouselModal.classList.contains('is-open')) { return; }
+
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    closeCarouselModal();
+                } else if (event.key === 'Tab') {
+                    const controls = Array.from(carouselModal.querySelectorAll('button:not([hidden]), input'));
+                    const first = controls[0];
+                    const last = controls[controls.length - 1];
+
+                    if (event.shiftKey && document.activeElement === first) {
+                        event.preventDefault();
+                        last.focus();
+                    } else if (!event.shiftKey && document.activeElement === last) {
+                        event.preventDefault();
+                        first.focus();
+                    }
+                }
+            });
 
             function createDefaultTabs() {
                 return Object.keys(TAB_TITLES).map(function (id) { return { Id: id, Enabled: id !== 'discover', Title: TAB_TITLES[id] }; });
@@ -2931,7 +3247,7 @@
                 closeCustomizeModal();
             }
 
-            document.querySelectorAll('.bst-customize-btn').forEach(function (button) {
+            document.querySelectorAll('[data-customize-key]').forEach(function (button) {
                 button.addEventListener('click', function () {
                     openCustomizeModal(button.getAttribute('data-customize-key'));
                 });
@@ -3032,6 +3348,7 @@
 
                 customTabsForeign = results[1] || [];
                 loadDisplayCustomizationsFromConfig(config);
+                loadCarouselLayoutsFromConfig(config);
                 tabSettings = normalizeTabsFromConfig(config.Tabs || config.tabs);
                 tabBarOrder = normalizeBarOrder( config.TabBarOrder || config.tabBarOrder || [], customTabsForeign );
                 syncTabCardsFromState();
@@ -3063,6 +3380,7 @@
                 Dashboard.hideLoadingMsg();
             }).catch(function () {
                 displayCustomizations = createDefaultDisplayCustomizations();
+                loadCarouselLayoutsFromConfig({});
                 tabSettings = createDefaultTabs();
                 customTabsForeign = [];
                 tabBarOrder = normalizeBarOrder([], customTabsForeign);
@@ -3084,6 +3402,7 @@
                         JSON.stringify(normalizeTabsFromConfig(config.Tabs || config.tabs)) !== JSON.stringify(nextTabs) ||
                         JSON.stringify(normalizeBarOrder(config.TabBarOrder || config.tabBarOrder, customTabsForeign)) !== JSON.stringify(nextTabBarOrder);
                     config.DisplayCustomizationsJson = JSON.stringify(buildDisplayCustomizationsPayload());
+                    config.CarouselLayoutsJson = JSON.stringify(carouselLayouts);
                     config.Tabs = nextTabs;
                     config.TabBarOrder = nextTabBarOrder;
                     config.JellyseerrUrl = document.querySelector('#jellyseerrUrl').value;

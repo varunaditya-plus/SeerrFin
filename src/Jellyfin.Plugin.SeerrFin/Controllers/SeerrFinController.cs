@@ -309,6 +309,10 @@ public class SeerrFinController : ControllerBase
                 config.NativeGridPages,
                 config.NativeSearchResults,
                 displayCustomizations = DisplayCustomizationsHelper.Resolve(config),
+                carouselLayouts = CarouselLayoutsHelper.Resolve(config).ToDictionary(
+                    page => page.Key,
+                    page => page.Value.Select(item => new { id = item.Id, enabled = item.Enabled })
+                ),
                 advanced = AdvancedSettingsHelper.BuildFrontendPayload(config),
                 tabs = tabs.Select(tab => new { id = tab.Id, enabled = tab.Enabled, title = tab.Title }),
                 tabBarOrder = SeerrFinTabConfigHelper.NormalizeBarOrder(config.TabBarOrder)

@@ -63,6 +63,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public string DisplayCustomizationsJson { get; set; } = string.Empty;
 
+    public string CarouselLayoutsJson { get; set; } = string.Empty;
+
     // Start empty because XmlSerializer adds to existing list instead of replacing so a default would survive deserialization and override saved tab states.
     public List<SeerrFinTabConfig> Tabs { get; set; } = new();
 
