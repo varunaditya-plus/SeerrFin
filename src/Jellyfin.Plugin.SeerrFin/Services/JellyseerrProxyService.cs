@@ -1,16 +1,19 @@
 using System.Net.Http.Headers;
 using System.Text;
 using Jellyfin.Plugin.SeerrFin.Configuration;
+using Jellyfin.Plugin.SeerrFin.Helpers;
 using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.SeerrFin.Services;
 
 public class JellyseerrProxyService
 {
+    private readonly IHttpClientFactory _clientFactory;
     private readonly ILogger<JellyseerrProxyService> _logger;
 
-    public JellyseerrProxyService(ILogger<JellyseerrProxyService> logger)
+    public JellyseerrProxyService(IHttpClientFactory clientFactory, ILogger<JellyseerrProxyService> logger)
     {
+        _clientFactory = clientFactory;
         _logger = logger;
     }
 
@@ -33,7 +36,8 @@ public class JellyseerrProxyService
             return (401, "{\"error\":true,\"message\":\"User not found.\"}", "application/json");
         }
 
-        using HttpClient client = new() { BaseAddress = new Uri(config.JellyseerrUrl!) };
+        using HttpClient client = _clientFactory.CreateClient(SeerrCsrfHandler.ClientName);
+        client.BaseAddress = new Uri(config.JellyseerrUrl!);
         client.DefaultRequestHeaders.Add("X-Api-Key", config.JellyseerrApiKey);
 
         int? jellyseerrUserId = await ResolveJellyseerrUserIdAsync(client, username, cancellationToken).ConfigureAwait(false);

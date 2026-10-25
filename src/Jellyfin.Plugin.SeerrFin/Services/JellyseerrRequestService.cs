@@ -1,5 +1,6 @@
 using System.Text;
 using Jellyfin.Plugin.SeerrFin.Configuration;
+using Jellyfin.Plugin.SeerrFin.Helpers;
 using Jellyfin.Plugin.SeerrFin.Model;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -19,10 +20,12 @@ public class JellyseerrRequestService
     private const int PermissionRequestMovie = 262144;
     private const int PermissionRequestTv = 524288;
 
+    private readonly IHttpClientFactory _clientFactory;
     private readonly ILogger<JellyseerrRequestService> _logger;
 
-    public JellyseerrRequestService(ILogger<JellyseerrRequestService> logger)
+    public JellyseerrRequestService(IHttpClientFactory clientFactory, ILogger<JellyseerrRequestService> logger)
     {
+        _clientFactory = clientFactory;
         _logger = logger;
     }
 
@@ -252,9 +255,10 @@ public class JellyseerrRequestService
         return options;
     }
 
-    private static HttpClient CreateClient(PluginConfiguration config)
+    private HttpClient CreateClient(PluginConfiguration config)
     {
-        HttpClient client = new() { BaseAddress = new Uri(config.JellyseerrUrl!) };
+        HttpClient client = _clientFactory.CreateClient(SeerrCsrfHandler.ClientName);
+        client.BaseAddress = new Uri(config.JellyseerrUrl!);
         client.DefaultRequestHeaders.Add("X-Api-Key", config.JellyseerrApiKey);
 
         return client;

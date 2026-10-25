@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Text;
 using Jellyfin.Plugin.SeerrFin.Configuration;
+using Jellyfin.Plugin.SeerrFin.Helpers;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -39,7 +40,7 @@ public class JellyseerrProfileService(IHttpClientFactory clientFactory, ILogger<
             )
                 return Error(400, "Invalid profile fields.");
 
-            using HttpClient client = clientFactory.CreateClient();
+            using HttpClient client = clientFactory.CreateClient(SeerrCsrfHandler.ClientName);
             client.BaseAddress = new Uri(config.JellyseerrUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add("X-Api-Key", config.JellyseerrApiKey);

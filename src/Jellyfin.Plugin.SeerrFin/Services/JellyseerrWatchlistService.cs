@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using Jellyfin.Plugin.SeerrFin.Configuration;
+using Jellyfin.Plugin.SeerrFin.Helpers;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -33,7 +34,7 @@ public class JellyseerrWatchlistService(IHttpClientFactory clientFactory, ILogge
 
         try
         {
-            using HttpClient client = clientFactory.CreateClient();
+            using HttpClient client = clientFactory.CreateClient(SeerrCsrfHandler.ClientName);
             client.BaseAddress = new Uri(config.JellyseerrUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
             client.DefaultRequestHeaders.Add("X-Api-Key", config.JellyseerrApiKey);
@@ -61,23 +62,6 @@ public class JellyseerrWatchlistService(IHttpClientFactory clientFactory, ILogge
                         ? $"/api/v1/watchlist/{tmdbId}?mediaType={mediaType}"
                         : "/api/v1/watchlist";
                 using HttpRequestMessage request = new(method, path);
-
-                // Seerr's optional CSRF protection also covers API-key requests.
-                if (identity.Headers.TryGetValues("Set-Cookie", out var setCookies))
-                {
-                    foreach (string cookie in setCookies)
-                    {
-                        string pair = cookie.Split(';', 2)[0];
-                        if (pair.StartsWith("XSRF-TOKEN=", StringComparison.Ordinal))
-                        {
-                            request.Headers.TryAddWithoutValidation("X-CSRF-Token", Uri.UnescapeDataString(pair[11..]));
-                        }
-                        else if (pair.StartsWith("_csrf=", StringComparison.Ordinal))
-                        {
-                            request.Headers.TryAddWithoutValidation("Cookie", pair);
-                        }
-                    }
-                }
 
                 if (method == HttpMethod.Post)
                 {

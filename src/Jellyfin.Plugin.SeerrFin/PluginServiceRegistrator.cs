@@ -1,3 +1,4 @@
+using Jellyfin.Plugin.SeerrFin.Helpers;
 using Jellyfin.Plugin.SeerrFin.Services;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
@@ -18,7 +19,11 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
                     UseCookies = false,
                     AutomaticDecompression = System.Net.DecompressionMethods.All
                 }
-            );
+            )
+            .AddHttpMessageHandler(() => new SeerrCsrfHandler());
+        serviceCollection.AddHttpClient(SeerrCsrfHandler.ClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { UseCookies = false })
+            .AddHttpMessageHandler(() => new SeerrCsrfHandler());
         serviceCollection.AddSingleton<ImageCacheService>(services =>
         {
             IHttpClientFactory httpClientFactory = services.GetRequiredService<IHttpClientFactory>();

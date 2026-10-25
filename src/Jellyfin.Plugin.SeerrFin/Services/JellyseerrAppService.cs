@@ -25,7 +25,6 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
         DateTimeOffset ExpiresAt,
         Uri Origin,
         string ConfigurationHash,
-        CookieContainer Cookies,
         JObject BootstrapProps
     );
 
@@ -61,9 +60,7 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
         try
         {
             using HttpClient client = CreateClient();
-            CookieContainer cookies = new();
-            JObject? user = await ReadActorAsync(client, origin, key, userId, cancellationToken, cookies)
-                .ConfigureAwait(false);
+            JObject? user = await ReadActorAsync(client, origin, key, userId, cancellationToken).ConfigureAwait(false);
             if (user == null)
                 return new(404, Message: "Seerr user not linked. Sign in to Seerr with this Jellyfin account first.");
 
@@ -78,7 +75,7 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
 
             string ticket = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
             Guid id = Guid.NewGuid();
-            _sessions[ticket] = new(id, user.Value<int>("id"), now + SessionLifetime, origin, hash, cookies, new());
+            _sessions[ticket] = new(id, user.Value<int>("id"), now + SessionLifetime, origin, hash, new());
             string path = mediaPage
                 ? page + "/" + mediaId!.Value.ToString(CultureInfo.InvariantCulture) + "?manage=1"
                 : page;
@@ -182,14 +179,9 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
             using HttpRequestMessage request = new(new HttpMethod(method), new Uri(session.Origin, upstreamPath + query));
             request.Headers.Add("X-Api-Key", key);
             request.Headers.Add("X-Api-User", session.SeerrUserId.ToString(CultureInfo.InvariantCulture));
-            string csrfCookies = session.Cookies.GetCookieHeader(session.Origin);
-            if (csrfCookies.Length > 0) request.Headers.Add("Cookie", csrfCookies);
 
             if (method is not ("GET" or "HEAD"))
             {
-                string? token = session.Cookies.GetCookies(session.Origin)["XSRF-TOKEN"]?.Value;
-                if (token != null) request.Headers.Add("X-XSRF-TOKEN", Uri.UnescapeDataString(token));
-
                 request.Content = new StreamContent(body);
 
                 if (!string.IsNullOrEmpty(contentType))
@@ -199,7 +191,6 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
             using HttpResponseMessage response = await client
                 .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                 .ConfigureAwait(false);
-            CaptureCsrfCookies(session.Cookies, session.Origin, response);
             string? location = null;
 
             if (response.Headers.Location != null)
@@ -453,13 +444,8 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
         using HttpRequestMessage request = new(HttpMethod.Get, new Uri(session.Origin, path));
         request.Headers.Add("X-Api-Key", key);
         request.Headers.Add("X-Api-User", session.SeerrUserId.ToString(CultureInfo.InvariantCulture));
-        string cookies = session.Cookies.GetCookieHeader(session.Origin);
-        if (cookies.Length > 0) request.Headers.Add("Cookie", cookies);
 
-        HttpResponseMessage response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        CaptureCsrfCookies(session.Cookies, session.Origin, response);
-
-        return response;
+        return await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<JObject?> ReadActorAsync(
@@ -467,15 +453,12 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
         Uri origin,
         string key,
         Guid userId,
-        CancellationToken cancellationToken,
-        CookieContainer? cookies = null
+        CancellationToken cancellationToken
     )
     {
         using HttpRequestMessage request = new(HttpMethod.Get, new Uri(origin, $"/api/v1/user/jellyfin/{userId:N}"));
         request.Headers.Add("X-Api-Key", key);
         using HttpResponseMessage response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-        if (cookies != null) CaptureCsrfCookies(cookies, origin, response);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
 
         response.EnsureSuccessStatusCode();
@@ -484,25 +467,6 @@ public class JellyseerrAppService(IHttpClientFactory clientFactory, ILogger<Jell
             throw new JsonException("Invalid linked Seerr account.");
 
         return user;
-    }
-
-    private static void CaptureCsrfCookies(CookieContainer cookies, Uri origin, HttpResponseMessage response)
-    {
-        if (!response.Headers.TryGetValues("Set-Cookie", out var values)) return;
-
-        foreach (string value in values)
-        {
-            string pair = value.Split(';')[0];
-            int equals = pair.IndexOf('=');
-            if (equals <= 0) continue;
-
-            string name = pair[..equals].Trim();
-
-            // These two server-side cookies support Seerr's optional CSRF protection;
-            // browser cookies and Seerr login sessions are never forwarded.
-            if (name is "_csrf" or "XSRF-TOKEN")
-                cookies.Add(origin, new Cookie(name, pair[(equals + 1)..], "/"));
-        }
     }
 
     private static int? PagePermission(string page) =>
