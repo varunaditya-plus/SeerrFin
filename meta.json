@@ -1,14 +1,14 @@
 {
   "category": "General",
-  "changelog": "Added carousel ordering and visibility controls for all discovery pages",
+  "changelog": "Added an unsaved changes indicator to the settings banner",
   "description": "The best way to discover and request Movies and TV Shows through Seerr directly in Jellyfin.",
   "guid": "c8e4f2a1-9b3d-4e7f-a6c2-1d5e8f0a3b7c",
   "name": "SeerrFin",
   "overview": "This plugin lets you add two extra tabs to your top bar, allowing you to discover new Movies and TV Shows, and easily request them in any quality profile you want.",
   "owner": "varunaditya-plus",
   "targetAbi": "12.0.0.0",
-  "timestamp": "2026-10-25T21:48:12.0000000Z",
-  "version": "1.8.4.0",
+  "timestamp": "2026-10-25T22:39:29.0000000Z",
+  "version": "1.8.5.0",
   "status": "Active",
   "autoUpdate": true,
   "assemblies": [
