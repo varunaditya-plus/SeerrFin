@@ -10,6 +10,15 @@
     "repositoryUrl": "https://github.com/varunaditya-plus/SeerrFin",
     "versions": [
       {
+        "version": "1.8.4.0",
+        "changelog": "Added carousel ordering and visibility controls for all discovery pages",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/varunaditya-plus/SeerrFin/releases/download/1.8.4.0/Jellyfin.Plugin.SeerrFin_12.0.0.zip",
+        "checksum": "293601D4A3E510C635BA1F51BC73819C",
+        "timestamp": "2026-10-25T21:48:12.0000000Z",
+        "dependencies": []
+      },
+      {
         "version": "1.8.3.4",
         "changelog": "Fixed invalid CSRF token errors when making Seerr requests",
         "targetAbi": "12.0.0.0",
