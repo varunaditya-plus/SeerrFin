@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net.Http.Headers;
+using System.Web;
 using Jellyfin.Plugin.SeerrFin.Configuration;
 using Jellyfin.Plugin.SeerrFin.Configuration.Advanced;
 using Jellyfin.Plugin.SeerrFin.Helpers;
@@ -30,12 +31,29 @@ public class JellyseerrDiscoveryService
 
         return GetDiscoverRow(
             username,
-            discovery.AnimeDiscoverPath,
+            discovery.HideAdultContent ? ExcludeHentai(discovery.AnimeDiscoverPath) : discovery.AnimeDiscoverPath,
             "tv",
             startIndex,
             limit,
             useSeerrMapping: discovery.UseSeerrMappingForAnime
         );
+    }
+
+    private static string ExcludeHentai(string path)
+    {
+        // Seerr removes the adult flag from series results, so remove hentai before pagination
+        int queryIndex = path.IndexOf('?');
+        string endpoint = queryIndex < 0 ? path : path[..queryIndex];
+        var query = HttpUtility.ParseQueryString(queryIndex < 0 ? string.Empty : path[(queryIndex + 1)..]);
+        query["excludeKeywords"] = string.Join(
+            ",",
+            (query["excludeKeywords"] ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Append("198385") // TMDB hentai tag
+                .Distinct()
+        );
+
+        return endpoint + "?" + query;
     }
 
     public QueryResult<BaseItemDto> Search(string username, string query, string? language = null)
