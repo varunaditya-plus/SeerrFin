@@ -287,6 +287,21 @@
     color: var(--primaryTextColor, #fff);
 }
 
+.seerrfin-request-title-loading,
+.seerrfin-request-metadata-error { color: var(--secondaryTextColor, #aaa); }
+
+.seerrfin-request-metadata-error { font-size: .85em; margin-bottom: .5em; }
+
+.seerrfin-request-metadata-retry {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accentTextColor, var(--buttonBackground, #00a4dc));
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .seerrfin-request-year { font-weight: 400; color: var(--secondaryTextColor, rgba(255, 255, 255, 0.6)); }
 
 .seerrfin-request-chips {

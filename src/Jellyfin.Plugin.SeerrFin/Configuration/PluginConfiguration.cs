@@ -61,6 +61,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool NativeSearchResults { get; set; }
 
+    public bool ShowDownloadDetailsInDiscoveryPages { get; set; }
+
     public string DisplayCustomizationsJson { get; set; } = string.Empty;
 
     public string CarouselLayoutsJson { get; set; } = string.Empty;

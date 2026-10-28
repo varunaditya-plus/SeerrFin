@@ -250,6 +250,60 @@ main > [data-seerrfin-modern-panel]:not(.is-active) {
 
 .seerrfin-discover-card .cardImageContainer.lazy-image-fadein-fast { opacity: 1; animation: seerrfin-fadein 0.1s; }
 
+.seerrfin-discover-download-details {
+    position: absolute;
+    left: 0.65em;
+    right: 0.65em;
+    bottom: 0.65em;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.4em;
+    pointer-events: none;
+}
+
+.cardScalable:has(> .seerrfin-discover-download-details:not(:empty)) > .cardImageContainer.cardContent::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent 45%);
+    pointer-events: none;
+}
+
+.seerrfin-discover-download-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    width: 100%;
+}
+
+.seerrfin-discover-download-track {
+    flex: 1;
+    min-width: 0;
+    height: 0.4em;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.65);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.seerrfin-discover-download-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: #fff;
+}
+
+.seerrfin-discover-download-percent {
+    flex: none;
+    color: #fff;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 1px 4px #000, 0 0 3px #000;
+}
+
 .seerrfin-discover-card--backdrop { flex: 0 0 auto; width: var(--seerrfin-discover-backdrop-width); }
 
 .seerrfin-poster-section .seerrfin-discover-card:not(.seerrfin-discover-card--backdrop),

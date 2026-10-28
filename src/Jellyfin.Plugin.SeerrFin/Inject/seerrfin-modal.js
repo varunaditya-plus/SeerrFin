@@ -707,6 +707,7 @@ window.seerrFinLog = window.seerrFinLog || {
             }
 
             log.info('request submitted for ' + mediaType + '/' + mediaId);
+            document.dispatchEvent(new Event('seerrfin-request-changed'));
 
             // TV might still have more seasons to request (so don't lock the button)
             if (mediaType !== 'tv') {
@@ -722,6 +723,7 @@ window.seerrFinLog = window.seerrFinLog || {
             }
 
             if (err && err.status === 409) {
+                document.dispatchEvent(new Event('seerrfin-request-changed'));
                 if (mediaType !== 'tv') {
                     markRequestButton(!!option.is4k, 'Already requested');
                 }

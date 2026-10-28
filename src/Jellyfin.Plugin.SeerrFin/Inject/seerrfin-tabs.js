@@ -1249,7 +1249,10 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     }
                 }
 
-                if (self.isContainerPopulated(container)) { return; }
+                if (self.isContainerPopulated(container)) {
+                    self.scheduleDiscoveryDownloadDetails();
+                    return;
+                }
 
                 const hasError = container.querySelector('.seerrfin-empty-row');
 
@@ -1594,6 +1597,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     NativeCarousels: self.readConfigBool(data, 'NativeCarousels', 'nativeCarousels', false),
                     NativeGridPages: self.readConfigBool(data, 'NativeGridPages', 'nativeGridPages', false),
                     NativeSearchResults: self.readConfigBool(data, 'NativeSearchResults', 'nativeSearchResults', false),
+                    ShowDownloadDetailsInDiscoveryPages: self.readConfigBool(data, 'ShowDownloadDetailsInDiscoveryPages', 'showDownloadDetailsInDiscoveryPages', false),
                     CarouselLayouts: (data && (data.CarouselLayouts || data.carouselLayouts)) || {},
                     DisplayCustomizations: self.parseDisplayCustomizations(data),
                     Advanced: self.parseAdvancedSettings(data)
@@ -1622,6 +1626,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     NativeCarousels: false,
                     NativeGridPages: false,
                     NativeSearchResults: false,
+                    ShowDownloadDetailsInDiscoveryPages: false,
                     CarouselLayouts: {},
                     DisplayCustomizations: self.parseDisplayCustomizations(null),
                     Advanced: self.parseAdvancedSettings(null)
@@ -1752,6 +1757,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 settings.NativeCarousels,
                 settings.NativeGridPages,
                 settings.NativeSearchResults,
+                settings.ShowDownloadDetailsInDiscoveryPages,
                 JSON.stringify(settings.CarouselLayouts || {}),
                 JSON.stringify(settings.DisplayCustomizations || {}),
                 JSON.stringify(settings.Advanced || {})
@@ -2017,7 +2023,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             `);
 
             const itemsContainer = section.querySelector('.itemsContainer');
-            itemsContainer.innerHTML = this.createDiscoverCards(items, false, { nativeCards: useNativeCards });
+            itemsContainer.innerHTML = this.createDiscoverCards(items, false, { nativeCards: useNativeCards, discoveryPage: true });
             this.appendHorizontalScroller(section, itemsContainer, {
                 focusScale: this.getAdvancedCarouselSetting('discoverRowFocusScale', true),
                 scrollEvent: this.getAdvancedCarouselSetting('enableRowInfiniteScroll', true)
@@ -2028,6 +2034,8 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         },
 
         initNativeOrCustomCards: function (container, useNativeCards) {
+            this.scheduleDiscoveryDownloadDetails();
+
             if (useNativeCards) {
                 if (this.shouldUseBackdropThumbnails()) {
                     this.hydrateNativeBackdropCards(container);
@@ -2154,7 +2162,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 });
 
                 if (newItems.length) {
-                    itemsContainer.insertAdjacentHTML('beforeend', self.createDiscoverCards(newItems, false, { nativeCards: useNativeCards }));
+                    itemsContainer.insertAdjacentHTML('beforeend', self.createDiscoverCards(newItems, false, { nativeCards: useNativeCards, discoveryPage: true }));
                     self.initNativeOrCustomCards(itemsContainer, useNativeCards);
                 }
 
@@ -2300,7 +2308,9 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         },
 
         createDiscoverCards: function (items, forGrid, options) {
-            options = options || {};
+            options = Object.assign({}, options);
+            options.showDownloadDetails = options.discoveryPage === true &&
+                (this._displaySettings || {}).ShowDownloadDetailsInDiscoveryPages === true;
             const useBackdrop = options.forceBackdrop === true ||
                 (options.forceBackdrop !== false && this.shouldUseBackdropThumbnails());
 
@@ -2315,6 +2325,116 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             if (useBackdrop) { return this.createDiscoverBackdropCards(items, forGrid, options); }
 
             return this.createDiscoverPosterCards(items, forGrid, options);
+        },
+
+        scheduleDiscoveryDownloadDetails: function () {
+            if ((this._displaySettings || {}).ShowDownloadDetailsInDiscoveryPages !== true || this._discoveryDownloadSchedule) { return; }
+
+            const self = this;
+            self._discoveryDownloadSchedule = setTimeout(function () {
+                self._discoveryDownloadSchedule = null;
+                window.__seerrFinRefreshMediaStatus?.({ reason: 'cards' });
+            }, 50);
+        },
+
+        getVisibleDiscoveryDownloadSlots: function () {
+            if (document.hidden || (this._displaySettings || {}).ShowDownloadDetailsInDiscoveryPages !== true) { return []; }
+
+            const self = this;
+            return Array.from(document.querySelectorAll('.seerrfin-discover-download-details'))
+                .filter(function (slot) { return self.isContainerVisible(slot); });
+        },
+
+        getMediaStatusChipClass: function (label) {
+            const normalized = (label || '').toLowerCase();
+
+            if (normalized.includes('available') && !normalized.includes('partially')) { return 'seerrfin-request-chip--available'; }
+            if (normalized.includes('partially')) { return 'seerrfin-request-chip--partial'; }
+            if (normalized.includes('processing')) { return 'seerrfin-request-chip--processing'; }
+            if (normalized.includes('pending')) { return 'seerrfin-request-chip--pending'; }
+            if (normalized.includes('approved')) { return 'seerrfin-request-chip--approved'; }
+            if (normalized.includes('declined') || normalized.includes('failed')) { return 'seerrfin-request-chip--declined'; }
+
+            return '';
+        },
+
+        renderDiscoveryDownloadDetails: function (item) {
+            const label = item.mediaStatusLabel || '';
+            const chip = label && label.toLowerCase() !== 'unknown' ?
+                `<span class="seerrfin-request-chip ${this.getMediaStatusChipClass(label)}">${this.escapeHtml(label)}</span>` : '';
+
+            if (item.downloadPercent == null) { return chip; }
+
+            const percent = Math.max(0, Math.min(100, item.downloadPercent));
+
+            if (percent === 100) { return chip; }
+
+            return `${chip}
+                <div class="seerrfin-discover-download-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-label="Downloading">
+                    <div class="seerrfin-discover-download-track" aria-hidden="true">
+                        <div class="seerrfin-discover-download-fill" style="width:${percent}%"></div>
+                    </div>
+                    <span class="seerrfin-discover-download-percent">${percent}%</span>
+                </div>
+            `;
+        },
+
+        getMediaStatusSnapshotState: function () {
+            const key = ApiClient.getUrl('SeerrFin/media-status') + ':' + ApiClient.getCurrentUserId();
+
+            if (!this._discoveryDownloadState || this._discoveryDownloadState.key !== key) {
+                this._discoveryDownloadState = { key: key, cache: new Map(), loaded: false, revision: 0 };
+                document.querySelectorAll('.seerrfin-discover-download-details').forEach(function (slot) { slot.innerHTML = ''; });
+            }
+
+            return this._discoveryDownloadState;
+        },
+
+        updateDiscoveryDownloadCards: function (state) {
+            if (!state.loaded || (this._displaySettings || {}).ShowDownloadDetailsInDiscoveryPages !== true) { return; }
+
+            document.querySelectorAll('.seerrfin-discover-download-details').forEach(function (slot) {
+                const card = slot.closest('[data-tmdb-id][data-media-type]');
+                const html = state.cache.get(card.dataset.mediaType + ':' + card.dataset.tmdbId) || '';
+
+                if (slot.innerHTML !== html) { slot.innerHTML = html; }
+            });
+        },
+
+        applyMediaStatusSnapshot: function (items, state, revision) {
+            if (this._discoveryDownloadState !== state || state.revision !== revision ||
+                state.key !== ApiClient.getUrl('SeerrFin/media-status') + ':' + ApiClient.getCurrentUserId()) { return; }
+
+            const self = this;
+            state.cache = new Map(items.map(function (item) {
+                return [item.type + ':' + item.tmdbId, self.renderDiscoveryDownloadDetails(item)];
+            }));
+            state.loaded = true;
+            self.updateDiscoveryDownloadCards(state);
+        },
+
+        refreshDiscoveryDownloadDetails: function (options) {
+            const self = this;
+
+            if (!self.getVisibleDiscoveryDownloadSlots().length) { return Promise.resolve(false); }
+
+            const state = self.getMediaStatusSnapshotState();
+            const revision = state.revision;
+            self.updateDiscoveryDownloadCards(state);
+
+            if (state.loaded && options?.force !== true) { return Promise.resolve(false); }
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('SeerrFin/media-status', { refresh: options?.force === true }),
+                type: 'GET',
+                dataType: 'json'
+            }).then(function (data) {
+                self.applyMediaStatusSnapshot(data.items, state, revision);
+                return true;
+            }).catch(function (err) {
+                log.warn('discovery download details failed', err);
+                throw err;
+            });
         },
 
         normalizeDiscoverMediaType: function (value) {
@@ -2370,11 +2490,11 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 const overlayHtml = interactive ? `
                     <div class="cardOverlayContainer">
                         <div class="cardImageContainer"></div>
-                        <div class="cardOverlayButton-br flex">
+                        ${options.showDownloadDetails ? '' : `<div class="cardOverlayButton-br flex">
                             <button is="discover-requestbutton" type="button" class="discover-requestbutton cardOverlayButton cardOverlayButton-hover paper-icon-button-light emby-button" data-id="${mediaId}" data-media-type="${mediaType}">
                                 <span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover add" aria-hidden="true"></span>
                             </button>
-                        </div>
+                        </div>`}
                     </div>
                 ` : '';
                 const metaHtml = includeMetaText ? (function () {
@@ -2407,6 +2527,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                                 <div class="cardPadder ${padderType} lazy-hidden-children"></div>
                                 <div class="cardImageContainer coveredImage cardContent lazy lazy-hidden"${imageAttrs} aria-label="${safeName}"></div>
                                 ${overlayHtml}
+                                ${options.showDownloadDetails ? '<div class="seerrfin-discover-download-details"></div>' : ''}
                                 ${chromeHtml}
                             </div>
                             ${metaHtml}
@@ -2449,11 +2570,11 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 const overlayHtml = interactive ? `
                     <div class="cardOverlayContainer">
                         <div class="cardImageContainer"></div>
-                        <div class="cardOverlayButton-br flex">
+                        ${options.showDownloadDetails ? '' : `<div class="cardOverlayButton-br flex">
                             <button is="discover-requestbutton" type="button" class="discover-requestbutton cardOverlayButton cardOverlayButton-hover paper-icon-button-light emby-button" data-id="${mediaId}" data-media-type="${mediaType}">
                                 <span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover add" aria-hidden="true"></span>
                             </button>
-                        </div>
+                        </div>`}
                     </div>
                 ` : '';
                 const metaHtml = includeMetaText ? (function () {
@@ -2485,6 +2606,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                                     <span class="seerrfin-discover-overlay-title seerrfin-box-label">${safeName}</span>
                                 </div>
                                 ${overlayHtml}
+                                ${options.showDownloadDetails ? '<div class="seerrfin-discover-download-details"></div>' : ''}
                                 ${chromeHtml}
                             </div>
                             ${metaHtml}
@@ -3306,7 +3428,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     return id && !existingIds.has(id) && existingIds.add(id);
                 });
 
-                itemsContainer.insertAdjacentHTML('beforeend', self.createDiscoverCards(newItems, true, { nativeCards: useNativeCards }));
+                itemsContainer.insertAdjacentHTML('beforeend', self.createDiscoverCards(newItems, true, { nativeCards: useNativeCards, discoveryPage: true }));
                 self.initNativeOrCustomCards(itemsContainer, useNativeCards);
                 const newCount = loadedCount + result.items.length;
                 gridView.dataset.loadedCount = String(newCount);

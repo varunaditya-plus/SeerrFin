@@ -1190,6 +1190,18 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="bst-toggle-row">
+                                <div class="bst-toggle-copy">
+                                    <label class="bst-toggle-label" for="showDownloadDetailsInDiscoveryPages">Show download details in discovery pages</label>
+                                    <div class="bst-field-desc">In discovery pages, show if media has been downloaded, is downloading (and its percent), or any other status it might be.</div>
+                                </div>
+                                <div class="bst-toggle-actions">
+                                    <label class="bst-toggle">
+                                        <input id="showDownloadDetailsInDiscoveryPages" name="showDownloadDetailsInDiscoveryPages" type="checkbox" />
+                                        <span class="bst-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -3391,6 +3403,7 @@
                 document.querySelector('#nativeCarousels').checked = config.NativeCarousels === true;
                 document.querySelector('#nativeGridPages').checked = config.NativeGridPages === true;
                 document.querySelector('#nativeSearchResults').checked = config.NativeSearchResults === true;
+                document.querySelector('#showDownloadDetailsInDiscoveryPages').checked = config.ShowDownloadDetailsInDiscoveryPages === true;
                 document.querySelector('#elegantFinFixes').checked = config.ElegantFinFixes === true;
                 document.querySelector('#qualityRecommendations').checked = config.QualityRecommendations !== false;
                 document.querySelector('#addSeerrResultsInSearch').checked = config.AddSeerrResultsInSearch !== false;
@@ -3447,6 +3460,7 @@
                     config.NativeCarousels = document.querySelector('#nativeCarousels').checked;
                     config.NativeGridPages = document.querySelector('#nativeGridPages').checked;
                     config.NativeSearchResults = document.querySelector('#nativeSearchResults').checked;
+                    config.ShowDownloadDetailsInDiscoveryPages = document.querySelector('#showDownloadDetailsInDiscoveryPages').checked;
                     config.ElegantFinFixes = document.querySelector('#elegantFinFixes').checked;
                     config.QualityRecommendations = document.querySelector('#qualityRecommendations').checked;
                     config.AddSeerrResultsInSearch = document.querySelector('#addSeerrResultsInSearch').checked;

@@ -10,6 +10,8 @@
 
 .seerrfin-filter-heading .sectionTitle { margin: 0; }
 
+.seerrfin-filter-actions { display: inline-flex; align-items: center; gap: .5em; }
+
 .seerrfin-filter-icon {
     display: inline-flex;
     position: relative;

@@ -25,6 +25,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
     const log = window.seerrFinLog;
     const DEFAULT_PAGE_SIZE = 20;
+    const METADATA_FRESH_MS = 10 * 60 * 1000;
     const SEERR_LOGO = '<svg xmlns="http://www.w3.org/2000/svg" width="1.45em" height="1.45em" viewBox="0 0 96 96" fill="none"><circle cx="52" cy="52" r="28" fill="#131928"/><path fill-rule="evenodd" clip-rule="evenodd" d="M48 96C74.5097 96 96 74.5097 96 48C96 21.4903 74.5097 0 48 0C21.4903 0 0 21.4903 0 48C0 74.5097 21.4903 96 48 96ZM80.0001 52C80.0001 67.464 67.4641 80 52.0001 80C36.5361 80 24.0001 67.464 24.0001 52C24.0001 49.1303 24.4318 46.3615 25.2338 43.7548C27.4288 48.6165 32.3194 52 38.0001 52C45.7321 52 52.0001 45.732 52.0001 38C52.0001 32.3192 48.6166 27.4287 43.755 25.2337C46.3616 24.4317 49.1304 24 52.0001 24C67.4641 24 80.0001 36.536 80.0001 52Z" fill="url(#bst-seerr-grad0)"/><path opacity="0.2" fill-rule="evenodd" clip-rule="evenodd" d="M80.0002 52C80.0002 67.464 67.4642 80 52.0002 80C36.864 80 24.5329 67.9897 24.017 52.9791C24.0057 53.318 24 53.6583 24 54C24 70.5685 37.4315 84 54 84C70.5685 84 84 70.5685 84 54C84 37.4315 70.5685 24 54 24C53.6597 24 53.3207 24.0057 52.9831 24.0169C67.9919 24.5347 80.0002 36.865 80.0002 52Z" fill="#131928"/><path fill-rule="evenodd" clip-rule="evenodd" d="M48 12C28.1177 12 12 28.1177 12 48C12 50.2091 10.2091 52 8 52C5.79086 52 4 50.2091 4 48C4 23.6995 23.6995 4 48 4C50.2091 4 52 5.79086 52 8C52 10.2091 50.2091 12 48 12Z" fill="url(#bst-seerr-grad1)"/><defs><linearGradient id="bst-seerr-grad0" x1="48" y1="-2.07126e-06" x2="117.5" y2="69.5" gradientUnits="userSpaceOnUse"><stop stop-color="#C395FC"/><stop offset="1" stop-color="#4F65F5"/></linearGradient><linearGradient id="bst-seerr-grad1" x1="28" y1="8" x2="28" y2="48" gradientUnits="userSpaceOnUse"><stop stop-color="white" stop-opacity="0.4"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient></defs></svg>';
     const RADARR_LOGO = '<svg width="1.45em" height="1.45em" viewBox="0 0 1024 1024" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g id="Simple-Logo-Light"><g id="Group-Copy" transform="translate(70 21.00012)"><path d="M105.302 154.943L112.824 869.492C52.651 877.014 7.52158 846.927 7.52158 786.755L0 192.55C0 4.51106 172.996 -40.6184 278.298 34.5974L812.33 342.982C887.546 395.633 902.589 493.413 864.981 561.107C857.46 508.456 834.895 478.37 789.765 448.284L188.039 109.813C142.91 79.7268 105.302 87.2484 105.302 154.943Z" id="Shape" fill="#24292E" stroke="none" /><path d="M0 376.079C45.1295 391.122 90.259 383.6 127.867 361.036L744.636 0C782.244 52.651 774.723 105.302 729.593 135.388L210.604 436.251C135.388 473.859 37.6079 436.251 0 376.079Z" transform="translate(60.17249 531.0214)" id="Shape" fill="#24292E" stroke="none" /><path d="M0 413.687L368.557 203.083L7.52157 0L0 413.687Z" transform="translate(240.6902 282.8092)" id="Shape" fill="#FFC230" stroke="none" /></g></g></svg>';
     const SONARR_LOGO = '<svg height="1.45em" viewBox="0 0 216.7 216.9" width="1.45em" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M216.7 108.45c0 29.833-10.533 55.4-31.6 76.7-.7.833-1.483 1.6-2.35 2.3-3.466 3.4-7.133 6.484-11 9.25-18.267 13.467-39.367 20.2-63.3 20.2-23.967 0-45.033-6.733-63.2-20.2-4.8-3.4-9.3-7.25-13.5-11.55-16.367-16.266-26.417-35.167-30.15-56.7-.733-4.2-1.217-8.467-1.45-12.8-.1-2.4-.15-4.8-.15-7.2 0-2.533.05-4.95.15-7.25 0-.233.066-.467.2-.7 1.567-26.6 12.033-49.583 31.4-68.95C53.05 10.517 78.617 0 108.45 0c29.933 0 55.484 10.517 76.65 31.55 21.067 21.433 31.6 47.067 31.6 76.9z" fill="#EEE" fill-rule="evenodd"/><path clip-rule="evenodd" d="M194.65 42.5l-22.4 22.4C159.152 77.998 158 89.4 158 109.5c0 17.934 2.852 34.352 16.2 47.7 9.746 9.746 19 18.95 19 18.95-2.5 3.067-5.2 6.067-8.1 9-.7.833-1.483 1.6-2.35 2.3-2.533 2.5-5.167 4.817-7.9 6.95l-17.55-17.55c-15.598-15.6-27.996-17.1-48.6-17.1-19.77 0-33.223 1.822-47.7 16.3-8.647 8.647-18.55 18.6-18.55 18.6-3.767-2.867-7.333-6.034-10.7-9.5-2.8-2.8-5.417-5.667-7.85-8.6 0 0 9.798-9.848 19.15-19.2 13.852-13.853 16.1-29.916 16.1-47.85 0-17.5-2.874-33.823-15.6-46.55-8.835-8.836-21.05-21-21.05-21 2.833-3.6 5.917-7.067 9.25-10.4 2.934-2.867 5.934-5.55 9-8.05L61.1 43.85C74.102 56.852 90.767 60.2 108.7 60.2c18.467 0 35.077-3.577 48.6-17.1 8.32-8.32 19.3-19.25 19.3-19.25 2.9 2.367 5.733 4.933 8.5 7.7 3.467 3.533 6.65 7.183 9.55 10.95z" fill="#3A3F51" fill-rule="evenodd"/><g clip-rule="evenodd"><path d="M78.7 114c-.2-1.167-.332-2.35-.4-3.55-.032-.667-.05-1.333-.05-2 0-.7.018-1.367.05-2 0-.067.018-.133.05-.2.435-7.367 3.334-13.733 8.7-19.1 5.9-5.833 12.984-8.75 21.25-8.75 8.3 0 15.384 2.917 21.25 8.75 5.834 5.934 8.75 13.033 8.75 21.3 0 8.267-2.916 15.35-8.75 21.25-.2.233-.416.45-.65.65-.966.933-1.982 1.783-3.05 2.55-5.065 3.733-10.916 5.6-17.55 5.6s-12.466-1.866-17.5-5.6c-1.332-.934-2.582-2-3.75-3.2-4.532-4.5-7.316-9.734-8.35-15.7z" fill="#0CF" fill-rule="evenodd"/><path d="M157.8 59.75l-15 14.65M30.785 32.526L71.65 73.25m84.6 84.25l27.808 28.78m1.855-153.894L157.8 59.75m-125.45 126l27.35-27.4" fill="none" stroke="#0CF" stroke-miterlimit="1" stroke-width="2"/><path d="M157.8 59.75l-16.95 17.2M58.97 60.604l17.2 17.15M59.623 158.43l16.75-17.4m61.928-1.396l18.028 17.945" fill="none" stroke="#0CF" stroke-miterlimit="1" stroke-width="7"/></g></svg>';
@@ -43,10 +44,19 @@ window.seerrFinLog = window.seerrFinLog || {
         filter: 'all',
         loadId: 0,
         isLoading: false,
+        loadPromise: null,
+        refreshPromise: null,
+        queuedRefresh: null,
+        reloadMode: 'idle',
         reloadResultTimer: null,
         autoRefreshTimer: null,
+        autoRefreshInterval: 0,
         lastAutoRefreshAt: 0,
-        clientSettings: null
+        clientSettings: null,
+        metadataSession: '',
+        metadataCache: new Map(),
+        metadataJobs: new Map(),
+        metadataObserver: null
     };
 
     const AUTO_REFRESH_DEBOUNCE_MS = 1000;
@@ -84,9 +94,7 @@ window.seerrFinLog = window.seerrFinLog || {
             return;
         }
 
-        ApiClient.ajax({ url: ApiClient.getUrl('SeerrFin/client-settings'), type: 'GET', dataType: 'json' })
-            .then(function (config) { openWithBase((config.jellyseerrBrowseUrl || '').replace(/\/+$/, '')); })
-            .catch(function (err) { log.warn('Jellyseerr browse URL fetch failed', err); });
+        loadClientSettings().then(function () { openWithBase(state.clientSettings.jellyseerrBrowseUrl); });
     }
 
     function openServarrUrl(url, service) {
@@ -195,24 +203,6 @@ window.seerrFinLog = window.seerrFinLog || {
         if (days < 30) { return days + 'd ago'; }
 
         return date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
-    }
-
-    function chipClassForStatus(label) {
-        const normalized = (label || '').toLowerCase();
-
-        if (normalized.includes('available') && !normalized.includes('partially')) { return 'seerrfin-request-chip--available'; }
-
-        if (normalized.includes('partially')) { return 'seerrfin-request-chip--partial'; }
-
-        if (normalized.includes('processing')) { return 'seerrfin-request-chip--processing'; }
-
-        if (normalized.includes('pending')) { return 'seerrfin-request-chip--pending'; }
-
-        if (normalized.includes('approved')) { return 'seerrfin-request-chip--approved'; }
-
-        if (normalized.includes('declined') || normalized.includes('failed')) { return 'seerrfin-request-chip--declined'; }
-
-        return '';
     }
 
     function getAvatarUrl(avatarPath) {
@@ -436,6 +426,7 @@ window.seerrFinLog = window.seerrFinLog || {
     function renderContentBlock(item, isLandscape) {
         const statusLabel = item.mediaStatusLabel || 'Unknown';
         const safeTitle = escapeHtml(item.title || 'Unknown');
+        const loadingTitle = item.metadataPending === true && !item._metadataError && (!item.title || item.title === 'Unknown');
         const timeAgo = item.createdAt ? escapeHtml(formatRelativeDate(item.createdAt)) : '';
         const avatarUrl = getAvatarUrl(item.requestedByAvatar);
         const avatarHtml = avatarUrl ?
@@ -443,7 +434,7 @@ window.seerrFinLog = window.seerrFinLog || {
             '';
 
         const chips = [
-            `<span class="seerrfin-request-chip ${chipClassForStatus(statusLabel)}">${escapeHtml(statusLabel)}</span>`
+            `<span class="seerrfin-request-chip ${getPlugin().getMediaStatusChipClass(statusLabel)}">${escapeHtml(statusLabel)}</span>`
         ];
 
         if (item.is4k) {
@@ -467,9 +458,10 @@ window.seerrFinLog = window.seerrFinLog || {
         return `
             <div class="seerrfin-request-content">
                 <div class="seerrfin-request-title">
-                    <span title="${safeTitle}">${safeTitle}</span>
+                    <span title="${safeTitle}"${loadingTitle ? ' class="seerrfin-request-title-loading"' : ''}>${loadingTitle ? 'Loading details…' : safeTitle}</span>
                     ${yearHtml}
                 </div>
+                ${item._metadataError ? `<div class="seerrfin-request-metadata-error">Could not load details. <button type="button" class="seerrfin-request-metadata-retry" data-request-id="${escapeHtml(String(item.id))}">Retry</button></div>` : ''}
                 <div class="seerrfin-request-chips">${chips.join('')}</div>
                 <div class="seerrfin-request-meta">
                     <span>Requested by</span>
@@ -481,23 +473,6 @@ window.seerrFinLog = window.seerrFinLog || {
                 ${progressSpacerHtml}
                 ${progressHtml}
             </div>
-        `;
-    }
-
-    function renderRequestCard(item) {
-        const isLandscape = shouldUseLandscapeCards();
-        const layoutClass = isLandscape ? 'seerrfin-request-box--landscape' : 'seerrfin-request-box--portrait';
-        const discoverCard = renderDiscoverCard(item);
-
-        if (!discoverCard) { return; }
-
-        return `
-            <article class="seerrfin-request-box ${layoutClass}">
-                <div class="seerrfin-request-box-inner">
-                    <div class="seerrfin-request-card-slot">${discoverCard}${renderCardActions(item) || ''}</div>
-                    ${renderContentBlock(item, isLandscape)}
-                </div>
-            </article>
         `;
     }
 
@@ -577,44 +552,218 @@ window.seerrFinLog = window.seerrFinLog || {
         pagination.innerHTML = renderPagination(state.page, totalPages);
     }
 
+    // Keep existing images and controls when only text or progress changes.
+    function patchRequestContent(current, next) {
+        Array.from(next.attributes).forEach(function (attribute) {
+            if (current.getAttribute(attribute.name) !== attribute.value) current.setAttribute(attribute.name, attribute.value);
+        });
+        Array.from(current.attributes).forEach(function (attribute) {
+            if (!next.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+        });
+        const children = Array.from(next.childNodes);
+        children.forEach(function (child, index) {
+            const existing = current.childNodes[index];
+            if (!existing) {
+                current.appendChild(child.cloneNode(true));
+            } else if (existing.nodeType !== child.nodeType || existing.nodeName !== child.nodeName) {
+                existing.replaceWith(child.cloneNode(true));
+            } else if (child.nodeType === 1) {
+                patchRequestContent(existing, child);
+            } else if (existing.textContent !== child.textContent) {
+                existing.textContent = child.textContent;
+            }
+        });
+        while (current.childNodes.length > children.length) current.lastChild.remove();
+    }
+
+    function updateRequestCard(article, item) {
+        const layout = shouldUseLandscapeCards();
+        const posterKey = JSON.stringify([layout, getCardOptions(), item.tmdbId, item.type, item.title, item.year,
+            item.posterPath, item.backdropPath, item.posterUrl, item.backdropUrl]);
+        const actions = renderCardActions(item) || '';
+        const content = renderContentBlock(item, layout);
+        article.className = 'seerrfin-request-box seerrfin-request-box--' + (layout ? 'landscape' : 'portrait');
+
+        if (article._posterKey !== posterKey) {
+            const slot = article.querySelector('.seerrfin-request-card-slot');
+            slot.innerHTML = (renderDiscoverCard(item) || '') + actions;
+            article._posterKey = posterKey;
+            article._actionsHtml = actions;
+        } else if (article._actionsHtml !== actions) {
+            const existing = article.querySelector('.seerrfin-request-card-actions');
+            if (existing) existing.outerHTML = actions;
+            article._actionsHtml = actions;
+        }
+        if (article._contentHtml !== content) {
+            const template = document.createElement('template');
+            template.innerHTML = content.trim();
+            patchRequestContent(article.querySelector('.seerrfin-request-content'), template.content.firstElementChild);
+            article._contentHtml = content;
+        }
+    }
+
+    function hydrateVisibleRequestArtwork(article, item) {
+        const container = findActiveContainer();
+        if (!article._metadataVisible || document.hidden || !container?.contains(article) || article._artworkKey === article._posterKey) return;
+        const rect = article.getBoundingClientRect();
+        if (rect.bottom <= 0 || rect.top >= window.innerHeight || rect.right <= 0 || rect.left >= window.innerWidth) return;
+        if (item.metadataPending && !item.posterPath && !item.backdropPath && !item.posterUrl && !item.backdropUrl) return;
+        hydrateRequestCards(article.querySelector('.seerrfin-request-card-slot'));
+        article._artworkKey = article._posterKey;
+    }
+
+    function metadataKey(item) {
+        return item.id + ':' + item.type + ':' + item.tmdbId;
+    }
+
+    function cancelMetadataLoads() {
+        state.metadataObserver?.disconnect();
+        state.metadataJobs.forEach(function (job) { job.controller.abort(); });
+    }
+
+    function ensureMetadataSession() {
+        const session = ApiClient.getUrl('SeerrFin/requests') + ':' + ApiClient.getCurrentUserId();
+        if (state.metadataSession !== session) {
+            cancelMetadataLoads();
+            state.metadataSession = session;
+            state.metadataCache.clear();
+            state.pageRequests = [];
+        }
+        return session;
+    }
+
+    function mergeRequestMetadata(item, previous) {
+        const cached = state.metadataCache.get(metadataKey(item));
+        const fresh = cached && Date.now() - cached.at < METADATA_FRESH_MS;
+        if (item.metadataPending && cached &&
+            (fresh || !item.title || item.title === 'Unknown')) {
+            Object.assign(item, cached.data);
+            if (fresh) item.metadataPending = false;
+        }
+        if (item.metadataPending && previous?._metadataError) item._metadataError = true;
+        return item;
+    }
+
+    function loadVisibleMetadata() {
+        const container = findActiveContainer();
+        if (!container || document.hidden) return;
+        const session = ensureMetadataSession();
+        const articles = Array.from(container.querySelectorAll('.seerrfin-request-box'));
+        for (const article of articles) {
+            if (state.metadataJobs.size >= 4) break;
+            if (!article._metadataVisible) continue;
+            const rect = article.getBoundingClientRect();
+            if (rect.bottom <= 0 || rect.top >= window.innerHeight || rect.right <= 0 || rect.left >= window.innerWidth) continue;
+            const item = state.pageRequests.find(function (request) { return String(request.id) === article.dataset.requestId; });
+            if (!item || !item.metadataPending || item._metadataError) continue;
+            const key = metadataKey(item);
+            if (state.metadataJobs.has(key)) continue;
+            const job = { controller: new AbortController() };
+            state.metadataJobs.set(key, job);
+            fetch(ApiClient.getUrl('SeerrFin/requests/' + item.id + '/metadata'), {
+                headers: { Authorization: 'MediaBrowser Token="' + ApiClient.accessToken() + '"' },
+                signal: job.controller.signal
+            }).then(function (response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            }).then(function (metadata) {
+                if (state.metadataSession !== session || session !== ApiClient.getUrl('SeerrFin/requests') + ':' + ApiClient.getCurrentUserId()) return;
+                if (metadata.id !== item.id || metadata.tmdbId !== item.tmdbId || metadata.type !== item.type) {
+                    throw new Error('Request metadata identity did not match.');
+                }
+                const data = {};
+                ['title', 'year', 'posterPath', 'backdropPath', 'posterUrl', 'backdropUrl'].forEach(function (field) { data[field] = metadata[field]; });
+                state.metadataCache.set(key, { data: data, at: Date.now() });
+                const current = state.pageRequests.find(function (request) { return metadataKey(request) === key; });
+                if (!current) return;
+                Object.assign(current, data, { metadataPending: false, _metadataError: false });
+                const currentArticle = container.querySelector('.seerrfin-request-box[data-request-id="' + current.id + '"]');
+                if (currentArticle?.isConnected) {
+                    updateRequestCard(currentArticle, current);
+                    hydrateVisibleRequestArtwork(currentArticle, current);
+                }
+            }).catch(function (err) {
+                if (err.name === 'AbortError' || state.metadataSession !== session) return;
+                const current = state.pageRequests.find(function (request) { return metadataKey(request) === key; });
+                if (current) {
+                    current._metadataError = true;
+                    const currentArticle = container.querySelector('.seerrfin-request-box[data-request-id="' + current.id + '"]');
+                    if (currentArticle?.isConnected) updateRequestCard(currentArticle, current);
+                }
+                log.warn('request details failed for ' + item.type + '/' + item.tmdbId, err);
+            }).finally(function () {
+                if (state.metadataJobs.get(key) === job) state.metadataJobs.delete(key);
+                loadVisibleMetadata();
+            });
+        }
+    }
+
+    function observeRequestMetadata(container) {
+        state.metadataObserver?.disconnect();
+        if (!state.metadataObserver && typeof IntersectionObserver !== 'undefined') {
+            state.metadataObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    entry.target._metadataVisible = entry.isIntersecting;
+                    const item = state.pageRequests.find(function (request) { return String(request.id) === entry.target.dataset.requestId; });
+                    if (item) hydrateVisibleRequestArtwork(entry.target, item);
+                });
+                loadVisibleMetadata();
+            });
+        }
+        const keys = new Set(state.pageRequests.map(metadataKey));
+        state.metadataJobs.forEach(function (job, key) { if (!keys.has(key)) job.controller.abort(); });
+        container.querySelectorAll('.seerrfin-request-box').forEach(function (article) {
+            if (state.metadataObserver) state.metadataObserver.observe(article);
+            else {
+                article._metadataVisible = true;
+                const item = state.pageRequests.find(function (request) { return String(request.id) === article.dataset.requestId; });
+                if (item) hydrateVisibleRequestArtwork(article, item);
+            }
+        });
+        loadVisibleMetadata();
+    }
+
     function renderPage(container) {
         updateFilters(container);
-
         const body = container.querySelector('.seerrfin-requests-body');
-
-        if (!body) { return; }
-
+        if (!body) return;
         if (!state.pageRequests.length) {
-            body.innerHTML = `<div class="seerrfin-empty-row padded-left">No requests found.</div>`;
+            body.innerHTML = '<div class="seerrfin-empty-row padded-left">No requests found.</div>';
+            cancelMetadataLoads();
             updatePagination(container, state.totalPages);
-
             return;
         }
-
-        const cards = state.pageRequests.map(renderRequestCard).filter(Boolean).join('');
-
-        if (!cards) {
-            body.innerHTML = `<div class="seerrfin-empty-row padded-left">No requests found.</div>`;
-            updatePagination(container, state.totalPages);
-
-            return;
+        let grid = body.querySelector('.seerrfin-requests-grid');
+        if (!grid) {
+            grid = document.createElement('div');
+            body.replaceChildren(grid);
         }
-
-        const gridClass = shouldUseLandscapeCards() ?
-            ' seerrfin-requests-grid--landscape' :
-            ' seerrfin-requests-grid--portrait';
-
-        body.innerHTML = `
-            <div class="seerrfin-requests-grid${gridClass} padded-left padded-right">${cards}</div>
-        `;
-
-        hydrateRequestCards(body);
+        grid.className = 'seerrfin-requests-grid padded-left padded-right seerrfin-requests-grid--' +
+            (shouldUseLandscapeCards() ? 'landscape' : 'portrait');
+        const existing = new Map(Array.from(grid.children).map(function (article) { return [article.dataset.requestId, article]; }));
+        let position = grid.firstElementChild;
+        state.pageRequests.forEach(function (item) {
+            let article = existing.get(String(item.id));
+            if (!article) {
+                article = document.createElement('article');
+                article.dataset.requestId = String(item.id);
+                article.innerHTML = '<div class="seerrfin-request-box-inner"><div class="seerrfin-request-card-slot"></div><div class="seerrfin-request-content"></div></div>';
+            }
+            updateRequestCard(article, item);
+            if (article !== position) grid.insertBefore(article, position);
+            position = article.nextElementSibling;
+            existing.delete(String(item.id));
+        });
+        existing.forEach(function (article) { article.remove(); });
+        observeRequestMetadata(container);
         updatePagination(container, state.totalPages);
     }
 
-    function fetchRequestsPage() {
+    function fetchRequestsPage(options) {
         const pageSize = getPageSize();
         const params = { take: pageSize, skip: (state.page - 1) * pageSize };
+
+        if (options.force === true) { params.refresh = true; }
 
         if (state.filter && state.filter !== 'all') {
             params.filter = state.filter;
@@ -631,70 +780,59 @@ window.seerrFinLog = window.seerrFinLog || {
         });
     }
 
-    function setReloadButtonState(container, mode) {
-        const reloadBtn = container && container.querySelector('.seerrfin-requests-reload');
+    function syncReloadButtons() {
+        document.querySelectorAll('.seerrfin-requests-reload').forEach(function (reloadBtn) {
+            const mode = state.reloadMode;
+            const icon = reloadBtn.querySelector('.material-icons');
 
-        if (!reloadBtn) { return; }
+            reloadBtn.classList.toggle('is-loading', mode === 'loading');
+            reloadBtn.classList.toggle('is-success', mode === 'success');
+            reloadBtn.classList.toggle('is-error', mode === 'error');
+            reloadBtn.disabled = mode !== 'idle';
+            reloadBtn.setAttribute('aria-busy', mode === 'loading' ? 'true' : 'false');
 
+            if (icon) {
+                icon.textContent = mode === 'success' ? 'check' : (mode === 'error' ? 'close' : 'refresh');
+            }
+        });
+    }
+
+    function setReloadButtonState(mode) {
         if (state.reloadResultTimer) {
             clearTimeout(state.reloadResultTimer);
             state.reloadResultTimer = null;
         }
 
-        const icon = reloadBtn.querySelector('.material-icons');
-
-        reloadBtn.classList.remove('is-loading', 'is-success', 'is-error');
-
-        if (mode === 'loading') {
-            reloadBtn.disabled = true;
-            reloadBtn.classList.add('is-loading');
-            reloadBtn.setAttribute('aria-busy', 'true');
-
-            if (icon) {
-                icon.textContent = 'refresh';
-            }
-
-            return;
-        }
+        state.reloadMode = mode;
+        syncReloadButtons();
 
         if (mode === 'success' || mode === 'error') {
-            reloadBtn.disabled = true;
-            reloadBtn.classList.add(mode === 'success' ? 'is-success' : 'is-error');
-            reloadBtn.setAttribute('aria-busy', 'false');
-
-            if (icon) {
-                icon.textContent = mode === 'success' ? 'check' : 'close';
-            }
-
             state.reloadResultTimer = setTimeout(function () {
                 state.reloadResultTimer = null;
-                setReloadButtonState(container, 'idle');
+                setReloadButtonState('idle');
             }, 2000);
-
-            return;
-        }
-
-        reloadBtn.disabled = false;
-        reloadBtn.setAttribute('aria-busy', 'false');
-
-        if (icon) {
-            icon.textContent = 'refresh';
         }
     }
 
     function loadRequests(container, options) {
-        if (!container) { return; }
+        if (!container) { return Promise.resolve(false); }
 
         options = options || {};
 
         const keepVisible = options.keepVisible === true;
 
-        if (keepVisible && state.isLoading) { return; }
+        if (keepVisible && state.isLoading) { return state.loadPromise; }
 
         const loadId = ++state.loadId;
+        const userId = ApiClient.getCurrentUserId();
+        ensureMetadataSession();
+        if (!keepVisible) cancelMetadataLoads();
+        const plugin = getPlugin();
+        const snapshot = plugin.getMediaStatusSnapshotState();
+        const revision = snapshot.revision;
 
         state.isLoading = true;
-        setReloadButtonState(container, 'loading');
+        setReloadButtonState('loading');
 
         const body = container.querySelector('.seerrfin-requests-body');
 
@@ -704,11 +842,18 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         log.info('loading requests tab (page ' + state.page + ', filter ' + state.filter + ')');
-        fetchRequestsPage()
+        state.loadPromise = fetchRequestsPage(options)
             .then(function (data) {
-                if (loadId !== state.loadId || !container.isConnected) { return; }
+                if (loadId !== state.loadId || !container.isConnected || userId !== ApiClient.getCurrentUserId()) { return; }
 
-                state.pageRequests = (data.requests || []).filter(function (item) { return matchesFilter(item, state.filter); });
+                if (Array.isArray(data.mediaStatuses)) {
+                    plugin.applyMediaStatusSnapshot(data.mediaStatuses, snapshot, revision);
+                }
+
+                const previous = new Map(state.pageRequests.map(function (item) { return [metadataKey(item), item]; }));
+                state.pageRequests = (data.requests || []).map(function (item) {
+                    return mergeRequestMetadata(item, previous.get(metadataKey(item)));
+                }).filter(function (item) { return matchesFilter(item, state.filter); });
                 state.totalPages = Math.max(1, Number(data.totalPages) || 1);
 
                 if (state.page > state.totalPages) {
@@ -717,18 +862,15 @@ window.seerrFinLog = window.seerrFinLog || {
 
                 log.info('requests loaded (' + state.pageRequests.length + ' on page, ' + state.totalPages + ' pages)');
                 renderPage(container);
-                setReloadButtonState(container, keepVisible ? 'success' : 'idle');
+
+                return true;
             })
             .catch(function (err) {
                 log.error('requests ' + (keepVisible ? 'refresh' : 'load') + ' failed (page ' + state.page + ', filter ' + state.filter + ')', err);
 
-                if (loadId !== state.loadId || !container.isConnected) { return; }
+                if (loadId !== state.loadId || !container.isConnected || userId !== ApiClient.getCurrentUserId()) { return; }
 
-                if (keepVisible) {
-                    setReloadButtonState(container, 'error');
-
-                    return;
-                }
+                if (keepVisible) { throw err; }
 
                 state.pageRequests = [];
                 state.totalPages = 1;
@@ -739,13 +881,20 @@ window.seerrFinLog = window.seerrFinLog || {
                     body.innerHTML = `<div class="seerrfin-empty-row padded-left">Could not load requests. Check Seerr settings.</div>`;
                 }
 
-                setReloadButtonState(container, 'idle');
+                return false;
             })
-            .then(function () {
+            .finally(function () {
                 if (loadId === state.loadId) {
                     state.isLoading = false;
+                    state.loadPromise = null;
+
+                    if (!state.refreshPromise) {
+                        setReloadButtonState('idle');
+                    }
                 }
             });
+
+        return state.loadPromise;
     }
 
     function stopAutoRefresh() {
@@ -753,6 +902,32 @@ window.seerrFinLog = window.seerrFinLog || {
             clearInterval(state.autoRefreshTimer);
             state.autoRefreshTimer = null;
         }
+
+        state.autoRefreshInterval = 0;
+    }
+
+    function hasActiveDiscovery() {
+        const plugin = getPlugin();
+
+        if (!plugin || plugin._displaySettings?.ShowDownloadDetailsInDiscoveryPages !== true) { return false; }
+
+        return plugin.getVisibleDiscoveryDownloadSlots().length > 0 ||
+            Array.from(document.querySelectorAll('.seerrfin-discovery-reload')).some(function (button) {
+                return plugin.isContainerVisible(button);
+            });
+    }
+
+    function refreshActiveRequests(force) {
+        const container = findActiveContainer();
+
+        if (!container || !container.querySelector('.seerrfin-requests-panel')) { return Promise.resolve(false); }
+
+        // A mutation must refresh again after any load that began before it.
+        if (state.isLoading && state.loadPromise) {
+            return state.loadPromise.catch(function () {}).then(function () { return refreshActiveRequests(force); });
+        }
+
+        return loadRequests(container, { keepVisible: true, force: force });
     }
 
     function refreshIfActive(options) {
@@ -761,47 +936,96 @@ window.seerrFinLog = window.seerrFinLog || {
         const reason = options.reason || 'manual';
         const settings = getRefreshSettings();
 
-        if (reason === 'interval' && settings.intervalSeconds <= 0) { return; }
+        startAutoRefresh();
 
-        if (reason === 'visibility' && !settings.onVisibility) { return; }
+        if (document.hidden) { return Promise.resolve(false); }
 
-        if (reason === 'tab' && !settings.onTabShow) { return; }
+        if (reason === 'interval' && settings.intervalSeconds <= 0) { return Promise.resolve(false); }
+
+        if (reason === 'visibility' && !settings.onVisibility) { return Promise.resolve(false); }
+
+        if (reason === 'tab' && !settings.onTabShow) { return Promise.resolve(false); }
 
         const container = findActiveContainer();
+        const requestsActive = reason !== 'cards' && !!container?.querySelector('.seerrfin-requests-panel');
+        const discoveryActive = hasActiveDiscovery();
 
-        if (!container || !container.querySelector('.seerrfin-requests-panel')) { return; }
+        if (!requestsActive && !discoveryActive) { return Promise.resolve(false); }
 
         const now = Date.now();
+        const force = options.force === true || reason !== 'cards';
 
-        if (reason !== 'manual' && now - state.lastAutoRefreshAt < AUTO_REFRESH_DEBOUNCE_MS) { return; }
+        if (state.refreshPromise) {
+            if (reason !== 'interval') {
+                const previous = state.queuedRefresh;
+                const queuedForce = force || previous?.force === true;
+                state.queuedRefresh = { reason: queuedForce ? 'mutation' : 'cards', force: queuedForce };
+            }
 
-        state.lastAutoRefreshAt = now;
+            return state.refreshPromise;
+        }
 
-        loadRequests(container, { keepVisible: true });
+        if (reason === 'cards' && state.loadPromise && container?.querySelector('.seerrfin-requests-panel')) {
+            return state.loadPromise.catch(function () {}).then(function () { return refreshIfActive(options); });
+        }
+
+        if (reason !== 'manual' && reason !== 'mutation' && reason !== 'cards' &&
+            now - state.lastAutoRefreshAt < AUTO_REFRESH_DEBOUNCE_MS) { return Promise.resolve(false); }
+
+        if (reason !== 'cards') { state.lastAutoRefreshAt = now; }
+        setReloadButtonState('loading');
+        let resultMode = 'idle';
+
+        state.refreshPromise = Promise.resolve().then(function () {
+            return requestsActive ? refreshActiveRequests(force) :
+                getPlugin().refreshDiscoveryDownloadDetails({ force: force });
+        }).then(function (fetched) {
+            resultMode = fetched === true ? 'success' : 'idle';
+
+            return fetched === true;
+        }).catch(function (err) {
+            log.warn('media status refresh failed', err);
+            resultMode = 'error';
+
+            return false;
+        }).then(function (fetched) {
+            state.refreshPromise = null;
+            const queued = state.queuedRefresh;
+            state.queuedRefresh = null;
+
+            if (queued && !document.hidden && (findActiveContainer() || hasActiveDiscovery())) {
+                return refreshIfActive(queued);
+            }
+
+            setReloadButtonState(state.isLoading ? 'loading' : resultMode);
+
+            return fetched;
+        });
+
+        return state.refreshPromise;
     }
 
     function startAutoRefresh() {
-        stopAutoRefresh();
-
-        if (document.hidden) { return; }
-
         const container = findActiveContainer();
-
-        if (!container || !container.querySelector('.seerrfin-requests-panel')) { return; }
-
         const settings = getRefreshSettings();
+        const requestsActive = container && container.querySelector('.seerrfin-requests-panel');
 
-        if (settings.intervalSeconds <= 0) { return; }
+        if (document.hidden || (!requestsActive && !hasActiveDiscovery()) || settings.intervalSeconds <= 0) {
+            stopAutoRefresh();
+
+            return;
+        }
+
+        const interval = settings.intervalSeconds * 1000;
+
+        if (state.autoRefreshTimer && state.autoRefreshInterval === interval) { return; }
+
+        stopAutoRefresh();
+        state.autoRefreshInterval = interval;
 
         state.autoRefreshTimer = setInterval(function () {
-            if (!findActiveContainer()) {
-                stopAutoRefresh();
-
-                return;
-            }
-
             refreshIfActive({ reason: 'interval' });
-        }, settings.intervalSeconds * 1000);
+        }, interval);
     }
 
     function renderRequestsPanel() {
@@ -848,7 +1072,7 @@ window.seerrFinLog = window.seerrFinLog || {
             }) :
             Promise.resolve();
 
-        settingsPromise.then(function () { return loadClientSettings(); }).then(function () {
+        settingsPromise.then(function () {
             loadRequests(container);
             startAutoRefresh();
         });
@@ -859,11 +1083,23 @@ window.seerrFinLog = window.seerrFinLog || {
 
         container.dataset.seerrfinRequestsBound = 'true';
         container.addEventListener('click', function (event) {
+            const retry = event.target.closest('.seerrfin-request-metadata-retry');
+            if (retry) {
+                const item = state.pageRequests.find(function (request) { return String(request.id) === retry.dataset.requestId; });
+                if (item) {
+                    item._metadataError = false;
+                    const article = retry.closest('.seerrfin-request-box');
+                    article._metadataVisible = true;
+                    updateRequestCard(article, item);
+                    loadVisibleMetadata();
+                }
+                return;
+            }
             const reloadBtn = event.target.closest('.seerrfin-requests-reload');
 
             if (reloadBtn) {
                 event.preventDefault();
-                loadRequests(container, { keepVisible: true });
+                refreshIfActive({ reason: 'manual' });
 
                 return;
             }
@@ -954,7 +1190,12 @@ window.seerrFinLog = window.seerrFinLog || {
         const container = findActiveContainer();
 
         if (!container) {
-            stopAutoRefresh();
+            cancelMetadataLoads();
+            startAutoRefresh();
+
+            if (options.tabShown) {
+                refreshIfActive({ reason: 'tab' });
+            }
 
             return;
         }
@@ -968,6 +1209,7 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         startAutoRefresh();
+        observeRequestMetadata(container);
 
         if (options.tabShown) {
             refreshIfActive({ reason: 'tab' });
@@ -977,16 +1219,19 @@ window.seerrFinLog = window.seerrFinLog || {
     function onVisibilityChange() {
         if (document.hidden) {
             stopAutoRefresh();
+            cancelMetadataLoads();
 
             return;
         }
 
         startAutoRefresh();
+        const container = findActiveContainer();
+        if (container) observeRequestMetadata(container);
         refreshIfActive({ reason: 'visibility' });
     }
 
     function init() {
-        if (typeof ApiClient === 'undefined' || !getPlugin()) {
+        if (typeof ApiClient === 'undefined' || !getPlugin() || !ApiClient.accessToken() || !ApiClient.getCurrentUserId()) {
             setTimeout(init, 200);
 
             return;
@@ -994,8 +1239,26 @@ window.seerrFinLog = window.seerrFinLog || {
 
         log.info('requests module init');
         window.__seerrFinRequestsEnsureMounted = ensureMounted;
+        window.__seerrFinRefreshMediaStatus = refreshIfActive;
+        window.__seerrFinSyncReloadButtons = syncReloadButtons;
         document.addEventListener('viewshow', function () { ensureMounted(); });
         document.addEventListener('visibilitychange', onVisibilityChange);
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.seerrfin-discovery-reload')) { return; }
+
+            event.preventDefault();
+            refreshIfActive({ reason: 'manual' });
+        });
+        document.addEventListener('seerrfin-request-changed', function () {
+            const discovery = getPlugin()._discoveryDownloadState;
+
+            if (discovery) {
+                discovery.revision += 1;
+                discovery.loaded = false;
+            }
+
+            refreshIfActive({ reason: 'mutation' });
+        });
         ensureMounted();
     }
 

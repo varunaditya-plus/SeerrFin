@@ -88,11 +88,11 @@ window.seerrFinLog = window.seerrFinLog || {
                 const overlayHtml = interactive ? `
                     <div class="cardOverlayContainer">
                         <div class="cardImageContainer"></div>
-                        <div class="cardOverlayButton-br flex">
+                        ${options.showDownloadDetails ? '' : `<div class="cardOverlayButton-br flex">
                             <button is="discover-requestbutton" type="button" class="discover-requestbutton cardOverlayButton cardOverlayButton-hover paper-icon-button-light emby-button" data-id="${mediaId}" data-media-type="${mediaType}">
                                 <span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover add" aria-hidden="true"></span>
                             </button>
-                        </div>
+                        </div>`}
                     </div>
                 ` : '';
 
@@ -104,6 +104,7 @@ window.seerrFinLog = window.seerrFinLog || {
                                 <canvas aria-hidden="true" width="20" height="20" class="blurhash-canvas lazy-hidden"></canvas>
                                 <div class="${imageClass}"${imageAttrs} aria-label="${safeName}" role="img"></div>
                                 ${overlayHtml}
+                                ${options.showDownloadDetails ? '<div class="seerrfin-discover-download-details"></div>' : ''}
                             </div>
                             ${metaHtml}
                         </div>

@@ -308,6 +308,7 @@ public class SeerrFinController : ControllerBase
                 config.NativeCarousels,
                 config.NativeGridPages,
                 config.NativeSearchResults,
+                config.ShowDownloadDetailsInDiscoveryPages,
                 displayCustomizations = DisplayCustomizationsHelper.Resolve(config),
                 carouselLayouts = CarouselLayoutsHelper.Resolve(config).ToDictionary(
                     page => page.Key,
@@ -781,6 +782,22 @@ public class SeerrFinController : ControllerBase
         return Content(payload.ToString(Newtonsoft.Json.Formatting.None), "application/json");
     }
 
+    [HttpGet("media-status")]
+    [Authorize]
+    public async Task<IActionResult> GetMediaStatuses(
+        [FromServices] IUserManager userManager,
+        [FromQuery] bool refresh = false,
+        CancellationToken cancellationToken = default
+    )
+    {
+        string? username = GetUsername(userManager);
+        if (string.IsNullOrWhiteSpace(username)) { return Forbid(); }
+        Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+        (int statusCode, string body) = await _requestsService.GetMediaStatusesAsync(username, refresh, cancellationToken).ConfigureAwait(false);
+        
+        return new ContentResult { StatusCode = statusCode, Content = body, ContentType = "application/json" };
+    }
+
     [HttpGet("requests")]
     [Authorize]
     public async Task<ActionResult> GetRequests(
@@ -788,6 +805,7 @@ public class SeerrFinController : ControllerBase
         [FromQuery] int take = 20,
         [FromQuery] int skip = 0,
         [FromQuery] string? filter = null,
+        [FromQuery] bool refresh = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -798,10 +816,27 @@ public class SeerrFinController : ControllerBase
             return Forbid();
         }
 
+        Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
         (int statusCode, string body) = await _requestsService
-            .GetRequestsAsync(userId, username, take, skip, filter, cancellationToken)
+            .GetRequestsAsync(userId, username, take, skip, filter, cancellationToken, refresh)
             .ConfigureAwait(false);
 
+        return new ContentResult { StatusCode = statusCode, Content = body, ContentType = "application/json" };
+    }
+
+    [HttpGet("requests/{requestId:int}/metadata")]
+    [Authorize]
+    public async Task<ActionResult> GetRequestMetadata(
+        [FromRoute] int requestId,
+        [FromServices] IUserManager userManager,
+        CancellationToken cancellationToken
+    )
+    {
+        string? username = GetUsername(userManager);
+        if (string.IsNullOrWhiteSpace(username)) { return Forbid(); }
+        Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+        (int statusCode, string body) = await _requestsService.GetRequestMetadataAsync(username, requestId, cancellationToken).ConfigureAwait(false);
+        
         return new ContentResult { StatusCode = statusCode, Content = body, ContentType = "application/json" };
     }
 
@@ -836,6 +871,7 @@ public class SeerrFinController : ControllerBase
         (int statusCode, string body, string contentType) = await _requestService.SubmitRequestAsync(username, payload, cancellationToken)
             .ConfigureAwait(false);
 
+        if (statusCode is >= 200 and < 300 or 409) { _requestsService.InvalidateMediaStatuses(); }
         return new ContentResult { StatusCode = statusCode, Content = body, ContentType = contentType };
     }
 

@@ -217,11 +217,17 @@
         host.innerHTML = `
             <div class="seerrfin-filter-heading sectionTitleContainer-cards">
                 <h2 class="sectionTitle">${escapeHtml(title || (type === 'movie' ? 'Movies' : 'TV Shows'))}</h2>
+                <div class="seerrfin-filter-actions">
+                ${window.seerrFinPlugin?._displaySettings?.ShowDownloadDetailsInDiscoveryPages === true ? `
+                    <button type="button" class="seerrfin-requests-reload seerrfin-discovery-reload" aria-label="Reload download details" title="Reload download details"><span class="material-icons" aria-hidden="true">refresh</span></button>
+                ` : ''}
                 <button type="button" class="seerrfin-filter-icon" data-filter-open aria-label="${type === 'movie' ? 'Movie' : 'TV'} filters" title="Filters"><span class="material-icons" aria-hidden="true">settings</span><span data-filter-count hidden></span></button>
+                </div>
             </div>
             <div class="seerrfin-filter-results" aria-live="polite"></div>
         `;
         parent.prepend(host);
+        window.__seerrFinSyncReloadButtons?.();
 
         const modal = document.createElement('div');
         modal.className = 'seerrfin-filter-modal';
@@ -456,7 +462,7 @@
 
                 results.classList.toggle('uses-backdrops', plugin.shouldUseBackdropThumbnails());
                 results.innerHTML = `
-${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'}<div class="seerrfin-filter-grid itemsContainer">${plugin.createDiscoverCards(data.items, true, { nativeCards })}</div>
+${data.items.length ? '' : '<p role="status">No titles match these filters.</p>'}<div class="seerrfin-filter-grid itemsContainer">${plugin.createDiscoverCards(data.items, true, { nativeCards, discoveryPage: true })}</div>
                     <div class="seerrfin-filter-pagination">
                         <button type="button" class="emby-button raised" data-filter-page="${data.page - 1}"${data.page <= 1 ? ' disabled' : ''}>Previous</button>
                         <span>Page ${data.page} of ${data.totalPages}</span>
