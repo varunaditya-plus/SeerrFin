@@ -1,14 +1,14 @@
 {
   "category": "General",
-  "changelog": "Added an unsaved changes indicator to the settings banner",
+  "changelog": "Added an option to show request details with status pill/progress bars in discovery sections. Synced discovery and request refresh indicators when request details option is turned on. Updated requests requesting to make it much faster by reusing cached Seerr details and metadata, loading missing details only for cards shown on the page, adding batched Jellyfin lookups, and updating cards in place. Also fixed authentication timing, stale responses and Coming Soon date handling",
   "description": "The best way to discover and request Movies and TV Shows through Seerr directly in Jellyfin.",
   "guid": "c8e4f2a1-9b3d-4e7f-a6c2-1d5e8f0a3b7c",
   "name": "SeerrFin",
   "overview": "This plugin lets you add two extra tabs to your top bar, allowing you to discover new Movies and TV Shows, and easily request them in any quality profile you want.",
   "owner": "varunaditya-plus",
   "targetAbi": "12.0.0.0",
-  "timestamp": "2026-10-25T22:39:29.0000000Z",
-  "version": "1.8.5.0",
+  "timestamp": "2026-10-28T12:09:39.0000000Z",
+  "version": "1.9.0.0",
   "status": "Active",
   "autoUpdate": true,
   "assemblies": [

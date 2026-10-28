@@ -10,6 +10,15 @@
     "repositoryUrl": "https://github.com/varunaditya-plus/SeerrFin",
     "versions": [
       {
+        "version": "1.9.0.0",
+        "changelog": "Added an option to show request details with status pill/progress bars in discovery sections. Synced discovery and request refresh indicators when request details option is turned on. Updated requests requesting to make it much faster by reusing cached Seerr details and metadata, loading missing details only for cards shown on the page, adding batched Jellyfin lookups, and updating cards in place. Also fixed authentication timing, stale responses and Coming Soon date handling",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/varunaditya-plus/SeerrFin/releases/download/1.9.0.0/Jellyfin.Plugin.SeerrFin_12.0.0.zip",
+        "checksum": "492F51F02EC49FD74C2BEA0F55796DBC",
+        "timestamp": "2026-10-28T12:09:39.0000000Z",
+        "dependencies": []
+      },
+      {
         "version": "1.8.5.0",
         "changelog": "Added an unsaved changes indicator to the settings banner",
         "targetAbi": "12.0.0.0",
