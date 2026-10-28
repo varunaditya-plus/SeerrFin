@@ -681,7 +681,7 @@ public class SeerrFinController : ControllerBase
             browseUrl = config.JellyseerrUrl?.Trim();
         }
 
-        return Ok(new { tmdbApiKey = key ?? string.Empty, jellyseerrBrowseUrl = browseUrl ?? string.Empty });
+        return Ok(new { tmdbApiKey = key ?? string.Empty, jellyseerrBrowseUrl = browseUrl ?? string.Empty, detailsRatingSource = config.DetailsRatingSource });
     }
 
     [HttpGet("servarr-servers/{type}")]

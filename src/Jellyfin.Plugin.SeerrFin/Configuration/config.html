@@ -1102,6 +1102,19 @@
                     <div class="bst-section-container">
                         <div class="bst-section-title">Display settings</div>
                         <div class="bst-card">
+                            <div class="bst-input-group">
+                                <div class="bst-field-main">
+                                    <label class="bst-label bst-label--side" for="detailsRatingSource">Ratings in details</label>
+                                    <div class="bst-input-stack">
+                                        <select id="detailsRatingSource" name="detailsRatingSource" class="bst-input">
+                                            <option value="tmdb">TMDB</option>
+                                            <option value="imdb">IMDb</option>
+                                            <option value="both" selected>Both</option>
+                                        </select>
+                                        <div class="bst-field-desc">Choose which platforms' ratings appear in details. IMDb ones are shown for movies when available from Seerr.</div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
                                     <label class="bst-toggle-label" for="streamingServiceUseImages">Streaming services logos</label>
@@ -3406,6 +3419,7 @@
                 document.querySelector('#showDownloadDetailsInDiscoveryPages').checked = config.ShowDownloadDetailsInDiscoveryPages === true;
                 document.querySelector('#elegantFinFixes').checked = config.ElegantFinFixes === true;
                 document.querySelector('#qualityRecommendations').checked = config.QualityRecommendations !== false;
+                document.querySelector('#detailsRatingSource').value = ['tmdb', 'imdb'].includes(config.DetailsRatingSource) ? config.DetailsRatingSource : 'both';
                 document.querySelector('#addSeerrResultsInSearch').checked = config.AddSeerrResultsInSearch !== false;
                 loadDiscoverReleaseTypes(config.DiscoverReleaseTypes || config.discoverReleaseTypes || []);
                 setAdvancedFormValues(loadAdvancedFromConfig(config));
@@ -3463,6 +3477,7 @@
                     config.ShowDownloadDetailsInDiscoveryPages = document.querySelector('#showDownloadDetailsInDiscoveryPages').checked;
                     config.ElegantFinFixes = document.querySelector('#elegantFinFixes').checked;
                     config.QualityRecommendations = document.querySelector('#qualityRecommendations').checked;
+                    config.DetailsRatingSource = document.querySelector('#detailsRatingSource').value;
                     config.AddSeerrResultsInSearch = document.querySelector('#addSeerrResultsInSearch').checked;
                     config.DiscoverReleaseTypes = getDiscoverReleaseTypesPayload();
                     config.Advanced = buildAdvancedPayload();

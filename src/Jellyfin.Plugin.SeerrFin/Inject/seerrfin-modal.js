@@ -449,18 +449,20 @@ window.seerrFinLog = window.seerrFinLog || {
     function loadModalDetails(mediaId, mediaType) {
         return loadClientSettings().then(function (config) {
             const apiKey = getTmdbApiKey(config);
+            const source = config.detailsRatingSource || config.DetailsRatingSource;
+            const ratingSource = source === 'tmdb' || source === 'imdb' ? source : 'both';
             const jellyseerrPromise = fetchJellyseerrDetails(mediaId, mediaType);
 
-            if (!apiKey) { return jellyseerrPromise; }
-
             // Fetch both sources but prefer TMDB content with Seerr status
-            return Promise.all([jellyseerrPromise, fetchTmdbDetailsFromBrowser(mediaId, mediaType, apiKey)]).then(function (results) {
+            return Promise.all([
+                jellyseerrPromise,
+                apiKey ? fetchTmdbDetailsFromBrowser(mediaId, mediaType, apiKey) : null
+            ]).then(function (results) {
                 const jellyseerr = results[0];
                 const tmdb = results[1];
-
-                if (tmdb) { return mergeJellyseerrOverlay(tmdb, jellyseerr); }
-
-                return jellyseerr;
+                const details = tmdb ? mergeJellyseerrOverlay(tmdb, jellyseerr) : jellyseerr;
+                details.ratingSource = ratingSource;
+                return details;
             });
         });
     }
@@ -1172,12 +1174,37 @@ window.seerrFinLog = window.seerrFinLog || {
         `;
     }
 
+    function renderDetailsRatings(data) {
+        const source = data.ratingSource;
+        const parts = [];
+        const tmdbRating = Number(data.voteAverage ?? data.vote_average);
+        const imdb = data.imdbRating;
+        const imdbRating = Number(imdb && imdb.criticsScore);
+
+        function score(className, label, icon, value, count) {
+            const votes = Number(count);
+            return `<div class="${className}" aria-label="${label} rating ${value.toFixed(1)} out of 10">
+                ${icon}<span class="bst-meta-emphasis">${value.toFixed(1)}</span>
+                ${Number.isFinite(votes) && votes > 0 ? `<span class="bst-vote-muted">(${votes.toLocaleString()})</span>` : ''}
+            </div>`;
+        }
+
+        if (source !== 'imdb' && tmdbRating > 0 && tmdbRating <= 10) {
+            parts.push(score('bst-tmdb-rating', 'TMDB', TMDB_LOGO_SVG, tmdbRating, data.voteCount ?? data.vote_count));
+        }
+        if (source !== 'tmdb' && imdbRating > 0 && imdbRating <= 10) {
+            parts.push(score('bst-imdb-rating', 'IMDb', IMDB_ICON, imdbRating, imdb.criticsScoreCount));
+        }
+
+        const year = (data.releaseDate || data.firstAirDate || '').substring(0, 4);
+        if (year) parts.push(`<span class="bst-meta-emphasis">${escapeHtml(year)}</span>`);
+
+        return parts.join('<span class="bst-dot">•</span>');
+    }
+
     function renderDetails(data, mediaId, mediaType) {
         const title = data.title || data.name || 'Details';
         const overview = data.overview || '';
-        const year = (data.releaseDate || data.firstAirDate || '').substring(0, 4);
-        const rating = data.voteAverage != null ? data.voteAverage : data.vote_average;
-        const voteCount = data.voteCount != null ? data.voteCount : data.vote_count;
         const backdrop = resolveImageUrl(data.backdropUrl || data.backdrop_url || '') || tmdbImage(data.backdropPath || data.backdrop_path, 'original');
         const runtimeMinutes = data.runtime || (data.episodeRunTime && data.episodeRunTime[0]);
         const runtime = formatRuntime(runtimeMinutes);
@@ -1215,18 +1242,7 @@ window.seerrFinLog = window.seerrFinLog || {
                                             ${logoUrl
                                                 ? `<img class="bst-hero-logo" alt="${escapeHtml(title)}" src="${logoUrl}" data-fallback-title="${escapeHtml(title)}" />`
                                                 : `<h1 class="bst-hero-title-fallback">${escapeHtml(title)}</h1>`}
-                                            ${rating || year ? `
-                                                <div class="bst-hero-meta">
-                                                    ${rating ? `
-                                                        <div class="bst-tmdb-rating">
-                                                            ${TMDB_LOGO_SVG}
-                                                            <span class="bst-meta-emphasis">${Number(rating).toFixed(1)}</span>
-                                                            ${voteCount ? `<span class="bst-vote-muted">(${Number(voteCount).toLocaleString()})</span>` : ''}
-                                                        </div>
-                                                    ` : ''}
-                                                    ${year ? `${rating ? '<span class="bst-dot">•</span>' : ''}<span class="bst-meta-emphasis">${escapeHtml(year)}</span>` : ''}
-                                                </div>
-                                            ` : ''}
+                                            <div class="bst-hero-meta" data-ratings-slot>${renderDetailsRatings(data)}</div>
                                         </div>
                                     </div>
                                     <div class="bst-content">
@@ -1309,6 +1325,23 @@ window.seerrFinLog = window.seerrFinLog || {
 
         const watchlistBtn = root.querySelector('[data-action="watchlist"]');
         const watchlistUserId = ApiClient.getCurrentUserId();
+
+        // Seerr's combined ratings endpoint provides IMDb scores for movies only.
+        if (data.ratingSource !== 'tmdb' && mediaType === 'movie') {
+            ApiClient.ajax({
+                url: ApiClient.getUrl('SeerrFin/jellyseerr/movie/' + mediaId + '/ratingscombined'),
+                type: 'GET',
+                dataType: 'json'
+            }).then(function (ratings) {
+                if (!root.isConnected || watchlistUserId !== ApiClient.getCurrentUserId() || !ratings || !ratings.imdb) return;
+
+                data.imdbRating = ratings.imdb;
+                root.querySelector('[data-ratings-slot]').innerHTML = renderDetailsRatings(data);
+            }).catch(function (err) {
+                if (!err || err.status !== 404) log.warn('IMDb ratings fetch failed', err);
+            });
+        }
+
         let watchlisted = false;
         let watchlistLoaded = false;
 

@@ -53,6 +53,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool QualityRecommendations { get; set; } = true;
 
+    public string DetailsRatingSource { get; set; } = "both";
+
     public bool AddSeerrResultsInSearch { get; set; } = true;
 
     public bool NativeCarousels { get; set; }

@@ -221,6 +221,8 @@
 
 .bst-hero-meta .bst-dot { color: var(--bst-type-secondary); }
 
+.bst-hero-meta:empty { display: none; }
+
 .bst-meta-emphasis { color: rgba(255, 255, 255, 0.92); }
 
 .bst-hero-logo {
@@ -256,13 +258,17 @@
     z-index: 30;
 }
 
-.bst-tmdb-rating {
+.bst-tmdb-rating,
+.bst-imdb-rating {
     display: flex;
     align-items: center;
     gap: 0.25rem;
 }
 
-.bst-tmdb-rating svg { width: 2em; height: 2em; }
+.bst-tmdb-rating svg,
+.bst-imdb-rating svg { width: 2em; height: 2em; }
+
+.bst-imdb-rating svg { color: #f5c518; }
 
 .bst-vote-muted { color: var(--bst-type-secondary); }
 
