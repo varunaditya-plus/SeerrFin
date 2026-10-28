@@ -10,6 +10,15 @@
     "repositoryUrl": "https://github.com/varunaditya-plus/SeerrFin",
     "versions": [
       {
+        "version": "1.9.0.1",
+        "changelog": "Skip quality selection for single-profile requests",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/varunaditya-plus/SeerrFin/releases/download/1.9.0.1/Jellyfin.Plugin.SeerrFin_12.0.0.zip",
+        "checksum": "8C705229733A0FA4C0B306A1C1EB9D33",
+        "timestamp": "2026-10-28T15:23:29.0000000Z",
+        "dependencies": []
+      },
+      {
         "version": "1.9.0.0",
         "changelog": "Added an option to show request details with status pill/progress bars in discovery sections. Synced discovery and request refresh indicators when request details option is turned on. Updated requests requesting to make it much faster by reusing cached Seerr details and metadata, loading missing details only for cards shown on the page, adding batched Jellyfin lookups, and updating cards in place. Also fixed authentication timing, stale responses and Coming Soon date handling",
         "targetAbi": "12.0.0.0",
