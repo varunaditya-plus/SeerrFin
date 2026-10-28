@@ -10,6 +10,15 @@
     "repositoryUrl": "https://github.com/varunaditya-plus/SeerrFin",
     "versions": [
       {
+        "version": "1.9.0.2",
+        "changelog": "Fixed hentai appearing when adult content is hidden",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/varunaditya-plus/SeerrFin/releases/download/1.9.0.2/Jellyfin.Plugin.SeerrFin_12.0.0.zip",
+        "checksum": "502482D7F5128EEB3DCD210FC683DCA2",
+        "timestamp": "2026-10-28T15:37:32.0000000Z",
+        "dependencies": []
+      },
+      {
         "version": "1.9.0.1",
         "changelog": "Skip quality selection for single-profile requests",
         "targetAbi": "12.0.0.0",
