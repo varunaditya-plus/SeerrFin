@@ -991,10 +991,11 @@ window.seerrFinLog = window.seerrFinLog || {
 
         is4k = !!is4k;
 
-        // Show shell so the click feels instant (fill profiles when the api returns)
+        // Hide shell unless profile choice/error needs to be shown
         closeQualityModal();
         document.body.insertAdjacentHTML('beforeend', renderQualityModalShell(is4k));
         activeQualityRoot = document.body.lastElementChild;
+        activeQualityRoot.style.display = 'none';
         const list = activeQualityRoot.querySelector('.bst-quality-list');
         const footer = activeQualityRoot.querySelector('.bst-quality-footer');
         const requestBtn = footer.querySelector('.bst-quality-continue');
@@ -1004,7 +1005,9 @@ window.seerrFinLog = window.seerrFinLog || {
         activeQualityRoot.querySelector('.bst-quality-close').addEventListener('click', closeQualityModal);
 
         function finishRequest() {
-            closeQualityModal();
+            if (list.isConnected) {
+                closeQualityModal();
+            }
 
             if (typeof onSuccess === 'function') {
                 onSuccess();
@@ -1012,17 +1015,18 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         function failRequest(message) {
-            if (!list || !activeQualityRoot) {
+            if (!list || !activeQualityRoot || !list.isConnected) {
                 notifyUser(message || 'Request failed');
                 return;
             }
 
             list.innerHTML = `<div class="bst-quality-empty">${escapeHtml(message || 'Request failed')}</div>`;
             footer.hidden = true;
+            activeQualityRoot.style.display = '';
         }
 
         ApiClient.ajax({ url: ApiClient.getUrl('SeerrFin/request-options/' + mediaType), type: 'GET', dataType: 'json' }).then(function (data) {
-            if (!activeQualityRoot) { return; }
+            if (!activeQualityRoot || !list.isConnected) { return; }
 
             const rawOptions = (data && (data.options || data.Options)) || [];
             const payload = {
@@ -1068,10 +1072,24 @@ window.seerrFinLog = window.seerrFinLog || {
                 return;
             }
 
+            if (filteredOptions.length === 1) {
+                const option = filteredOptions[0];
+                list.innerHTML = `<div class="bst-quality-loading">Submitting request…</div>`;
+                submitRequest(mediaId, mediaType, {
+                    serverId: option.serverId,
+                    profileId: option.profileId,
+                    rootFolder: option.rootFolder,
+                    is4k: option.is4k,
+                    seasons: selectedSeasons
+                }, finishRequest, failRequest).catch(function () {});
+                return;
+            }
+
             list.innerHTML = renderQualityOptions(filteredOptions);
             list.setAttribute('role', 'radiogroup');
             list.setAttribute('aria-labelledby', 'bst-quality-title');
             footer.hidden = false;
+            activeQualityRoot.style.display = '';
             let selectedOption = null;
 
             function updateSelection() {
