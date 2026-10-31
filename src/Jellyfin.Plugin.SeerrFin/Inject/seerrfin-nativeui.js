@@ -73,7 +73,6 @@ window.seerrFinLog = window.seerrFinLog || {
                 const posterAttr = posterUrl ? ` data-poster-src="${plugin.escapeHtml(posterUrl)}"` : '';
                 const meta = plugin.buildDiscoverYearText(item);
                 const yearValue = parseInt(meta.year || '0', 10) || 0;
-                const ratingValue = Number(plugin.getField(item, 'CommunityRating', 'communityRating') || 0) || 0;
                 const imageClass = !preferEnglishBackdrop && safeDisplayUrl ?
                     'cardImageContainer coveredImage cardContent lazy blurhashed lazy-hidden' :
                     'cardImageContainer coveredImage cardContent lazy-hidden';
@@ -97,7 +96,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 ` : '';
 
                 return `
-                    <div class="card ${cardType} card-hoverable card-withuserdata" data-seerrfin-native-card="true" data-tmdb-id="${mediaId}" data-media-type="${mediaType}" data-name="${safeName}" data-year="${yearValue}" data-rating="${ratingValue}" data-use-poster="${usePoster ? 'true' : 'false'}"${fallbackAttr}${backdropPathAttr}${posterAttr}>
+                    <div class="card ${cardType} card-hoverable card-withuserdata" data-seerrfin-native-card="true" data-tmdb-id="${mediaId}" data-media-type="${mediaType}" data-name="${safeName}" data-year="${yearValue}" data-rating="${meta.rating}" data-use-poster="${usePoster ? 'true' : 'false'}"${fallbackAttr}${backdropPathAttr}${posterAttr}>
                         <div class="cardBox cardBox-bottompadded">
                             <div class="cardScalable">
                                 <div class="cardPadder ${padderType} seerrfin-card-thumb-skeleton"></div>

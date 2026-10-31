@@ -1593,6 +1593,10 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     DiscoverUsePosters: self.readConfigBool(data, 'DiscoverUsePosters', 'discoverUsePosters', true),
                     ElegantFinFixes: self.readConfigBool(data, 'ElegantFinFixes', 'elegantFinFixes', false),
                     QualityRecommendations: self.readConfigBool(data, 'QualityRecommendations', 'qualityRecommendations', true),
+                    MovieRatingSources: window.seerrFinModal.getRatingSources('movie', data),
+                    TvShowRatingSources: window.seerrFinModal.getRatingSources('tv', data),
+                    UseStarForRatings: self.readConfigBool(data, 'UseStarForRatings', 'useStarForRatings', false),
+                    RatingStarColor: data?.RatingStarColor ?? data?.ratingStarColor ?? '#ffd700',
                     AddSeerrResultsInSearch: self.readConfigBool(data, 'AddSeerrResultsInSearch', 'addSeerrResultsInSearch', true),
                     NativeCarousels: self.readConfigBool(data, 'NativeCarousels', 'nativeCarousels', false),
                     NativeGridPages: self.readConfigBool(data, 'NativeGridPages', 'nativeGridPages', false),
@@ -1622,6 +1626,10 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     DiscoverUsePosters: true,
                     ElegantFinFixes: false,
                     QualityRecommendations: true,
+                    MovieRatingSources: window.seerrFinModal.getRatingSources('movie'),
+                    TvShowRatingSources: window.seerrFinModal.getRatingSources('tv'),
+                    UseStarForRatings: false,
+                    RatingStarColor: '#ffd700',
                     AddSeerrResultsInSearch: true,
                     NativeCarousels: false,
                     NativeGridPages: false,
@@ -1641,6 +1649,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 return self._displaySettings;
             }).then(function (settings) {
                 self._displaySettingsPromise = null;
+                self.hydrateCardRatings(document);
                 return settings;
             });
 
@@ -1758,6 +1767,10 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 settings.NativeGridPages,
                 settings.NativeSearchResults,
                 settings.ShowDownloadDetailsInDiscoveryPages,
+                JSON.stringify(settings.MovieRatingSources),
+                JSON.stringify(settings.TvShowRatingSources),
+                settings.UseStarForRatings,
+                settings.RatingStarColor,
                 JSON.stringify(settings.CarouselLayouts || {}),
                 JSON.stringify(settings.DisplayCustomizations || {}),
                 JSON.stringify(settings.Advanced || {})
@@ -2454,12 +2467,95 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             const date = new Date(self.getField(item, 'PremiereDate', 'premiereDate', 'releaseDate', 'firstAirDate') || '');
             const year = Number.isNaN(date.getFullYear()) ? '' : date.getFullYear();
             const rating = Number(self.getField(item, 'CommunityRating', 'communityRating') || 0);
-            const starIcon = '<span class="material-icons" style="font-size:14px;vertical-align:middle;color:#FFD700;">star</span>';
-            const yearText = rating ?
-                `${starIcon} ${rating.toFixed(1)} • ${year}` :
-                `${starIcon} - • ${year}`;
+            const type = self.normalizeDiscoverMediaType(self.getField(item, 'SourceType', 'sourceType', 'mediaType', 'MediaType'));
+            const ratings = self.getCardRatings(rating, null, type);
+            const yearText = `<span data-seerrfin-card-ratings data-tmdb-rating="${rating}" data-year="${year}">${self.renderCardRatings(ratings, year)}</span>`;
 
-            return { year: year, yearText: yearText };
+            return { year: year, yearText: yearText, rating: ratings[0]?.value || 0 };
+        },
+
+        getCardRatings: function (tmdb, external, mediaType) {
+            const modal = window.seerrFinModal;
+
+            return modal.getRatingEntries(
+                tmdb,
+                null,
+                external,
+                modal.getRatingSources(mediaType, this._displaySettings),
+                this._displaySettings
+            );
+        },
+
+        renderCardRatings: function (ratings, year) {
+            const parts = ratings.map(function (rating) {
+                return `<span title="${rating.label} rating"><img src="${rating.logo}" alt="${rating.label}"> ${rating.text}</span>`;
+            });
+
+            if (year) parts.push(this.escapeHtml(String(year)));
+
+            return parts.join(' • ');
+        },
+
+        hydrateCardRatings: function (container) {
+            const self = this;
+            const userId = ApiClient.getCurrentUserId();
+
+            function update(element) {
+                const card = element.closest('.card');
+                const ratings = self.getCardRatings(
+                    Number(element.dataset.tmdbRating) || 0,
+                    element._seerrfinRatings,
+                    card?.dataset.mediaType
+                );
+
+                element.innerHTML = self.renderCardRatings(ratings, element.dataset.year);
+                if (card) card.dataset.rating = String(ratings[0]?.value || 0);
+            }
+
+            function needsExternal(card) {
+                return ['movie', 'tv'].includes(card?.dataset.mediaType) &&
+                    window.seerrFinModal.getRatingSources(card.dataset.mediaType, self._displaySettings)
+                        .some(function (source) { return source !== 'tmdb'; });
+            }
+
+            if (!self._cardRatingsObserver) {
+                self._cardRatingsObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (!entry.isIntersecting) return;
+
+                        const element = entry.target;
+                        const card = element.closest('.card');
+                        self._cardRatingsObserver.unobserve(element);
+
+                        if (!element.isConnected || !needsExternal(card)) {
+                            delete element.dataset.ratingObserved;
+                            return;
+                        }
+
+                        const actor = ApiClient.getCurrentUserId();
+
+                        window.seerrFinModal.fetchRatings(card.dataset.tmdbId, card.dataset.mediaType).then(function (ratings) {
+                            delete element.dataset.ratingObserved;
+                            if (!element.isConnected || actor !== ApiClient.getCurrentUserId()) return;
+
+                            element._seerrfinRatings = ratings;
+                            element.dataset.ratingUser = actor;
+                            update(element);
+                        });
+                    });
+                }, { rootMargin: '200px 0px' });
+            }
+
+            container.querySelectorAll('[data-seerrfin-card-ratings]').forEach(function (element) {
+                if (element.dataset.ratingUser !== userId) delete element._seerrfinRatings;
+
+                update(element);
+
+                if (!needsExternal(element.closest('.card')) || element._seerrfinRatings !== undefined || element.dataset.ratingObserved) return;
+
+                element.dataset.ratingObserved = 'true';
+                self._cardRatingsObserver.observe(element);
+            });
         },
 
         createDiscoverPosterCards: function (items, forGrid, options) {
@@ -2809,6 +2905,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             const self = this;
 
             if (!container) { return; }
+            self.hydrateCardRatings(container);
 
             const cards = container.querySelectorAll('.seerrfin-discover-card--backdrop:not([data-backdrop-hydrate-queued]):not([data-backdrop-loaded])');
 
@@ -3719,6 +3816,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             if (!container) { return; }
 
             const self = this;
+            self.hydrateCardRatings(container);
             const images = container.querySelectorAll('.cardImageContainer.lazy[data-src]');
 
             if (!images.length) { return; }

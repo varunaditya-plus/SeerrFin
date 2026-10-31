@@ -53,7 +53,13 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool QualityRecommendations { get; set; } = true;
 
-    public string DetailsRatingSource { get; set; } = "both";
+    public string[] MovieRatingSources { get; set; } = ["tmdb"];
+
+    public string[] TvShowRatingSources { get; set; } = ["tmdb"];
+
+    public bool UseStarForRatings { get; set; }
+
+    public string RatingStarColor { get; set; } = "#ffd700";
 
     public bool AddSeerrResultsInSearch { get; set; } = true;
 

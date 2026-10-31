@@ -647,7 +647,7 @@ public class JellyseerrRequestsService
             response.EnsureSuccessStatusCode();
             JObject source = JObject.Parse(await response.Content.ReadAsStringAsync(timeout.Token).ConfigureAwait(false));
             JObject details = new();
-            foreach (string field in new[] { "title", "name", "posterPath", "backdropPath", "releaseDate", "firstAirDate", "digitalReleaseDate" })
+            foreach (string field in new[] { "title", "name", "posterPath", "backdropPath", "voteAverage", "releaseDate", "firstAirDate", "digitalReleaseDate" })
             {
                 if (source[field] is JToken value && value.Type != JTokenType.Null) { details[field] = value.DeepClone(); }
             }
@@ -712,6 +712,7 @@ public class JellyseerrRequestsService
                 ?? media?.Value<string>("name")
                 ?? "Unknown",
             ["year"] = ExtractYear(details?["releaseDate"]?.ToString() ?? details?["firstAirDate"]?.ToString()),
+            ["voteAverage"] = details?["voteAverage"],
             ["posterUrl"] = string.IsNullOrWhiteSpace(posterPath)
                 ? null
                 : $"https://image.tmdb.org/t/p/w300{posterPath}",

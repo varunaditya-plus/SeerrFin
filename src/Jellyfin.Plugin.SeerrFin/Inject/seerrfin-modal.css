@@ -258,17 +258,18 @@
     z-index: 30;
 }
 
-.bst-tmdb-rating,
-.bst-imdb-rating {
+.bst-rating {
     display: flex;
     align-items: center;
     gap: 0.25rem;
 }
 
-.bst-tmdb-rating svg,
-.bst-imdb-rating svg { width: 2em; height: 2em; }
-
-.bst-imdb-rating svg { color: #f5c518; }
+.bst-rating img {
+    width: auto;
+    max-width: 2em;
+    height: 1.2em;
+    object-fit: contain;
+}
 
 .bst-vote-muted { color: var(--bst-type-secondary); }
 

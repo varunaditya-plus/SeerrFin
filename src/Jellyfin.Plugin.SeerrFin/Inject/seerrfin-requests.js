@@ -342,6 +342,7 @@ window.seerrFinLog = window.seerrFinLog || {
             mediaType: mediaType,
             SourceType: mediaType,
             PremiereDate: item.year ? item.year + '-01-01' : null,
+            CommunityRating: item.voteAverage,
             ProviderIds: providerIds
         };
     }
@@ -578,8 +579,19 @@ window.seerrFinLog = window.seerrFinLog || {
 
     function updateRequestCard(article, item) {
         const layout = shouldUseLandscapeCards();
-        const posterKey = JSON.stringify([layout, getCardOptions(), item.tmdbId, item.type, item.title, item.year,
-            item.posterPath, item.backdropPath, item.posterUrl, item.backdropUrl]);
+        const posterKey = JSON.stringify([
+            layout,
+            getCardOptions(),
+            item.tmdbId,
+            item.type,
+            item.title,
+            item.year,
+            item.posterPath,
+            item.backdropPath,
+            item.posterUrl,
+            item.backdropUrl,
+            item.voteAverage
+        ]);
         const actions = renderCardActions(item) || '';
         const content = renderContentBlock(item, layout);
         article.className = 'seerrfin-request-box seerrfin-request-box--' + (layout ? 'landscape' : 'portrait');
@@ -672,7 +684,7 @@ window.seerrFinLog = window.seerrFinLog || {
                     throw new Error('Request metadata identity did not match.');
                 }
                 const data = {};
-                ['title', 'year', 'posterPath', 'backdropPath', 'posterUrl', 'backdropUrl'].forEach(function (field) { data[field] = metadata[field]; });
+                ['title', 'year', 'posterPath', 'backdropPath', 'posterUrl', 'backdropUrl', 'voteAverage'].forEach(function (field) { data[field] = metadata[field]; });
                 state.metadataCache.set(key, { data: data, at: Date.now() });
                 const current = state.pageRequests.find(function (request) { return metadataKey(request) === key; });
                 if (!current) return;

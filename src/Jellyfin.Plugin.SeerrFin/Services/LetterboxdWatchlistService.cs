@@ -158,6 +158,7 @@ public class LetterboxdWatchlistService
                             Name = title,
                             SourceType = "movie",
                             PremiereDate = new DateTime(year, 1, 1),
+                            CommunityRating = movie.Rating,
                             ProviderIds = providerIds
                         }
                     );
@@ -271,7 +272,7 @@ public class LetterboxdWatchlistService
         return request;
     }
 
-    private sealed record TmdbMovieRefs(int Id, string? PosterPath, string? BackdropPath);
+    private sealed record TmdbMovieRefs(int Id, string? PosterPath, string? BackdropPath, float? Rating);
 
     private async Task<TmdbMovieRefs?> SearchTmdbMovieAsync(string title, int year, string apiKey, CancellationToken cancellationToken)
     {
@@ -300,7 +301,8 @@ public class LetterboxdWatchlistService
             return new TmdbMovieRefs(
                 movie.Value<int>("id"),
                 NormalizeTmdbImagePath(movie.Value<string>("poster_path")),
-                NormalizeTmdbImagePath(movie.Value<string>("backdrop_path"))
+                NormalizeTmdbImagePath(movie.Value<string>("backdrop_path")),
+                movie.Value<float?>("vote_average")
             );
         }
 
@@ -328,7 +330,8 @@ public class LetterboxdWatchlistService
         return new TmdbMovieRefs(
             id.Value,
             NormalizeTmdbImagePath(movie.Value<string>("poster_path")),
-            NormalizeTmdbImagePath(movie.Value<string>("backdrop_path"))
+            NormalizeTmdbImagePath(movie.Value<string>("backdrop_path")),
+            movie.Value<float?>("vote_average")
         );
     }
 

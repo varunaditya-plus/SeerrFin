@@ -1102,19 +1102,6 @@
                     <div class="bst-section-container">
                         <div class="bst-section-title">Display settings</div>
                         <div class="bst-card">
-                            <div class="bst-input-group">
-                                <div class="bst-field-main">
-                                    <label class="bst-label bst-label--side" for="detailsRatingSource">Ratings in details</label>
-                                    <div class="bst-input-stack">
-                                        <select id="detailsRatingSource" name="detailsRatingSource" class="bst-input">
-                                            <option value="tmdb">TMDB</option>
-                                            <option value="imdb">IMDb</option>
-                                            <option value="both" selected>Both</option>
-                                        </select>
-                                        <div class="bst-field-desc">Choose which platforms' ratings appear in details. IMDb ones are shown for movies when available from Seerr.</div>
-                                    </div>
-                                </div>
-                            </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
                                     <label class="bst-toggle-label" for="streamingServiceUseImages">Streaming services logos</label>
@@ -1211,6 +1198,65 @@
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
                                         <input id="showDownloadDetailsInDiscoveryPages" name="showDownloadDetailsInDiscoveryPages" type="checkbox" />
+                                        <span class="bst-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="bst-toggle-row bst-toggle-row--release-types">
+                                <div class="bst-toggle-copy">
+                                    <span class="bst-toggle-label" id="movieRatingSourcesLabel">Movie ratings</span>
+                                    <div class="bst-field-desc">Choose which ratings appear on cards and in details.</div>
+                                </div>
+                                <div class="bst-toggle-actions bst-release-type-actions" id="movieRatingSources" role="group" aria-labelledby="movieRatingSourcesLabel">
+                                    <label class="bst-release-type-btn">
+                                        <input type="checkbox" value="tmdb" data-rating-source checked />
+                                        <span>TMDB</span>
+                                    </label>
+                                    <label class="bst-release-type-btn">
+                                        <input type="checkbox" value="imdb" data-rating-source />
+                                        <span>IMDb</span>
+                                    </label>
+                                    <label class="bst-release-type-btn">
+                                        <input type="checkbox" value="rtCritics" data-rating-source />
+                                        <span>Tomatometer</span>
+                                    </label>
+                                    <label class="bst-release-type-btn">
+                                        <input type="checkbox" value="rtAudience" data-rating-source />
+                                        <span>Popcornmeter</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="bst-toggle-row bst-toggle-row--release-types">
+                                <div class="bst-toggle-copy">
+                                    <span class="bst-toggle-label" id="tvShowRatingSourcesLabel">TV Show ratings</span>
+                                    <div class="bst-field-desc">Choose which ratings appear on cards and in details.</div>
+                                </div>
+                                <div class="bst-toggle-actions bst-release-type-actions" id="tvShowRatingSources" role="group" aria-labelledby="tvShowRatingSourcesLabel">
+                                    <label class="bst-release-type-btn">
+                                        <input type="checkbox" value="tmdb" data-rating-source checked />
+                                        <span>TMDB</span>
+                                    </label>
+                                    <label class="bst-release-type-btn">
+                                        <input type="checkbox" value="rtCritics" data-rating-source />
+                                        <span>Tomatometer</span>
+                                    </label>
+                                    <label class="bst-release-type-btn">
+                                        <input type="checkbox" value="rtAudience" data-rating-source />
+                                        <span>Popcornmeter</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="bst-toggle-row">
+                                <div class="bst-toggle-copy">
+                                    <label class="bst-toggle-label" for="useStarForRatings">Use star for ratings</label>
+                                    <div class="bst-field-desc">Display the rating as a star instead of using the rating service's logo. You can also customize its color.</div>
+                                </div>
+                                <div class="bst-toggle-actions">
+                                    <label class="bst-color-swatch" title="Rating star color">
+                                        <input id="ratingStarColor" name="ratingStarColor" type="color" value="#ffd700" aria-label="Rating star color" />
+                                    </label>
+                                    <label class="bst-toggle">
+                                        <input id="useStarForRatings" name="useStarForRatings" type="checkbox" />
                                         <span class="bst-toggle-slider"></span>
                                     </label>
                                 </div>
@@ -2913,6 +2959,19 @@
                 };
             }
 
+            function loadRatingSources(id, values) {
+                const selected = new Set(Array.isArray(values) ? values : ['tmdb']);
+
+                document.querySelectorAll('#' + id + ' [data-rating-source]').forEach(function (checkbox) {
+                    checkbox.checked = selected.has(checkbox.value);
+                });
+            }
+
+            function getRatingSourcesPayload(id) {
+                return Array.from(document.querySelectorAll('#' + id + ' [data-rating-source]:checked'))
+                    .map(function (checkbox) { return checkbox.value; });
+            }
+
             function loadDiscoverReleaseTypes(types) {
                 const selected = new Set((types || []).map(function (value) { return parseInt(value, 10); }).filter(function (value) { return !Number.isNaN(value); }));
 
@@ -3419,7 +3478,12 @@
                 document.querySelector('#showDownloadDetailsInDiscoveryPages').checked = config.ShowDownloadDetailsInDiscoveryPages === true;
                 document.querySelector('#elegantFinFixes').checked = config.ElegantFinFixes === true;
                 document.querySelector('#qualityRecommendations').checked = config.QualityRecommendations !== false;
-                document.querySelector('#detailsRatingSource').value = ['tmdb', 'imdb'].includes(config.DetailsRatingSource) ? config.DetailsRatingSource : 'both';
+
+                loadRatingSources('movieRatingSources', config.MovieRatingSources ?? config.movieRatingSources);
+                loadRatingSources('tvShowRatingSources', config.TvShowRatingSources ?? config.tvShowRatingSources);
+                document.querySelector('#useStarForRatings').checked = (config.UseStarForRatings ?? config.useStarForRatings) === true;
+                document.querySelector('#ratingStarColor').value = toColorInputValue(config.RatingStarColor ?? config.ratingStarColor, 'ffd700');
+
                 document.querySelector('#addSeerrResultsInSearch').checked = config.AddSeerrResultsInSearch !== false;
                 loadDiscoverReleaseTypes(config.DiscoverReleaseTypes || config.discoverReleaseTypes || []);
                 setAdvancedFormValues(loadAdvancedFromConfig(config));
@@ -3477,7 +3541,12 @@
                     config.ShowDownloadDetailsInDiscoveryPages = document.querySelector('#showDownloadDetailsInDiscoveryPages').checked;
                     config.ElegantFinFixes = document.querySelector('#elegantFinFixes').checked;
                     config.QualityRecommendations = document.querySelector('#qualityRecommendations').checked;
-                    config.DetailsRatingSource = document.querySelector('#detailsRatingSource').value;
+
+                    config.MovieRatingSources = getRatingSourcesPayload('movieRatingSources');
+                    config.TvShowRatingSources = getRatingSourcesPayload('tvShowRatingSources');
+                    config.UseStarForRatings = document.querySelector('#useStarForRatings').checked;
+                    config.RatingStarColor = document.querySelector('#ratingStarColor').value;
+
                     config.AddSeerrResultsInSearch = document.querySelector('#addSeerrResultsInSearch').checked;
                     config.DiscoverReleaseTypes = getDiscoverReleaseTypesPayload();
                     config.Advanced = buildAdvancedPayload();

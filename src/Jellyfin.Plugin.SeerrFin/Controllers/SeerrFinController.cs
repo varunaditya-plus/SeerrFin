@@ -304,6 +304,10 @@ public class SeerrFinController : ControllerBase
                 config.DiscoverUsePosters,
                 config.ElegantFinFixes,
                 config.QualityRecommendations,
+                config.MovieRatingSources,
+                config.TvShowRatingSources,
+                config.UseStarForRatings,
+                config.RatingStarColor,
                 config.AddSeerrResultsInSearch,
                 config.NativeCarousels,
                 config.NativeGridPages,
@@ -681,7 +685,17 @@ public class SeerrFinController : ControllerBase
             browseUrl = config.JellyseerrUrl?.Trim();
         }
 
-        return Ok(new { tmdbApiKey = key ?? string.Empty, jellyseerrBrowseUrl = browseUrl ?? string.Empty, detailsRatingSource = config.DetailsRatingSource });
+        return Ok(
+            new
+            {
+                tmdbApiKey = key ?? string.Empty,
+                jellyseerrBrowseUrl = browseUrl ?? string.Empty,
+                movieRatingSources = config.MovieRatingSources,
+                tvShowRatingSources = config.TvShowRatingSources,
+                useStarForRatings = config.UseStarForRatings,
+                ratingStarColor = config.RatingStarColor
+            }
+        );
     }
 
     [HttpGet("servarr-servers/{type}")]

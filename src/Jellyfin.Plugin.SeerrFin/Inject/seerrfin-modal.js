@@ -25,10 +25,134 @@ window.seerrFinLog = window.seerrFinLog || {
     const TMDB_LOGO_SVG = '<svg width="2em" height="2em" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190.24 81.52"><defs><linearGradient id="bst-tmdb-grad" y1="40.76" x2="190.24" y2="40.76" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#90cea1"/><stop offset="0.56" stop-color="#3cbec9"/><stop offset="1" stop-color="#00b3e5"/></linearGradient></defs><path fill="url(#bst-tmdb-grad)" d="M105.67,36.06h66.9A17.67,17.67,0,0,0,190.24,18.4h0A17.67,17.67,0,0,0,172.57.73h-66.9A17.67,17.67,0,0,0,88,18.4h0A17.67,17.67,0,0,0,105.67,36.06Zm-88,45h76.9A17.67,17.67,0,0,0,112.24,63.4h0A17.67,17.67,0,0,0,94.57,45.73H17.67A17.67,17.67,0,0,0,0,63.4H0A17.67,17.67,0,0,0,17.67,81.06ZM10.41,35.42h7.8V6.92h10.1V0H.31v6.9h10.1Zm28.1,0h7.8V8.25h.1l9,27.15h6l9.3-27.15h.1V35.4h7.8V0H66.76l-8.2,23.1h-.1L50.31,0H38.51ZM152.43,55.67a15.07,15.07,0,0,0-4.52-5.52,18.57,18.57,0,0,0-6.68-3.08,33.54,33.54,0,0,0-8.07-1h-11.7v35.4h12.75a24.58,24.58,0,0,0,7.55-1.15A19.34,19.34,0,0,0,148.11,77a16.27,16.27,0,0,0,4.37-5.5,16.91,16.91,0,0,0,1.63-7.58A18.5,18.5,0,0,0,152.43,55.67ZM145,68.6A8.8,8.8,0,0,1,142.36,72a10.7,10.7,0,0,1-4,1.82,21.57,21.57,0,0,1-5,.55h-4.05v-21h4.6a17,17,0,0,1,4.67.63,11.66,11.66,0,0,1,3.88,1.87A9.14,9.14,0,0,1,145,59a9.87,9.87,0,0,1,1,4.52A11.89,11.89,0,0,1,145,68.6Zm44.63-.13a8,8,0,0,0-1.58-2.62A8.38,8.38,0,0,0,185.63,64a10.31,10.31,0,0,0-3.17-1v-.1a9.22,9.22,0,0,0,4.42-2.82,7.43,7.43,0,0,0,1.68-5,8.42,8.42,0,0,0-1.15-4.65,8.09,8.09,0,0,0-3-2.72,12.56,12.56,0,0,0-4.18-1.3,32.84,32.84,0,0,0-4.62-.33h-13.2v35.4h14.5a22.41,22.41,0,0,0,4.72-.5,13.53,13.53,0,0,0,4.28-1.65,9.42,9.42,0,0,0,3.1-3,8.52,8.52,0,0,0,1.2-4.68A9.39,9.39,0,0,0,189.66,68.47ZM170.21,52.72h5.3a10,10,0,0,1,1.85.18,6.18,6.18,0,0,1,1.7.57,3.39,3.39,0,0,1,1.22,1.13,3.22,3.22,0,0,1,.48,1.82,3.63,3.63,0,0,1-.43,1.8,3.4,3.4,0,0,1-1.12,1.2,4.92,4.92,0,0,1-1.58.65,7.51,7.51,0,0,1-1.77.2h-5.65Zm11.72,20a3.9,3.9,0,0,1-1.22,1.3,4.64,4.64,0,0,1-1.68.7,8.18,8.18,0,0,1-1.82.2h-7v-8h5.9a15.35,15.35,0,0,1,2,.15,8.47,8.47,0,0,1,2.05.55,4,4,0,0,1,1.57,1.18,3.11,3.11,0,0,1,.63,2A3.71,3.71,0,0,1,181.93,72.72Z"/></svg>';
     const CLOSE_ICON = '<span class="material-icons close" aria-hidden="true"></span>';
     const IMDB_ICON = '<svg width="2em" height="2em" fill="currentColor" viewBox="0 0 32 32"><path d="M8.4,21.1H5.9V9.9h3.8l0.7,4.7h0.1L11,9.9h3.8v11.2h-2.5v-6.7h-0.1l-0.9,6.7H9.4l-1-6.7h0L8.4,21.1z"/><path d="M15.8,9.8c0.4,0,3.2-0.1,4.7,0.1c1.2,0.1,1.8,1.1,1.9,2.3c0.1,2.2,0.1,4.4,0.1,6.6c0,0.2,0,0.5-0.1,0.8c-0.2,0.9-0.7,1.4-1.9,1.5c-1.5,0.1-3,0.1-4.4,0.1c0,0-0.1,0-0.2,0V9.8z M18.8,11.9v7.2c0.5,0,0.8-0.2,0.8-0.7c0-1.9,0-3.9,0-5.9C19.6,12,19.4,11.8,18.8,11.9z"/><path d="M2,21.1V9.9h2.9v11.2H2z"/><path d="M29.9,14.1c-0.1-0.8-0.6-1.2-1.4-1.4c-0.8-0.1-1.6,0-2.3,0.7V9.9h-2.8v11.2H26c0.1-0.2,0.1-0.4,0.2-0.5c0.1,0.1,0.2,0.2,0.3,0.3c0.7,0.5,1.5,0.6,2.3,0.3c0.7-0.3,1-0.9,1-1.6c0-0.8,0.1-1.7,0.1-2.6C30,16,30,15,29.9,14.1z M27.1,19.1c0,0.2-0.2,0.4-0.4,0.4s-0.4-0.2-0.4-0.4v-4.3c0-0.2,0.2-0.4,0.4-0.4s0.4,0.2,0.4,0.4V19.1z"/></svg>';
+    const ratingLogos = {
+        tmdb: ratingLogoUrl(TMDB_LOGO_SVG),
+        imdb: ratingLogoUrl(
+            IMDB_ICON.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ')
+                .replace('fill="currentColor"', 'fill="#f5c518"')
+                .replace('viewBox="0 0 32 32"', 'viewBox="2 9.8 28 11.4"')
+        ),
+        rtFresh: ratingLogoUrl('<svg viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg"><path d="m478.29 296.98c-3.99-63.966-36.52-111.82-85.468-138.58 0.278 1.56-1.109 3.508-2.688 2.818-32.016-14.006-86.328 31.32-124.28 7.584 0.285 8.519-1.378 50.072-59.914 52.483-1.382 0.056-2.142-1.355-1.268-2.354 7.828-8.929 15.732-31.535 4.367-43.586-24.338 21.81-38.472 30.017-85.138 19.186-29.878 31.241-46.809 74-43.485 127.26 6.78 108.74 108.63 170.89 211.19 164.49 102.56-6.395 193.47-80.572 186.68-189.31" fill="#FA320A"/><path d="M291.375 132.293c21.075-5.023 81.693-.49 101.114 25.274 1.166 1.545-.475 4.468-2.355 3.648-32.016-14.006-86.328 31.32-124.282 7.584.285 8.519-1.378 50.072-59.914 52.483-1.382.056-2.142-1.355-1.268-2.354 7.828-8.929 15.73-31.535 4.367-43.586-26.512 23.758-40.884 31.392-98.426 15.838-1.883-.508-1.241-3.535.762-4.298 10.876-4.157 35.515-22.361 58.824-30.385 4.438-1.526 8.862-2.71 13.18-3.4-25.665-2.293-37.235-5.862-53.559-3.4-1.789.27-3.004-1.813-1.895-3.241 21.995-28.332 62.513-36.888 87.512-21.837-15.41-19.094-27.48-34.321-27.48-34.321l28.601-16.246s11.817 26.4 20.414 45.614c21.275-31.435 60.86-34.336 77.585-12.033.992 1.326-.045 3.21-1.702 3.171-13.612-.331-21.107 12.05-21.675 21.466l.197.023" fill="#00912D"/></svg>'),
+        rtRotten: ratingLogoUrl('<svg viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg"><path d="M445.185 444.684c-79.369 4.167-95.587-86.652-126.726-86.006-13.268.279-23.726 14.151-19.133 30.32 2.525 8.888 9.53 21.923 13.944 30.011 15.57 28.544-7.447 60.845-34.383 63.577-44.76 4.54-63.433-21.426-62.278-48.007 1.3-29.84 26.6-60.331.65-73.305-27.194-13.597-49.301 39.572-75.325 51.439-23.553 10.741-56.248 2.413-67.872-23.741-8.164-18.379-6.68-53.768 29.67-67.27 22.706-8.433 73.305 11.029 75.9-13.623 2.992-28.416-53.155-30.812-70.06-37.626-29.912-12.055-47.567-37.85-33.734-65.522 10.378-20.757 40.915-29.203 64.223-20.11 27.922 10.892 32.404 39.853 46.71 51.897 12.324 10.38 29.19 11.68 40.22 4.543 8.135-5.265 10.843-16.828 7.774-27.39-4.07-14.023-14.875-22.773-25.415-31.346-18.758-15.249-45.24-28.36-29.222-69.983 13.13-34.11 51.642-35.34 51.642-35.34 15.3-1.72 29.002 2.9 40.167 12.875 14.927 13.335 17.834 31.16 15.336 50.176-2.283 17.358-8.426 32.56-11.63 49.759-3.717 19.966 6.954 40.086 27.249 40.869 26.694 1.031 34.698-19.486 37.964-32.492 4.782-19.028 11.058-36.694 28.718-47.82 25.346-15.97 60.552-12.47 76.886 18.222 12.92 24.284 8.772 57.715-11.047 75.97-8.892 8.188-19.584 11.075-31.148 11.156-16.585.117-33.162-.29-48.556 7.471-10.48 5.281-15.047 13.888-15.045 25.423 0 11.242 5.853 18.585 15.336 23.363 17.86 9.003 37.577 10.843 56.871 14.222 27.98 4.9 52.581 14.755 68.375 40.72.142.228.28.458.415.69 18.139 30.741-.831 75.005-36.476 76.878" fill="#0AC855"/></svg>'),
+        rtAudienceFresh: ratingLogoUrl('<svg viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg"><path fill="#fff" d="M370.57 474.214l23.466-237.956c14.93-4.796 29.498-11.15 40.23-20.262L404.16 446.278c-6.748 10.248-19.863 20.86-33.59 27.936zm-78.197 21.631l2.947-244.528c20.894-.599 47.933-3.43 70.97-8.346l-19.07 241.17c-22.724 7.518-35.934 9.848-54.847 11.704zm-99.694-252.874c23.038 4.916 50.077 7.747 70.971 8.346l2.948 244.528c-18.914-1.856-32.123-4.186-54.847-11.705l-19.072-241.17zm-67.974-26.975c10.732 9.112 25.3 15.466 40.23 20.262l23.464 237.956c-13.726-7.075-26.84-17.688-33.59-27.936l-30.104-230.282z"/><path fill="gold" d="M118.905 157.445c1.357 28.827 72.771 51.677 160.578 51.176 76.687-.438 140.659-18.546 156.329-42.336a22.976 22.976 0 00-14.058-7.426c.06-.7.098-1.406.095-2.122-.065-11.4-8.429-20.788-19.327-22.54.287-1.474.438-2.999.43-4.559-.072-12.696-10.426-22.928-23.124-22.856-.287.001-.568.036-.853.049a22.911 22.911 0 001.254-7.56c-.074-12.697-10.425-22.93-23.123-22.858a22.914 22.914 0 00-8.247 1.6c-3.632-6.835-10.606-11.6-18.737-12.149-1.416-11.4-11.157-20.195-22.93-20.129-7.41.042-13.963 3.6-18.136 9.065-4.233-4.605-10.3-7.494-17.047-7.456-12.698.072-22.932 10.424-22.86 23.118a22.983 22.983 0 001.115 6.946 22.918 22.918 0 00-13.07 7.459c-2.644-9.847-11.637-17.084-22.314-17.024-9.975.057-18.406 6.47-21.537 15.366-8.474 3.426-14.439 11.738-14.383 21.433.012 2.154.342 4.227.907 6.202a22.876 22.876 0 00-9.328-1.932c-10.012.058-18.47 6.516-21.574 15.465a22.83 22.83 0 00-9.788-2.149c-12.698.072-22.934 10.422-22.86 23.118a22.833 22.833 0 003.159 11.463c-.202.203-.379.426-.571.636"/><path fill="#FA320A" d="M404.161 446.278c-6.749 10.248-19.864 20.86-33.59 27.936l23.465-237.956c14.93-4.796 29.498-11.15 40.23-20.262L404.16 446.278zM347.22 484.14c-22.723 7.519-35.934 9.85-54.847 11.705l2.947-244.528c20.894-.599 47.933-3.43 70.973-8.346L347.22 484.14zm-135.47 0l-19.07-241.17c23.037 4.917 50.076 7.748 70.97 8.347l2.948 244.528c-18.914-1.856-32.123-4.186-54.847-11.705zm-56.94-37.862l-30.105-230.282c10.732 9.112 25.3 15.466 40.23 20.262l23.464 237.956c-13.726-7.075-26.84-17.688-33.588-27.936zm247.668-321.143c.298 1.453.465 2.955.473 4.498a23.018 23.018 0 01-.43 4.56c10.9 1.749 19.263 11.137 19.328 22.54a23.59 23.59 0 01-.095 2.12 22.976 22.976 0 0114.058 7.425c-15.669 23.792-79.642 41.9-156.327 42.34-87.807.502-159.221-22.346-160.58-51.175.192-.208.37-.433.57-.634-1.355-2.311-2.29-4.887-2.773-7.62-8.408 7.979-13.495 14.412-12.6 23.78.085 1.251 37.196 266.911 37.196 266.911 4.282 42.075 65.391 75.703 138.187 76.12 72.796-.417 133.907-34.045 138.187-76.12 0 0 37.11-265.66 37.197-266.912 1.777-18.736-20.15-35.745-52.39-47.833z"/></svg>'),
+        rtAudienceRotten: ratingLogoUrl('<svg viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg"><g transform="translate(33 140)"><path d="m43.802 267.32l237.94 23.482c4.7937 14.937 11.149 29.517 20.259 40.256l-230.27-30.125c-10.248-6.7519-20.861-19.877-27.936-33.612zm222.88-75.298c0.60053 20.906 3.4316 47.964 8.3462 71.017l-241.15-19.083c-7.518-22.739-9.8466-35.959-11.704-54.885l244.51 2.951zm8.3462-102.71c-4.9146 23.053-7.7456 50.111-8.3462 71.017l-244.51 2.951c1.8576-18.926 4.1862-32.146 11.704-54.885l241.15-19.083zm26.973-68.019c-9.1095 10.74-15.465 25.318-20.259 40.257l-237.94 23.48c7.0751-13.735 17.689-26.859 27.936-33.612l230.27-30.125z" fill="#fff"/><path d="m303.57 264.67c3.155-7.8209 14.337-12.586 22.367-12.028 8.5825 0.59581 17.699 9.6258 19.292 18.507 0.29589-0.32244 0.60578-0.62735 0.92093-0.92701 2.7558-2.6356 6.2084-4.3845 9.9867-4.8664-0.57777-2.562-0.71609-5.3045-0.3204-8.1188 1.3954-9.901 9.3336-17.326 18.422-17.252 5.8652 0.047314 11.011 3.0509 14.364 7.6649 0.29939-0.37501 0.6303-0.71848 0.95245-1.069 3.8343-19.991 6.2644-42.578 6.8177-66.547 1.8996-82.42-18.993-149.75-46.663-150.39-27.672-0.63962-51.644 65.656-53.544 148.08 0 0-1.4654 30.062 7.4042 86.951" fill="#00641E"/><path d="m490.91 354.8c1.6353-2.732 2.5492-6.0072 2.4862-9.4874 0.5305-11.245-7.1819-21.439-17.913-20.31 0.3099-1.2862 0.51299-2.6233 0.59178-4.0024 0.64255-11.264-7.1188-20.972-17.337-21.682-0.2241-0.014019-0.44471-0.021029-0.66706-0.028039 1.0627-2.795 1.5897-5.916 1.4024-9.2228-0.52875-9.3717-6.9858-17.268-15.386-18.822-3.0342-0.56076-5.9773-0.28213-8.6718 0.65188-2.5457-6.277-7.8909-10.933-14.393-11.916-0.51474-10.192-7.8699-18.58-17.34-19.238-5.9545-0.41356-11.426 2.3237-15.085 6.9061-3.3528-4.614-8.4985-7.6158-14.364-7.6632-9.0885-0.075352-17.027 7.3495-18.422 17.252-0.39569 2.8126-0.25737 5.555 0.3204 8.1188-3.7783 0.48015-7.2309 2.2308-9.9867 4.8646-0.31515 0.29966-0.62504 0.60457-0.92093 0.92701-1.5932-8.8811-10.71-17.909-19.292-18.507-8.0293-0.55726-19.357 4.3249-22.367 12.028 1.3201 13.434 9.71 50.053 40.055 82.903l0.26963 0.019276c2.9256 2.6496 6.7459 4.1093 10.818 3.7466 2.5247-0.22606 4.8498-1.1303 6.8527-2.5252l0.48848 0.033295c2.67 1.8558 5.8793 2.8266 9.2706 2.5252 1.2956-0.11566 2.5317-0.42758 3.7065-0.87269 2.9064 6.0142 9.3879 9.901 16.622 9.2631 5.6026-0.49417 10.365-3.5959 13.164-7.9611l0.90692 0.063086c2.7961 2.774 6.513 4.3897 10.522 4.2688 3.3143 5.0188 9.4019 8.1065 16.12 7.516 2.5299-0.22255 4.8918-0.95505 6.998-2.0643 3.5139 4.3266 9.2811 6.8991 15.609 6.3419 6.2557-0.5485 11.54-4.02 14.414-8.8197 2.8241 2.2693 6.3625 3.4872 10.12 3.1525 3.6452-0.32594 6.8842-2.0485 9.3179-4.6543l0.40619 0.028038c0.55326-0.80259 1.026-1.6245 1.4654-2.4533 0.010505-0.015772 0.019259-0.033296 0.028014-0.049067 0.059527-0.1104 0.13306-0.21905 0.18909-0.3312" fill="#FFD700"/><path d="m281.75 61.547l-237.94 23.48c7.0751-13.735 17.689-26.859 27.936-33.612l230.27-30.125c-9.1095 10.74-15.465 25.318-20.259 40.257zm20.259 269.51l-230.27-30.125c-10.248-6.7519-20.861-19.877-27.936-33.611l237.94 23.48c4.7937 14.937 11.149 29.517 20.259 40.256zm-268.13-87.102c-7.518-22.739-9.8466-35.957-11.704-54.885l244.51 2.951c0.60053 20.906 3.4316 47.964 8.3462 71.017l-241.15-19.083zm0-135.56l241.15-19.083c-4.9146 23.053-7.7456 50.111-8.3462 71.019l-244.51 2.9493c1.8576-18.926 4.1862-32.146 11.704-54.885zm344.72-82.679c-15.255-17.778-26.206-26.124-35.587-25.04-1.7491 0.22255-266.89 37.222-266.89 37.222-42.074 4.2828-75.7 65.432-76.117 138.28 0.4167 72.843 34.043 133.99 76.117 138.28 0 0 265.64 37.135 266.89 37.221 2.2183-0.014019 4.4086-0.31192 6.5673-0.86568-2.101-0.6256-4.0391-1.7208-5.6867-3.2139l-0.26963-0.019276c-30.345-32.848-38.735-69.47-40.055-82.903 0.003501-0.010514 0.010505-0.019276 0.014006-0.02979-0.003501 0.010514-0.010505 0.019276-0.014006 0.02979-8.8697-56.889-7.4042-86.951-7.4042-86.951 1.8996-82.42 25.872-148.72 53.544-148.08 27.67 0.63962 48.562 67.973 46.663 150.39-0.55326 23.969-2.9834 46.556-6.8177 66.547 3.9393-4.3512 9.2233-6.1842 14.133-5.8372 0.90342 0.064838 1.7823 0.2173 2.6437 0.41531 16.804-92.03-0.81238-181.89-27.729-215.44z" fill="#04A53C"/></g></svg>')
+    };
+
+    function ratingLogoUrl(svg) {
+        return 'data:image/svg+xml,' + encodeURIComponent(svg.replace('width="2em" height="2em" ', ''));
+    }
+
     let activeDetailsRoot = null;
     let activeSeasonRoot = null;
     let activeQualityRoot = null;
     let escapeHandler = null;
+    const ratingCache = new Map();
+    const ratingQueue = [];
+    let activeRatingRequests = 0;
+
+    function loadRatings() {
+        while (activeRatingRequests < 4 && ratingQueue.length) {
+            const job = ratingQueue.shift();
+
+            if (job.userId !== ApiClient.getCurrentUserId()) {
+                job.resolve({});
+                continue;
+            }
+
+            activeRatingRequests++;
+            const path = job.mediaType === 'tv' ? 'tv/' + job.mediaId + '/ratings' : 'movie/' + job.mediaId + '/ratingscombined';
+
+            ApiClient.ajax({
+                url: ApiClient.getUrl('SeerrFin/jellyseerr/' + path),
+                type: 'GET',
+                dataType: 'json'
+            }).then(function (ratings) {
+                job.resolve(job.mediaType === 'tv' ? { rt: ratings } : ratings || {});
+            }).catch(function (err) {
+                ratingCache.delete(job.key);
+                if (!err || err.status !== 404) log.warn('Seerr ratings fetch failed', err);
+
+                job.resolve({});
+            }).finally(function () {
+                activeRatingRequests--;
+                loadRatings();
+            });
+        }
+    }
+
+    function fetchRatings(mediaId, mediaType) {
+        const userId = ApiClient.getCurrentUserId();
+        const key = userId + ':' + mediaType + ':' + mediaId;
+
+        if (!ratingCache.has(key)) {
+            if (ratingCache.size >= 200) ratingCache.delete(ratingCache.keys().next().value);
+
+            ratingCache.set(key, new Promise(function (resolve) {
+                ratingQueue.push({
+                    mediaId: mediaId,
+                    mediaType: mediaType,
+                    userId: userId,
+                    key: key,
+                    resolve: resolve
+                });
+                loadRatings();
+            }));
+        }
+
+        return ratingCache.get(key);
+    }
+
+    function getRatingSources(mediaType, config) {
+        const tv = mediaType === 'tv';
+        const allowed = tv ? ['tmdb', 'rtCritics', 'rtAudience'] : ['tmdb', 'imdb', 'rtCritics', 'rtAudience'];
+        const selected = tv ?
+            config?.TvShowRatingSources ?? config?.tvShowRatingSources :
+            config?.MovieRatingSources ?? config?.movieRatingSources;
+        const values = Array.isArray(selected) ? selected : ['tmdb'];
+
+        return allowed.filter(function (source) { return values.includes(source); });
+    }
+
+    function getRatingEntries(tmdbScore, tmdbVotes, ratings, selected, config) {
+        const entries = [];
+        const color = config?.RatingStarColor ?? config?.ratingStarColor;
+        const star = (config?.UseStarForRatings ?? config?.useStarForRatings) === true ?
+            ratingLogoUrl(
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="' +
+                (/^#[0-9a-f]{6}$/i.test(color) ? color : '#ffd700') +
+                '"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>'
+            ) :
+            null;
+
+        function add(source, label, score, max, logo, votes) {
+            if (!selected.includes(source) || (typeof score !== 'number' && typeof score !== 'string') || score === '') return;
+
+            const value = Number(score);
+
+            if (!(value >= 0 && value <= max) || (max === 10 && value === 0)) return;
+
+            entries.push({
+                label: label,
+                value: value * 10 / max,
+                text: max === 100 ? value.toFixed(0) + '%' : value.toFixed(1),
+                logo: star || logo,
+                votes: votes
+            });
+        }
+
+        add('tmdb', 'TMDB', tmdbScore, 10, ratingLogos.tmdb, tmdbVotes);
+        add('imdb', 'IMDb', ratings?.imdb?.criticsScore, 10, ratingLogos.imdb, ratings?.imdb?.criticsScoreCount);
+
+        const rt = ratings?.rt;
+
+        if (rt?.criticsRating) add('rtCritics', 'Tomatometer', rt.criticsScore, 100,
+            rt.criticsRating === 'Rotten' ? ratingLogos.rtRotten : ratingLogos.rtFresh);
+
+        if (rt?.audienceRating) add('rtAudience', 'Popcornmeter', rt.audienceScore, 100,
+            rt.audienceRating === 'Spilled' ? ratingLogos.rtAudienceRotten : ratingLogos.rtAudienceFresh);
+
+        return entries;
+    }
 
     function escapeHtml(text) {
         const div = document.createElement('div');
@@ -449,8 +573,7 @@ window.seerrFinLog = window.seerrFinLog || {
     function loadModalDetails(mediaId, mediaType) {
         return loadClientSettings().then(function (config) {
             const apiKey = getTmdbApiKey(config);
-            const source = config.detailsRatingSource || config.DetailsRatingSource;
-            const ratingSource = source === 'tmdb' || source === 'imdb' ? source : 'both';
+            const ratingSources = getRatingSources(mediaType, config);
             const jellyseerrPromise = fetchJellyseerrDetails(mediaId, mediaType);
 
             // Fetch both sources but prefer TMDB content with Seerr status
@@ -461,7 +584,9 @@ window.seerrFinLog = window.seerrFinLog || {
                 const jellyseerr = results[0];
                 const tmdb = results[1];
                 const details = tmdb ? mergeJellyseerrOverlay(tmdb, jellyseerr) : jellyseerr;
-                details.ratingSource = ratingSource;
+                details.ratingSources = ratingSources;
+                details.useStarForRatings = config.UseStarForRatings ?? config.useStarForRatings;
+                details.ratingStarColor = config.RatingStarColor ?? config.ratingStarColor;
                 return details;
             });
         });
@@ -1175,28 +1300,18 @@ window.seerrFinLog = window.seerrFinLog || {
     }
 
     function renderDetailsRatings(data) {
-        const source = data.ratingSource;
-        const parts = [];
-        const tmdbRating = Number(data.voteAverage ?? data.vote_average);
-        const imdb = data.imdbRating;
-        const imdbRating = Number(imdb && imdb.criticsScore);
+        const entries = getRatingEntries(data.voteAverage ?? data.vote_average, data.voteCount ?? data.vote_count,
+            data.externalRatings, data.ratingSources, data);
 
-        function score(className, label, icon, value, count) {
-            const votes = Number(count);
-            return `<div class="${className}" aria-label="${label} rating ${value.toFixed(1)} out of 10">
-                ${icon}<span class="bst-meta-emphasis">${value.toFixed(1)}</span>
+        const parts = entries.map(function (rating) {
+            const votes = Number(rating.votes);
+            return `<div class="bst-rating" aria-label="${rating.label} rating ${rating.text}">
+                <img src="${rating.logo}" alt="${rating.label}"><span class="bst-meta-emphasis">${rating.text}</span>
                 ${Number.isFinite(votes) && votes > 0 ? `<span class="bst-vote-muted">(${votes.toLocaleString()})</span>` : ''}
             </div>`;
-        }
-
-        if (source !== 'imdb' && tmdbRating > 0 && tmdbRating <= 10) {
-            parts.push(score('bst-tmdb-rating', 'TMDB', TMDB_LOGO_SVG, tmdbRating, data.voteCount ?? data.vote_count));
-        }
-        if (source !== 'tmdb' && imdbRating > 0 && imdbRating <= 10) {
-            parts.push(score('bst-imdb-rating', 'IMDb', IMDB_ICON, imdbRating, imdb.criticsScoreCount));
-        }
-
+        });
         const year = (data.releaseDate || data.firstAirDate || '').substring(0, 4);
+
         if (year) parts.push(`<span class="bst-meta-emphasis">${escapeHtml(year)}</span>`);
 
         return parts.join('<span class="bst-dot">•</span>');
@@ -1326,19 +1441,12 @@ window.seerrFinLog = window.seerrFinLog || {
         const watchlistBtn = root.querySelector('[data-action="watchlist"]');
         const watchlistUserId = ApiClient.getCurrentUserId();
 
-        // Seerr's combined ratings endpoint provides IMDb scores for movies only.
-        if (data.ratingSource !== 'tmdb' && mediaType === 'movie') {
-            ApiClient.ajax({
-                url: ApiClient.getUrl('SeerrFin/jellyseerr/movie/' + mediaId + '/ratingscombined'),
-                type: 'GET',
-                dataType: 'json'
-            }).then(function (ratings) {
-                if (!root.isConnected || watchlistUserId !== ApiClient.getCurrentUserId() || !ratings || !ratings.imdb) return;
+        if (data.ratingSources.some(function (source) { return source !== 'tmdb'; })) {
+            fetchRatings(mediaId, mediaType).then(function (ratings) {
+                if (!root.isConnected || watchlistUserId !== ApiClient.getCurrentUserId()) return;
 
-                data.imdbRating = ratings.imdb;
+                data.externalRatings = ratings;
                 root.querySelector('[data-ratings-slot]').innerHTML = renderDetailsRatings(data);
-            }).catch(function (err) {
-                if (!err || err.status !== 404) log.warn('IMDb ratings fetch failed', err);
             });
         }
 
@@ -1486,5 +1594,12 @@ window.seerrFinLog = window.seerrFinLog || {
         });
     }
 
-    window.seerrFinModal = { open: openDetailsModal, close: closeDetailsModal, openQualityPicker: openQualityModal };
+    window.seerrFinModal = {
+        open: openDetailsModal,
+        close: closeDetailsModal,
+        openQualityPicker: openQualityModal,
+        fetchRatings: fetchRatings,
+        getRatingSources: getRatingSources,
+        getRatingEntries: getRatingEntries
+    };
 })();

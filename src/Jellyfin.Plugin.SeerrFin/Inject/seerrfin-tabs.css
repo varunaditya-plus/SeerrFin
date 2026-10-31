@@ -42,6 +42,26 @@ main > [data-seerrfin-modern-panel]:not(.is-active) {
 
 .seerrfin-discover-filter.is-active { border-bottom-color: var(--accentTextColor, var(--buttonBackground, #00a4dc)); }
 
+[data-seerrfin-card-ratings] {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    vertical-align: top;
+}
+
+[data-seerrfin-card-ratings] > span {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+[data-seerrfin-card-ratings] img {
+    width: auto;
+    max-width: 1.9em;
+    height: 1.1em;
+    object-fit: contain;
+    vertical-align: -0.15em;
+}
+
 .seerrfin-discover-body[hidden] { display: none; }
 
 .seerrfin-box-card { cursor: pointer; }
