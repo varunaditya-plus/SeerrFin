@@ -973,7 +973,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
             return `
                 <label class="bst-quality-option">
-                    <input type="radio" class="bst-quality-radio" name="bst-quality-profile"${opt === defaultOption ? ' checked' : ''}
+                    <input type="radio" class="bst-quality-radio" name="bst-quality-profile"${opt === defaultOption || options.length === 1 ? ' checked' : ''}
                         data-server-id="${opt.serverId}" data-profile-id="${opt.profileId}" />
                     <span>${label}${opt === defaultOption ? ' (Default)' : ''}${subHtml}</span>
                 </label>
@@ -1074,7 +1074,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 return;
             }
 
-            if (filteredOptions.length === 1) {
+            if (filteredOptions.length === 1 && (!getRequestModalAdvanced().showRootFolderSelector || filteredOptions[0].rootFolders.length <= 1)) {
                 const option = filteredOptions[0];
                 list.innerHTML = `<div class="bst-quality-loading">Submitting request…</div>`;
                 submitRequest(mediaId, mediaType, {
