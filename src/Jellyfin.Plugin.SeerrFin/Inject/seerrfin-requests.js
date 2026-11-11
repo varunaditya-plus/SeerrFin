@@ -32,9 +32,16 @@ window.seerrFinLog = window.seerrFinLog || {
     const FILTERS = [
         { id: 'all', label: 'All' },
         { id: 'pending', label: 'Pending Approval' },
+        { id: 'approved', label: 'Approved' },
+        { id: 'completed', label: 'Completed' },
         { id: 'processing', label: 'Processing' },
         { id: 'comingsoon', label: 'Coming Soon' },
-        { id: 'available', label: 'Available' }
+        { id: 'partial', label: 'Partially Available' },
+        { id: 'available', label: 'Available' },
+        { id: 'unavailable', label: 'Unavailable' },
+        { id: 'declined', label: 'Declined' },
+        { id: 'failed', label: 'Failed' },
+        { id: 'deleted', label: 'Deleted' }
     ];
 
     const state = {
@@ -42,6 +49,7 @@ window.seerrFinLog = window.seerrFinLog || {
         totalPages: 1,
         page: 1,
         filter: 'all',
+        filterCounts: null,
         loadId: 0,
         isLoading: false,
         loadPromise: null,
@@ -378,17 +386,18 @@ window.seerrFinLog = window.seerrFinLog || {
 
         if (!raw || !statusKey) {
             return mediaFailed ?
-                { statusKey: 'failed', statusLabel: 'Failed to find content', percent: 100, isActive: false } :
+                { statusKey: 'failed', statusLabel: 'Request failed', percent: null } :
                 null;
         }
 
         return {
             statusKey: statusKey,
             statusLabel: raw.statusLabel || raw.StatusLabel || '',
-            percent: raw.percent ?? raw.Percent ?? 0,
-            downloadedBytes: raw.downloadedBytes ?? raw.DownloadedBytes ?? 0,
-            totalBytes: raw.totalBytes ?? raw.TotalBytes ?? 0,
-            isActive: raw.isActive ?? raw.IsActive ?? false
+            percent: raw.percent ?? raw.Percent ?? null,
+            downloadedBytes: raw.downloadedBytes ?? raw.DownloadedBytes ?? null,
+            totalBytes: raw.totalBytes ?? raw.TotalBytes ?? null,
+            detail: raw.detail || raw.Detail || '',
+            openUrl: raw.openUrl || raw.OpenUrl || ''
         };
     }
 
@@ -397,25 +406,23 @@ window.seerrFinLog = window.seerrFinLog || {
 
         if (!progress) { return; }
 
-        const isFailed = progress.statusKey === 'failed' || (item.mediaStatusLabel || '').toLowerCase() === 'failed';
-        const percent = isFailed ? 100 : Math.max(0, Math.min(100, Number(progress.percent) || 0));
-        const statusKey = isFailed ? 'failed' : escapeHtml(progress.statusKey);
-        const isTransfer = !isFailed && progress.isActive === true && (
-            progress.statusKey === 'queued' || progress.statusKey.indexOf('downloaded-') === 0
-        );
-
-        const percentText = isFailed ? 'Failed' : (isTransfer ? `${percent}%` : '0%');
-        const detailText = isFailed ?
-            'Failed to find content' :
-            (isTransfer ?
-                `${formatBytes(progress.downloadedBytes)}/${formatBytes(progress.totalBytes)}` :
-                (progress.statusLabel || ''));
+        const hasPercent = progress.percent != null && Number.isFinite(Number(progress.percent));
+        const percent = hasPercent ? Math.max(0, Math.min(100, Number(progress.percent))) : null;
+        const statusKey = escapeHtml(progress.statusKey);
+        const label = progress.statusKey.indexOf('downloaded-') === 0 ? 'Downloaded' : (progress.statusLabel || 'Status unknown');
+        const separateState = label !== getPlugin().getMediaStatusDisplayLabel(item) && progress.statusKey.indexOf('downloaded-') !== 0;
+        const percentText = hasPercent ? `${separateState ? label + ' · ' : ''}${percent}%` : label;
+        const detailText = progress.totalBytes > 0 && progress.downloadedBytes != null ?
+            `${formatBytes(progress.downloadedBytes)}/${formatBytes(progress.totalBytes)}` : progress.detail;
+        const barHtml = hasPercent ? `
+            <div class="seerrfin-request-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-label="${escapeHtml(label)}">
+                <div class="seerrfin-request-progress-fill" style="width:${percent}%"></div>
+            </div>
+        ` : '';
 
         return `
-            <div class="seerrfin-request-progress" data-status="${statusKey}">
-                <div class="seerrfin-request-progress-bar" aria-hidden="true">
-                    <div class="seerrfin-request-progress-fill" style="width:${percent}%"></div>
-                </div>
+            <div class="seerrfin-request-progress" data-status="${statusKey}" title="${escapeHtml(progress.detail)}">
+                ${barHtml}
                 <div class="seerrfin-request-progress-meta">
                     <span class="seerrfin-request-progress-percent">${escapeHtml(percentText)}</span>
                     <span class="seerrfin-request-progress-detail">${escapeHtml(detailText)}</span>
@@ -425,7 +432,7 @@ window.seerrFinLog = window.seerrFinLog || {
     }
 
     function renderContentBlock(item, isLandscape) {
-        const statusLabel = item.mediaStatusLabel || 'Unknown';
+        const statusLabel = getPlugin().getMediaStatusDisplayLabel(item) || 'Unknown';
         const safeTitle = escapeHtml(item.title || 'Unknown');
         const loadingTitle = item.metadataPending === true && !item._metadataError && (!item.title || item.title === 'Unknown');
         const timeAgo = item.createdAt ? escapeHtml(formatRelativeDate(item.createdAt)) : '';
@@ -435,7 +442,7 @@ window.seerrFinLog = window.seerrFinLog || {
             '';
 
         const chips = [
-            `<span class="seerrfin-request-chip ${getPlugin().getMediaStatusChipClass(statusLabel)}">${escapeHtml(statusLabel)}</span>`
+            getPlugin().renderRequestStatusChip(item, statusLabel)
         ];
 
         if (item.is4k) {
@@ -491,38 +498,47 @@ window.seerrFinLog = window.seerrFinLog || {
         }
     }
 
-    function matchesFilter(item, filterId) {
-        if (filterId === 'all') { return true; }
+    function updateFilters(container) {
+        const filters = container.querySelector('.seerrfin-requests-filters');
+        if (!filters) { return; }
 
-        if (filterId === 'comingsoon') { return item.isComingSoon === true; }
-
-        const label = (item.mediaStatusLabel || '').toLowerCase();
-
-        if (filterId === 'pending') { return label.includes('pending'); }
-
-        const settings = getRequestsAdvanced();
-
-        if (filterId === 'available') {
-            if (settings.splitPartiallyAvailableFilter === true) { return label === 'available'; }
-
-            return label.includes('available');
-        }
-
-        if (filterId === 'processing') {
-            const isProcessing = label === 'processing' || label === 'approved';
-
-            if (settings.includePartialsInProcessingFilter === true) { return isProcessing || label === 'partially available'; }
-
-            return label !== 'partially available' && isProcessing;
-        }
-
-        return true;
+        const html = renderFilterButtons();
+        if (filters.innerHTML !== html) { filters.innerHTML = html; }
     }
 
-    function updateFilters(container) {
-        container.querySelectorAll('.seerrfin-requests-filter').forEach(function (button) {
-            button.classList.toggle('is-active', button.getAttribute('data-filter') === state.filter);
-        });
+    function renderFilterButtons(loading) {
+        loading = loading === true || !state.filterCounts;
+        const activeFilter = loading ? 'all' : state.filter;
+
+        return FILTERS.filter(function (filter) {
+            return filter.id === 'all' || !loading && Number(state.filterCounts[filter.id]) > 0;
+        }).map(function (filter) {
+            const activeClass = activeFilter === filter.id ? ' is-active' : '';
+
+            return `
+                <button type="button" class="seerrfin-requests-filter${activeClass}" data-filter="${filter.id}">
+                    ${escapeHtml(filter.label)}
+                </button>
+            `;
+        }).join('');
+    }
+
+    function openRequestFilter(filter) {
+        if (!FILTERS.some(function (entry) { return entry.id === filter; })) { return; }
+
+        const changed = state.filter !== filter;
+        const container = findActiveContainer();
+
+        if (!changed && container) { return; }
+
+        state.filter = filter;
+        if (changed) { state.page = 1; }
+
+        if (container) {
+            loadRequests(container);
+        } else {
+            window.location.hash = '#/home?seerrfinTab=requests&seerrfinFrom=discover';
+        }
     }
 
     function renderPagination(page, totalPages) {
@@ -640,6 +656,7 @@ window.seerrFinLog = window.seerrFinLog || {
             state.metadataSession = session;
             state.metadataCache.clear();
             state.pageRequests = [];
+            state.filterCounts = null;
         }
         return session;
     }
@@ -736,7 +753,6 @@ window.seerrFinLog = window.seerrFinLog || {
     }
 
     function renderPage(container) {
-        updateFilters(container);
         const body = container.querySelector('.seerrfin-requests-body');
         if (!body) return;
         if (!state.pageRequests.length) {
@@ -844,6 +860,8 @@ window.seerrFinLog = window.seerrFinLog || {
         const revision = snapshot.revision;
 
         state.isLoading = true;
+        container.dataset.seerrfinRequestsFilter = state.filter;
+        updateFilters(container);
         setReloadButtonState('loading');
 
         const body = container.querySelector('.seerrfin-requests-body');
@@ -862,15 +880,25 @@ window.seerrFinLog = window.seerrFinLog || {
                     plugin.applyMediaStatusSnapshot(data.mediaStatuses, snapshot, revision);
                 }
 
+                state.filterCounts = data.filterCounts || null;
+                if (state.filter !== 'all' && state.filterCounts && !Number(state.filterCounts[state.filter])) {
+                    state.filter = 'all';
+                    state.page = 1;
+
+                    return loadRequests(container);
+                }
+
+                state.totalPages = Math.max(1, Number(data.totalPages) || 1);
+                if (state.page > state.totalPages) {
+                    state.page = state.totalPages;
+
+                    return loadRequests(container);
+                }
+
                 const previous = new Map(state.pageRequests.map(function (item) { return [metadataKey(item), item]; }));
                 state.pageRequests = (data.requests || []).map(function (item) {
                     return mergeRequestMetadata(item, previous.get(metadataKey(item)));
-                }).filter(function (item) { return matchesFilter(item, state.filter); });
-                state.totalPages = Math.max(1, Number(data.totalPages) || 1);
-
-                if (state.page > state.totalPages) {
-                    state.page = state.totalPages;
-                }
+                });
 
                 log.info('requests loaded (' + state.pageRequests.length + ' on page, ' + state.totalPages + ' pages)');
                 renderPage(container);
@@ -886,7 +914,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
                 state.pageRequests = [];
                 state.totalPages = 1;
-                updateFilters(container);
+                state.filterCounts = null;
                 updatePagination(container, 1);
 
                 if (body) {
@@ -899,6 +927,7 @@ window.seerrFinLog = window.seerrFinLog || {
                 if (loadId === state.loadId) {
                     state.isLoading = false;
                     state.loadPromise = null;
+                    updateFilters(container);
 
                     if (!state.refreshPromise) {
                         setReloadButtonState('idle');
@@ -1041,15 +1070,7 @@ window.seerrFinLog = window.seerrFinLog || {
     }
 
     function renderRequestsPanel() {
-        const filterButtons = FILTERS.map(function (filter) {
-            const activeClass = state.filter === filter.id ? ' is-active' : '';
-
-            return `
-                <button type="button" class="seerrfin-requests-filter${activeClass}" data-filter="${filter.id}">
-                    ${escapeHtml(filter.label)}
-                </button>
-            `;
-        }).join('');
+        const filterButtons = renderFilterButtons(true);
 
         return `
             <div class="verticalSection seerrfin-requests-panel">
@@ -1173,11 +1194,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
                 const filter = tab.getAttribute('data-filter');
 
-                if (filter && filter !== state.filter) {
-                    state.filter = filter;
-                    state.page = 1;
-                    loadRequests(container);
-                }
+                if (filter) { openRequestFilter(filter); }
 
                 return;
             }
@@ -1221,6 +1238,12 @@ window.seerrFinLog = window.seerrFinLog || {
         }
 
         startAutoRefresh();
+        if (container.dataset.seerrfinRequestsFilter !== state.filter) {
+            loadRequests(container);
+
+            return;
+        }
+
         observeRequestMetadata(container);
 
         if (options.tabShown) {
@@ -1251,6 +1274,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
         log.info('requests module init');
         window.__seerrFinRequestsEnsureMounted = ensureMounted;
+        window.__seerrFinOpenRequestFilter = openRequestFilter;
         window.__seerrFinRefreshMediaStatus = refreshIfActive;
         window.__seerrFinSyncReloadButtons = syncReloadButtons;
         document.addEventListener('viewshow', function () { ensureMounted(); });

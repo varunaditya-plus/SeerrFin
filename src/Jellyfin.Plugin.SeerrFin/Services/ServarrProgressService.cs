@@ -144,16 +144,8 @@ public sealed class ServarrProgressService
                                         context.Request["servarrUrl"] = progress.OpenUrl;
                                     }
 
-                                    context.Request["servarrProgress"] = new JObject
-                                    {
-                                        ["statusLabel"] = progress.StatusLabel,
-                                        ["statusKey"] = progress.StatusKey,
-                                        ["percent"] = progress.Percent,
-                                        ["downloadedBytes"] = progress.DownloadedBytes,
-                                        ["totalBytes"] = progress.TotalBytes,
-                                        ["isActive"] = progress.IsActive,
-                                        ["openUrl"] = context.Request["servarrUrl"]
-                                    };
+                                    progress.OpenUrl = context.Request.Value<string>("servarrUrl");
+                                    context.Request["servarrProgress"] = progress.ToJson();
                                 }
                             })
                         )
@@ -421,18 +413,6 @@ public sealed class ServarrProgressService
                         }
 
                         seriesByTmdbId[tmdbId.Value] = series;
-                        int? seriesId = series.Value<int?>("id");
-                        if (!seriesId.HasValue)
-                        {
-                            continue;
-                        }
-
-                        JArray? episodes = await GetJsonArrayAsync(client, $"episode?seriesId={seriesId.Value}", cancellationToken)
-                            .ConfigureAwait(false);
-                        if (episodes != null)
-                        {
-                            episodesBySeriesId[seriesId.Value] = episodes.OfType<JObject>().ToList();
-                        }
                     }
                 }
 
@@ -453,21 +433,27 @@ public sealed class ServarrProgressService
                         }
 
                         seriesByTmdbId[context.TmdbId] = series;
-                        int? seriesId = series.Value<int?>("id");
-                        if (!seriesId.HasValue)
-                        {
-                            continue;
-                        }
-
-                        JArray? episodes = await GetJsonArrayAsync(client, $"episode?seriesId={seriesId.Value}", cancellationToken)
-                            .ConfigureAwait(false);
-                        if (episodes != null)
-                        {
-                            episodesBySeriesId[seriesId.Value] = episodes.OfType<JObject>().ToList();
-                        }
                     }
                 }
             }
+
+            // Fetch each series once, with bounded concurrency so large libraries cant exhaust the snapshot timeout before progress can be returned
+            using SemaphoreSlim episodeSlots = new(4);
+            await Task.WhenAll(seriesByTmdbId.Values.Select(async series =>
+            {
+                if (series.Value<int?>("id") is not int seriesId) { return; }
+                await episodeSlots.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    JArray? episodes = await GetJsonArrayAsync(client, $"episode?seriesId={seriesId}&includeEpisodeFile=true", cancellationToken)
+                        .ConfigureAwait(false);
+                    if (episodes != null)
+                    {
+                        lock (episodesBySeriesId) { episodesBySeriesId[seriesId] = episodes.OfType<JObject>().ToList(); }
+                    }
+                }
+                finally { episodeSlots.Release(); }
+            })).ConfigureAwait(false);
 
             Dictionary<int, List<JObject>> queueBySeriesId = new();
 
@@ -510,9 +496,10 @@ public sealed class ServarrProgressService
                 ? byId.Where(record => record.Value<JObject>("movie")?.Value<int?>("tmdbId")is not int tmdbId || tmdbId == context.TmdbId)
                     .ToList()
                 : snapshot.QueueByTmdbId.GetValueOrDefault(context.TmdbId) ?? new List<JObject>();
-        if (queueItems.Count > 0)
+        ServarrProgressInfo? transfer = BuildQueueProgress(queueItems, snapshot.BaseUrl, movie, isMovie: true);
+        if (transfer != null)
         {
-            return BuildQueueProgress(queueItems, snapshot.BaseUrl, movie, isMovie: true);
+            return transfer;
         }
 
         if (movie == null)
@@ -523,8 +510,8 @@ public sealed class ServarrProgressService
         return BuildLibraryProgress(
             hasFile: movie.Value<bool?>("hasFile") ?? false,
             monitored: movie.Value<bool?>("monitored") ?? false,
-            isUnreleased: IsUnreleasedMedia(movie.Value<string>("status")),
-            sizeOnDisk: movie.Value<long?>("sizeOnDisk") ?? 0,
+            isUnreleased: movie.Value<bool?>("hasFile") != true && IsUnreleasedMedia(movie.Value<string>("status")),
+            sizeOnDisk: movie["movieFile"]?.Value<long?>("size") ?? movie.Value<long?>("sizeOnDisk") ?? 0,
             openUrl: BuildServarrOpenUrl(snapshot.BaseUrl, GetTitleSlug(movie), isMovie: true)
         );
     }
@@ -552,28 +539,22 @@ public sealed class ServarrProgressService
                     context.SeasonNumbers
                 )
                 : new List<JObject>();
-        if (queueItems.Count > 0)
+        ServarrProgressInfo? transfer = BuildQueueProgress(queueItems, snapshot.BaseUrl, series, isMovie: false);
+        if (transfer != null)
         {
-            return BuildQueueProgress(queueItems, snapshot.BaseUrl, series, isMovie: false);
+            return transfer;
         }
 
-        List<JObject> episodes =
-            seriesId.HasValue && snapshot.EpisodesBySeriesId.TryGetValue(seriesId.Value, out List<JObject>? eps)
-                ? FilterEpisodesBySeasons(eps, context.SeasonNumbers)
-                : new List<JObject>();
+        if (!seriesId.HasValue || !snapshot.EpisodesBySeriesId.TryGetValue(seriesId.Value, out List<JObject>? eps))
+        {
+            // An unavailable episode API shouldnt turn a season "Missing".
+            return null;
+        }
+        List<JObject> episodes = FilterEpisodesBySeasons(eps, context.SeasonNumbers);
         if (episodes.Count == 0)
         {
-            bool monitored = series.Value<bool?>("monitored") ?? false;
-            long sizeOnDisk = series.Value<long?>("sizeOnDisk") ?? 0;
-            bool hasFile = sizeOnDisk > 0;
-
-            return BuildLibraryProgress(
-                hasFile,
-                monitored,
-                isUnreleased: false,
-                sizeOnDisk,
-                BuildServarrOpenUrl(snapshot.BaseUrl, GetTitleSlug(series), isMovie: false)
-            );
+            // Series totals include other seasons and cannot establish this request's progress.
+            return null;
         }
 
         bool anyFile = episodes.Any(e => e.Value<bool?>("hasFile") == true);
@@ -582,7 +563,13 @@ public sealed class ServarrProgressService
         bool allMonitored = episodes.All(e => e.Value<bool?>("monitored") == true);
         bool anyMissingMonitored = episodes.Any(e => e.Value<bool?>("hasFile") != true && e.Value<bool?>("monitored") == true);
         bool allUnreleased = episodes.All(e => IsUnreleasedMedia(e.Value<string>("airDateUtc") ?? e.Value<string>("airDate")));
-        long totalSize = episodes.Where(e => e.Value<bool?>("hasFile") == true).Sum(e => e.Value<long?>("sizeOnDisk") ?? 0);
+        HashSet<int> seenFiles = new();
+        long totalSize = episodes.Where(e => e.Value<bool?>("hasFile") == true).Where(episode =>
+        {
+            int? fileId = episode.Value<int?>("episodeFileId") ?? episode["episodeFile"]?.Value<int?>("id");
+            return fileId is null or <= 0 || seenFiles.Add(fileId.Value);
+        })
+            .Sum(e => e["episodeFile"]?.Value<long?>("size") ?? e.Value<long?>("sizeOnDisk") ?? 0);
         string? seriesOpenUrl = BuildServarrOpenUrl(snapshot.BaseUrl, GetTitleSlug(series), isMovie: false);
 
         if (allUnreleased && !anyFile)
@@ -590,63 +577,30 @@ public sealed class ServarrProgressService
             return BuildLibraryProgress(false, anyMonitored, true, 0, seriesOpenUrl);
         }
 
-        if (allHaveFiles && allMonitored)
-        {
-            return BuildLibraryProgress(true, true, false, totalSize, seriesOpenUrl);
-        }
-
         if (allHaveFiles)
         {
-            return BuildLibraryProgress(true, false, false, totalSize, seriesOpenUrl);
-        }
-
-        if (!anyFile && anyMonitored)
-        {
-            return BuildLibraryProgress(false, true, false, 0, seriesOpenUrl);
+            return BuildLibraryProgress(true, allMonitored, false, totalSize, seriesOpenUrl);
         }
 
         return BuildLibraryProgress(false, anyMissingMonitored, false, 0, seriesOpenUrl);
     }
 
-    private static ServarrProgressInfo BuildQueueProgress(
+    private static ServarrProgressInfo? BuildQueueProgress(
         IReadOnlyCollection<JObject> queueItems,
         string baseUrl,
         JObject? media,
         bool isMovie
     )
     {
-        // Sonarr returns a queue row for each episode in a season-pack torrent.
-        // Those rows share a downloadId and repeat the torrent's full size, so
-        // count each client download once when calculating request progress.
-        HashSet<string> seenDownloadIds = new(StringComparer.OrdinalIgnoreCase);
-        List<JObject> uniqueDownloads = queueItems
-            .Where(item =>
-            {
-                string? downloadId = item.Value<string>("downloadId");
-
-                return string.IsNullOrWhiteSpace(downloadId) || seenDownloadIds.Add(downloadId);
-            })
-            .ToList();
-
-        double totalSize = uniqueDownloads.Sum(item => item.Value<double?>("size") ?? 0);
-        double sizeLeft = uniqueDownloads.Sum(item => item.Value<double?>("sizeleft") ?? 0);
-        double downloaded = Math.Max(0, totalSize - sizeLeft);
-        int percent = totalSize > 0 ? (int)Math.Round(downloaded / totalSize * 100) : 0;
+        ServarrProgressInfo? progress = DownloadProgress.Build(queueItems);
+        if (progress == null) { return null; }
         string? titleSlug =
             GetTitleSlug(media)
             ?? queueItems.Select(item => GetTitleSlug(isMovie ? item["movie"] as JObject : item["series"] as JObject))
                 .FirstOrDefault(slug => !string.IsNullOrWhiteSpace(slug));
 
-        return new ServarrProgressInfo
-        {
-            StatusLabel = "Queued",
-            StatusKey = "queued",
-            Percent = percent,
-            DownloadedBytes = (long)downloaded,
-            TotalBytes = (long)totalSize,
-            IsActive = true,
-            OpenUrl = BuildServarrOpenUrl(baseUrl, titleSlug, isMovie)
-        };
+        progress.OpenUrl = BuildServarrOpenUrl(baseUrl, titleSlug, isMovie);
+        return progress;
     }
 
     private static ServarrProgressInfo BuildLibraryProgress(
@@ -663,26 +617,6 @@ public sealed class ServarrProgressService
             {
                 StatusLabel = "Unreleased",
                 StatusKey = "unreleased",
-                Percent = 0,
-                DownloadedBytes = 0,
-                TotalBytes = 0,
-                IsActive = false,
-                OpenUrl = openUrl
-            };
-        }
-
-        bool downloadedActive = AdvancedSettingsHelper.Resolve(SeerrFinPlugin.Instance.Configuration).Servarr.DownloadedProgressIsActive;
-
-        if (hasFile && monitored)
-        {
-            return new ServarrProgressInfo
-            {
-                StatusLabel = "Downloaded (Monitored)",
-                StatusKey = "downloaded-monitored",
-                Percent = 100,
-                DownloadedBytes = sizeOnDisk,
-                TotalBytes = sizeOnDisk,
-                IsActive = downloadedActive,
                 OpenUrl = openUrl
             };
         }
@@ -691,38 +625,20 @@ public sealed class ServarrProgressService
         {
             return new ServarrProgressInfo
             {
-                StatusLabel = "Downloaded (Unmonitored)",
-                StatusKey = "downloaded-unmonitored",
+                StatusLabel = monitored ? "Downloaded (Monitored)" : "Downloaded (Unmonitored)",
+                StatusKey = monitored ? "downloaded-monitored" : "downloaded-unmonitored",
                 Percent = 100,
                 DownloadedBytes = sizeOnDisk,
                 TotalBytes = sizeOnDisk,
-                IsActive = downloadedActive,
-                OpenUrl = openUrl
-            };
-        }
-
-        if (monitored)
-        {
-            return new ServarrProgressInfo
-            {
-                StatusLabel = "Missing (Monitored)",
-                StatusKey = "missing-monitored",
-                Percent = 0,
-                DownloadedBytes = 0,
-                TotalBytes = 0,
-                IsActive = false,
+                IsActive = AdvancedSettingsHelper.Resolve(SeerrFinPlugin.Instance.Configuration).Servarr.DownloadedProgressIsActive,
                 OpenUrl = openUrl
             };
         }
 
         return new ServarrProgressInfo
         {
-            StatusLabel = "Missing (Unmonitored)",
-            StatusKey = "missing-unmonitored",
-            Percent = 0,
-            DownloadedBytes = 0,
-            TotalBytes = 0,
-            IsActive = false,
+            StatusLabel = monitored ? "Awaiting download" : "Not monitored",
+            StatusKey = monitored ? "missing-monitored" : "missing-unmonitored",
             OpenUrl = openUrl
         };
     }
@@ -807,21 +723,18 @@ public sealed class ServarrProgressService
                 : $"queue?page={page}&pageSize={pageSize}&includeSeries=true&includeEpisode=true";
 
             JObject? payload = await GetJsonObjectAsync(client, path, cancellationToken).ConfigureAwait(false);
-            if (payload == null)
+            if (payload?["records"] is not JArray pageRecords || pageRecords.Any(record => record is not JObject))
             {
+                throw new InvalidDataException("Arr returned an invalid queue page.");
+            }
+            int? totalRecords = payload.Value<int?>("totalRecords");
+            if (pageRecords.Count == 0)
+            {
+                if (totalRecords > records.Count) { throw new InvalidDataException("Arr returned an incomplete queue."); }
                 break;
             }
-
-            JArray? pageRecords = payload.Value<JArray>("records");
-            if (pageRecords == null || pageRecords.Count == 0)
-            {
-                break;
-            }
-
             records.AddRange(pageRecords.OfType<JObject>());
-
-            int totalRecords = payload.Value<int?>("totalRecords") ?? records.Count;
-            if (records.Count >= totalRecords)
+            if (totalRecords.HasValue ? records.Count >= totalRecords.Value : pageRecords.Count < pageSize)
             {
                 break;
             }
@@ -928,20 +841,4 @@ public sealed class ServarrProgressService
         Dictionary<int, List<JObject>> QueueBySeriesId
     );
 
-    private sealed class ServarrProgressInfo
-    {
-        public string StatusLabel { get; set; } = string.Empty;
-
-        public string StatusKey { get; set; } = string.Empty;
-
-        public int Percent { get; set; }
-
-        public long DownloadedBytes { get; set; }
-
-        public long TotalBytes { get; set; }
-
-        public bool IsActive { get; set; }
-
-        public string? OpenUrl { get; set; }
-    }
 }

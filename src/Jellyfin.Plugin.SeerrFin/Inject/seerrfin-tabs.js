@@ -2361,9 +2361,11 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         getMediaStatusChipClass: function (label) {
             const normalized = (label || '').toLowerCase();
 
-            if (normalized.includes('available') && !normalized.includes('partially')) { return 'seerrfin-request-chip--available'; }
+            if (normalized.includes('available') && !normalized.includes('partially') && !normalized.includes('unavailable')) { return 'seerrfin-request-chip--available'; }
             if (normalized.includes('partially')) { return 'seerrfin-request-chip--partial'; }
-            if (normalized.includes('processing')) { return 'seerrfin-request-chip--processing'; }
+            if (['processing', 'downloading', 'queued', 'importing', 'waiting for import', 'waiting for jellyfin'].includes(normalized)) { return 'seerrfin-request-chip--processing'; }
+            if (normalized.includes('paused') || ['awaiting download', 'not monitored', 'unreleased'].includes(normalized)) { return 'seerrfin-request-chip--pending'; }
+            if (normalized.includes('warning') || normalized.includes('blocked') || normalized.includes('blocklisted') || normalized.includes('unavailable') || normalized.includes('skipped')) { return 'seerrfin-request-chip--declined'; }
             if (normalized.includes('pending')) { return 'seerrfin-request-chip--pending'; }
             if (normalized.includes('approved')) { return 'seerrfin-request-chip--approved'; }
             if (normalized.includes('declined') || normalized.includes('failed')) { return 'seerrfin-request-chip--declined'; }
@@ -2371,23 +2373,58 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             return '';
         },
 
+        getMediaStatusDisplayLabel: function (item) {
+            return item.statusLabel || item.mediaStatusLabel || '';
+        },
+
+        getMediaStatusFilter: function (item) {
+            const label = (item.mediaStatusLabel || this.getMediaStatusDisplayLabel(item)).toLowerCase();
+
+            switch (label) {
+                case 'pending':
+                case 'pending approval': return 'pending';
+                case 'partially available': return 'partial';
+                case 'approved':
+                case 'completed':
+                case 'processing':
+                case 'available':
+                case 'unavailable':
+                case 'declined':
+                case 'failed':
+                case 'deleted': return label;
+                default: return 'all';
+            }
+        },
+
+        renderRequestStatusChip: function (item, label, displayLabel) {
+            const filter = this.getMediaStatusFilter(item);
+            const filterLabel = filter === 'pending' ? 'Pending Approval' : filter === 'partial' ? 'Partially Available' :
+                filter.charAt(0).toUpperCase() + filter.slice(1);
+
+            return `<button type="button" class="seerrfin-request-chip ${this.getMediaStatusChipClass(label)}" data-request-filter="${filter}" aria-label="View ${filterLabel} requests">${this.escapeHtml(displayLabel || label)}</button>`;
+        },
+
         renderDiscoveryDownloadDetails: function (item) {
-            const label = item.mediaStatusLabel || '';
+            const label = this.getMediaStatusDisplayLabel(item);
+            const displayLabel = item.is4k ? '4K · ' + label : label;
             const chip = label && label.toLowerCase() !== 'unknown' ?
-                `<span class="seerrfin-request-chip ${this.getMediaStatusChipClass(label)}">${this.escapeHtml(label)}</span>` : '';
+                this.renderRequestStatusChip(item, label, displayLabel) : '';
+            const progressLabel = item.servarrProgress?.statusLabel || label;
+            const separateState = item.servarrProgress?.isTransfer === true && progressLabel !== label;
 
-            if (item.downloadPercent == null) { return chip; }
+            if (item.downloadPercent == null || !Number.isFinite(Number(item.downloadPercent))) {
+                return separateState ? chip + this.renderRequestStatusChip(item, progressLabel) : chip;
+            }
 
-            const percent = Math.max(0, Math.min(100, item.downloadPercent));
-
-            if (percent === 100) { return chip; }
+            const percent = Math.max(0, Math.min(100, Number(item.downloadPercent)));
+            const percentText = separateState ? `${progressLabel} · ${percent}%` : `${percent}%`;
 
             return `${chip}
-                <div class="seerrfin-discover-download-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-label="Downloading">
+                <div class="seerrfin-discover-download-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-label="${this.escapeHtml(progressLabel)}">
                     <div class="seerrfin-discover-download-track" aria-hidden="true">
                         <div class="seerrfin-discover-download-fill" style="width:${percent}%"></div>
                     </div>
-                    <span class="seerrfin-discover-download-percent">${percent}%</span>
+                    <span class="seerrfin-discover-download-percent">${this.escapeHtml(percentText)}</span>
                 </div>
             `;
         },
@@ -3184,6 +3221,17 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         bindCardClickHandler: function () {
             // Capturing so card opens our modal instead of jellyfin detail page
             document.addEventListener('click', function (e) {
+                const statusChip = e.target.closest('.seerrfin-request-chip[data-request-filter]');
+
+                if (statusChip && typeof window.__seerrFinOpenRequestFilter === 'function') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    window.__seerrFinOpenRequestFilter(statusChip.getAttribute('data-request-filter'));
+
+                    return;
+                }
+
                 if (e.target.closest('.discover-requestbutton')) { return; }
 
                 const card = e.target.closest('.seerrfin-discover-card, [data-seerrfin-native-card="true"]');

@@ -3,6 +3,7 @@ using System.Globalization;
 using Jellyfin.Data.Enums;
 using Jellyfin.Database.Implementations.Entities;
 using Jellyfin.Plugin.SeerrFin.Configuration;
+using Jellyfin.Plugin.SeerrFin.Configuration.Advanced;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Querying;
@@ -65,30 +66,23 @@ public class JellyseerrRequestsService
         try
         {
             MediaStatusSnapshot snapshot = await GetMediaSnapshotAsync(username, refresh, cancellationToken).ConfigureAwait(false);
-            List<JObject> requests = snapshot.Requests.OfType<JObject>().Where(req => MatchesRequestFilter(req, filter)).ToList();
+            List<JObject> allRequests = snapshot.Requests.OfType<JObject>().ToList();
+            JObject filterCounts = new() { ["all"] = allRequests.Count };
+            foreach (string filterId in new[] { "pending", "approved", "completed", "processing", "partial", "available", "unavailable", "declined", "failed", "deleted" })
+            {
+                filterCounts[filterId] = allRequests.Count(request => MatchesRequestFilter(request, filterId, snapshot.RequestStatuses.GetValueOrDefault(request.Value<int>("id"))));
+            }
+            Dictionary<int, string> upcomingDates = await GetComingSoonDatesAsync(config, snapshot, cancellationToken).ConfigureAwait(false);
+            filterCounts["comingsoon"] = upcomingDates.Count;
+
+            List<JObject> requests = allRequests.Where(req => comingSoon ? upcomingDates.ContainsKey(req.Value<int>("id")) :
+                MatchesRequestFilter(req, filter, snapshot.RequestStatuses.GetValueOrDefault(req.Value<int>("id")))).ToList();
+            if (comingSoon) { requests = requests.OrderBy(request => upcomingDates[request.Value<int>("id")]).ToList(); }
             int totalPages = Math.Max(1, (int)Math.Ceiling(requests.Count / (double)take));
             List<JObject> page = requests.Skip(skip).Take(take).ToList();
             Dictionary<string, Guid?> libraryItemCache = new(StringComparer.OrdinalIgnoreCase);
             User? user = _userManager.GetUserById(userId);
             if (user != null) { ResolveLibraryItemIds(user, page, libraryItemCache); }
-            if (comingSoon)
-            {
-                // This filter needs current release dates before deciding which requests belong in it.
-                JObject?[] candidates = await Task.WhenAll(page.Select(async request =>
-                {
-                    try
-                    {
-                        await GetRequestMetadataAsync(config, snapshot.UserId, request, cancellationToken).ConfigureAwait(false);
-                        return (JObject?)request;
-                    }
-                    catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-                    {
-                        _logger.LogDebug(ex, "SeerrFin • failed to load release dates for request {RequestId}", request.Value<int>("id"));
-                        return null;
-                    }
-                })).ConfigureAwait(false);
-                page = candidates.OfType<JObject>().ToList();
-            }
             JArray mappedRequests = new();
 
             foreach (JObject request in page)
@@ -103,40 +97,27 @@ public class JellyseerrRequestsService
                 }
                 JObject mapped = MapRequest(request, details, user, libraryItemCache);
                 mapped["metadataPending"] = metadataPending;
-                if (snapshot.RequestProgress.TryGetValue(request.Value<int>("id"), out JObject? progress))
+                if (upcomingDates.TryGetValue(request.Value<int>("id"), out string? releaseDate))
                 {
-                    mapped["servarrProgress"] = progress.DeepClone();
+                    mapped["isComingSoon"] = true;
+                    mapped["releaseSortDate"] = releaseDate;
                 }
-
-                if (mapped.Value<string>("mediaStatusLabel") == "Failed")
+                if (snapshot.RequestStatuses.TryGetValue(request.Value<int>("id"), out JObject? status))
                 {
-                    mapped["servarrProgress"] = new JObject
-                    {
-                        ["statusKey"] = "failed",
-                        ["statusLabel"] = "Failed to find content",
-                        ["percent"] = 100,
-                        ["isActive"] = false
-                    };
-                }
-                else if (mapped["servarrProgress"]?.Value<string>("statusKey") == "missing-monitored")
-                {
-                    mapped.Remove("servarrProgress");
+                    mapped["mediaStatusLabel"] = status["mediaStatusLabel"]?.DeepClone();
+                    mapped["statusLabel"] = status["statusLabel"]?.DeepClone();
+                    if (status.Value<string>("servarrUrl") is string url) { mapped["servarrUrl"] = url; }
+                    if (status["servarrProgress"] is JObject progress) { mapped["servarrProgress"] = progress.DeepClone(); }
                 }
 
                 mappedRequests.Add(mapped);
-            }
-
-            if (comingSoon)
-            {
-                mappedRequests = new JArray(mappedRequests.OfType<JObject>().Where(r => r.Value<bool?>("isComingSoon") == true)
-                    .OrderBy(r => r.Value<string>("releaseSortDate") ?? "9999"));
-                totalPages = Math.Max(1, (int)Math.Ceiling(mappedRequests.Count / (double)take));
             }
 
             return (200, new JObject
             {
                 ["requests"] = mappedRequests,
                 ["totalPages"] = totalPages,
+                ["filterCounts"] = filterCounts,
                 ["mediaStatuses"] = snapshot.Items.DeepClone()
             }.ToString());
         }
@@ -149,6 +130,39 @@ public class JellyseerrRequestsService
             _logger.LogWarning(ex, "SeerrFin • failed to fetch Seerr requests");
             return (502, "{\"error\":true,\"message\":\"Failed to reach Seerr.\"}");
         }
+    }
+
+    private async Task<Dictionary<int, string>> GetComingSoonDatesAsync(PluginConfiguration config, MediaStatusSnapshot snapshot, CancellationToken cancellationToken)
+    {
+        Dictionary<int, string> dates = new();
+        IEnumerable<JObject> candidates = snapshot.Requests.OfType<JObject>().Where(request =>
+            MatchesRequestFilter(request, "comingsoon", snapshot.RequestStatuses.GetValueOrDefault(request.Value<int>("id"))));
+
+        // Release dates are cached with request metadata. Limit uncached lookups to four at a time.
+        foreach (JObject[] batch in candidates.Chunk(4))
+        {
+            (int Id, DateTime? Date)[] results = await Task.WhenAll(batch.Select(async request =>
+            {
+                int id = request.Value<int>("id");
+                try
+                {
+                    JObject details = await GetRequestMetadataAsync(config, snapshot.UserId, request, cancellationToken).ConfigureAwait(false);
+                    string? type = request.Value<string>("type") ?? request["media"]?.Value<string>("mediaType");
+                    return (Id: id, Date: GetFutureReleaseDate(type, details));
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogDebug(ex, "SeerrFin • failed to load release dates for request {RequestId}", request.Value<int>("id"));
+                    return (Id: id, Date: (DateTime?)null);
+                }
+            })).ConfigureAwait(false);
+            foreach ((int id, DateTime? date) in results)
+            {
+                if (date.HasValue) { dates[id] = date.Value.ToString("o"); }
+            }
+        }
+
+        return dates;
     }
 
     public async Task<(byte[]? Data, string? ContentType)> GetAvatarAsync(string? path, CancellationToken cancellationToken)
@@ -388,8 +402,9 @@ public class JellyseerrRequestsService
                 if (is4k && (status is null or <= 1) && request == null) { continue; }
                 JObject context = BuildStatusContext(media, request, is4k);
                 mediaVariants.Add(context);
-                if (!ApplySeerrDownloadProgress(context, media, is4k) && status is >= 2 and <= 5)
+                if (ShouldLoadProgress(status, request?.Value<int?>("status")))
                 {
+                    ApplySeerrDownloadProgress(context, media, is4k);
                     fallback.Add(context);
                 }
             }
@@ -404,8 +419,9 @@ public class JellyseerrRequestsService
             JObject context = BuildStatusContext(media!, request, is4k);
             context["seasonNumbers"] = GetSeasonNumbers(request.Value<JArray>("seasons"));
             int? status = media!.Value<int?>(is4k ? "status4k" : "status");
-            if (!ApplySeerrDownloadProgress(context, media, is4k) && status is >= 2 and <= 5 && context.Value<string>("mediaStatusLabel") != "Failed")
+            if (ShouldLoadProgress(status, request.Value<int?>("status")))
             {
+                ApplySeerrDownloadProgress(context, media, is4k);
                 fallback.Add(context);
             }
             requestContexts[request.Value<int>("id")] = context;
@@ -419,29 +435,34 @@ public class JellyseerrRequestsService
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {
-                _logger.LogDebug(ex, "SeerrFin • fallback download progress is unavailable");
+                _logger.LogDebug(ex, "SeerrFin • Arr download progress is unavailable");
             }
+        }
+        foreach (JObject context in variants.SelectMany(choices => choices).Concat(requestContexts.Values))
+        {
+            ApplyProgressStatus(context);
         }
         JArray items = new();
         foreach (List<JObject> choices in variants)
         {
-            JObject selected = choices.FirstOrDefault(item => item["servarrProgress"]?.Value<string>("statusKey") == "queued")
+            JObject selected = choices.FirstOrDefault(item => item["servarrProgress"]?.Value<bool?>("isTransfer") == true)
                 ?? choices.FirstOrDefault(item => item.Value<string>("mediaStatusLabel") != "Unknown") ?? choices[0];
             JObject item = new()
             {
                 ["tmdbId"] = selected["tmdbId"],
                 ["type"] = selected["type"],
-                ["mediaStatusLabel"] = selected["mediaStatusLabel"]
+                ["mediaStatusLabel"] = selected["mediaStatusLabel"],
+                ["statusLabel"] = selected["statusLabel"],
+                ["is4k"] = selected["is4k"]
             };
-            if (selected["servarrProgress"]?.Value<string>("statusKey") == "queued")
+            if (selected["servarrProgress"] is JObject progress)
             {
-                item["downloadPercent"] = selected["servarrProgress"]!["percent"];
+                item["servarrProgress"] = progress.DeepClone();
+                if (progress.Value<bool?>("isTransfer") == true) { item["downloadPercent"] = progress["percent"]; }
             }
             items.Add(item);
         }
-        Dictionary<int, JObject> requestProgress = requestContexts.Where(pair => pair.Value["servarrProgress"] is JObject)
-            .ToDictionary(pair => pair.Key, pair => (JObject)pair.Value["servarrProgress"]!);
-        return new MediaStatusSnapshot(userId.Value, requests, items, requestProgress);
+        return new MediaStatusSnapshot(userId.Value, requests, items, requestContexts);
     }
 
     private static async Task<JArray> FetchAllSeerrRecordsAsync(HttpClient client, string path, CancellationToken cancellationToken)
@@ -484,57 +505,75 @@ public class JellyseerrRequestsService
         ["type"] = media["mediaType"],
         ["is4k"] = is4k,
         ["mediaStatusLabel"] = GetMediaStatusLabel(request?.Value<int?>("status"), media.Value<int?>(is4k ? "status4k" : "status")),
-        ["serviceId"] = media[is4k ? "serviceId4k" : "serviceId"] ?? request?["serverId"],
-        ["externalServiceId"] = media[is4k ? "externalServiceId4k" : "externalServiceId"]
+        ["serviceId"] = media.Value<int?>(is4k ? "serviceId4k" : "serviceId") ?? request?.Value<int?>("serverId"),
+        ["externalServiceId"] = media[is4k ? "externalServiceId4k" : "externalServiceId"],
+        ["servarrUrl"] = ServarrProgressService.NormalizeBrowseUrl(media.Value<string>(is4k ? "serviceUrl4k" : "serviceUrl"))
     };
 
     private static bool ApplySeerrDownloadProgress(JObject context, JObject media, bool is4k)
     {
         if (media[is4k ? "downloadStatus4k" : "downloadStatus"] is not JArray downloads) { return false; }
         List<JObject> entries = downloads.OfType<JObject>().ToList();
-        if (entries.Count != downloads.Count || entries.Any(item => !IsDownloadSize(item["size"]) || !IsDownloadSize(item["sizeLeft"])))
-        {
-            return false;
-        }
+        if (entries.Count != downloads.Count) { return false; }
         HashSet<int> seasons = context["seasonNumbers"]?.Values<int>().ToHashSet() ?? new();
         if (context.Value<string>("type") == "tv" && seasons.Count > 0)
         {
-            entries = entries.Where(item => item["episode"]?.Value<int?>("seasonNumber") is not int season || seasons.Contains(season)).ToList();
+            entries = entries.Where(item => item["episode"]?.Value<int?>("seasonNumber") is int season && seasons.Contains(season)).ToList();
         }
-        if (entries.Count == 0) { return true; }
-        double total = entries.Sum(item => item.Value<double>("size"));
-        double leftTotal = entries.Sum(item => item.Value<double>("sizeLeft"));
-        if (!double.IsFinite(total) || !double.IsFinite(leftTotal)) { return false; }
-        double downloaded = Math.Clamp(total - leftTotal, 0, total);
-        context["servarrProgress"] = new JObject
-        {
-            ["statusKey"] = "queued",
-            ["statusLabel"] = "Downloading",
-            ["percent"] = total > 0 ? (int)Math.Round(downloaded / total * 100) : 0,
-            ["downloadedBytes"] = (long)downloaded,
-            ["totalBytes"] = (long)total,
-            ["isActive"] = true
-        };
+        ServarrProgressInfo? progress = DownloadProgress.Build(entries);
+        if (progress == null) { return false; }
+        context["servarrProgress"] = progress.ToJson();
         return true;
     }
 
-    private static bool IsDownloadSize(JToken? value)
+    private static bool ShouldLoadProgress(int? mediaStatus, int? requestStatus) =>
+        requestStatus is not (1 or 3) && (mediaStatus is >= 3 and <= 5 || mediaStatus is 1 or 2 && requestStatus is 2 or 4);
+
+    private static void ApplyProgressStatus(JObject context)
     {
-        if (value?.Type is not (JTokenType.Integer or JTokenType.Float)) { return false; }
-        double size = value.Value<double>();
-        return double.IsFinite(size) && size >= 0;
+        JObject? progress = context["servarrProgress"] as JObject;
+        string label = context.Value<string>("mediaStatusLabel") ?? "Unknown";
+        bool downloaded = progress?.Value<string>("statusKey")?.StartsWith("downloaded-", StringComparison.Ordinal) == true;
+        if (label == "Failed" && (progress?.Value<bool?>("isTransfer") == true || downloaded))
+        {
+            // A Seerr submission can time out after arr has already accepted it (seerr issue)
+            label = "Processing";
+            context["mediaStatusLabel"] = label;
+        }
+        if (label == "Failed")
+        {
+            context["servarrProgress"] = new ServarrProgressInfo { StatusKey = "failed", StatusLabel = "Request failed" }.ToJson();
+            context["statusLabel"] = "Request failed";
+        }
+        else
+        {
+            context["statusLabel"] = label is "Available" or "Partially Available" ? label
+                : downloaded ? "Waiting for Jellyfin" : progress?.Value<string>("statusLabel") ?? label;
+        }
     }
 
-    private static bool MatchesRequestFilter(JObject request, string? filter)
+    private static bool MatchesRequestFilter(JObject request, string? filter, JObject? context)
     {
-        int? status = request.Value<int?>("status");
         JObject? media = request.Value<JObject>("media");
-        int? mediaStatus = media?.Value<int?>(request.Value<bool?>("is4k") == true ? "status4k" : "status");
+        string label = context?.Value<string>("mediaStatusLabel") ?? GetMediaStatusLabel(request.Value<int?>("status"),
+            media?.Value<int?>(request.Value<bool?>("is4k") == true ? "status4k" : "status"));
+        int? requestStatus = request.Value<int?>("status");
+        var settings = AdvancedSettingsHelper.Resolve(SeerrFinPlugin.Instance.Configuration).Requests;
         return filter?.ToLowerInvariant() switch
         {
-            "pending" => status == 1 && mediaStatus is >= 1 and <= 5 or 7,
-            "available" => status == 5 && mediaStatus == 5,
-            "processing" or "comingsoon" => status == 2 && mediaStatus is >= 1 and <= 4,
+            "pending" => requestStatus == 1 || label is "Pending" or "Pending Approval",
+            "approved" => requestStatus.HasValue ? requestStatus == 2 : label == "Approved",
+            "completed" => requestStatus.HasValue ? requestStatus == 5 : label == "Completed",
+            "declined" => requestStatus.HasValue ? requestStatus == 3 : label == "Declined",
+            "partial" => label == "Partially Available",
+            "failed" => label == "Failed",
+            "blocklisted" => label == "Blocklisted",
+            "deleted" => label == "Deleted",
+            "unknown" => label == "Unknown",
+            "unavailable" => requestStatus is null or 1 or 2 && label is "Unknown" or "Pending" or "Pending Approval" or "Approved" or "Processing" or "Partially Available",
+            "available" => label == "Available" || label == "Partially Available" && !settings.SplitPartiallyAvailableFilter,
+            "processing" => label is "Processing" or "Approved" || label == "Partially Available" && settings.IncludePartialsInProcessingFilter,
+            "comingsoon" => label is "Processing" or "Approved",
             _ => true
         };
     }
@@ -548,7 +587,7 @@ public class JellyseerrRequestsService
         public Task<MediaStatusSnapshot>? InFlight { get; set; }
     }
 
-    private sealed record MediaStatusSnapshot(int UserId, JArray Requests, JArray Items, Dictionary<int, JObject> RequestProgress);
+    private sealed record MediaStatusSnapshot(int UserId, JArray Requests, JArray Items, Dictionary<int, JObject> RequestStatuses);
 
     private sealed class MediaSnapshotException(int statusCode, string body) : Exception(body)
     {
@@ -720,18 +759,13 @@ public class JellyseerrRequestsService
                 ? null
                 : $"https://image.tmdb.org/t/p/w780{backdropPath}",
             ["mediaStatusLabel"] = GetMediaStatusLabel(requestStatus, mediaStatus),
+            ["requestStatus"] = requestStatus,
             ["is4k"] = is4k,
             ["requestedBy"] = requestedBy?["displayName"] ?? requestedBy?["username"] ?? "Unknown",
             ["requestedByAvatar"] = string.IsNullOrWhiteSpace(avatar) ? null : avatar,
             ["createdAt"] = req["createdAt"],
             ["seasonNumbers"] = GetSeasonNumbers(req.Value<JArray>("seasons"))
         };
-        if (HasFutureRelease(mapped, details))
-        {
-            mapped["isComingSoon"] = true;
-            mapped["releaseSortDate"] = GetReleaseSortDate(mapped, details).ToString("o");
-        }
-
         if (user != null && tmdbId.HasValue && IsPlayableMediaStatus(mediaStatus))
         {
             Guid? jellyfinItemId = ResolveLibraryItemId(user, type, tmdbId.Value, libraryItemCache);
@@ -863,50 +897,25 @@ public class JellyseerrRequestsService
         return numbers;
     }
 
-    private static bool HasFutureRelease(JObject mapped, JObject? details)
+    private static DateTime? GetFutureReleaseDate(string? type, JObject? details)
     {
-        string status = mapped.Value<string>("mediaStatusLabel")?.ToLowerInvariant() ?? string.Empty;
-        string? type = mapped.Value<string>("type");
+        bool isTv = string.Equals(type, "tv", StringComparison.OrdinalIgnoreCase);
         DateTime today = DateTime.UtcNow.Date;
-
-        if (string.Equals(type, "tv", StringComparison.OrdinalIgnoreCase))
+        string?[] candidates = isTv
+            ? new[] { details?["nextEpisodeToAir"]?.Value<string>("airDate") ?? details?["nextAiring"]?.Value<string>("airDate") }
+            : new[] { details?.Value<string>("digitalReleaseDate"), details?.Value<string>("releaseDate") };
+        foreach (string? candidate in candidates)
         {
-            string? nextAirDate = details?["nextEpisodeToAir"]?["airDate"]?.ToString() ?? details?["nextAiring"]?["airDate"]?.ToString();
-
-            return !string.IsNullOrWhiteSpace(nextAirDate)
-                && DateTime.TryParse(nextAirDate, out DateTime airDate)
-                && airDate.Date > today
-                && status is "processing" or "approved" or "partially available";
+            if (DateTime.TryParse(candidate, out DateTime date) && date.Date > today) { return date; }
         }
-
-        if (status is not ("processing" or "approved"))
-        {
-            return false;
-        }
-
-        return new[] { details?["digitalReleaseDate"]?.ToString(), details?["releaseDate"]?.ToString() }.Any(
-            dateValue =>
-                !string.IsNullOrWhiteSpace(dateValue)
-                && DateTime.TryParse(dateValue, out DateTime releaseDate)
-                && releaseDate.Date > today
-        );
-    }
-
-    private static DateTime GetReleaseSortDate(JObject mapped, JObject? details)
-    {
-        string? type = mapped.Value<string>("type");
-        string? candidate = string.Equals(type, "tv", StringComparison.OrdinalIgnoreCase)
-            ? (details?["nextEpisodeToAir"] as JObject)?.Value<string>("airDate") ?? (details?["nextAiring"] as JObject)?.Value<string>("airDate")
-            : details?.Value<string>("digitalReleaseDate") ?? details?.Value<string>("releaseDate");
-
-        return DateTime.TryParse(candidate, out DateTime parsed) ? parsed : DateTime.MaxValue;
+        return null;
     }
 
     private static int? ExtractYear(string? dateValue) => !string.IsNullOrWhiteSpace(dateValue) && dateValue.Length >= 4 && int.TryParse(dateValue[..4], out int year) ? year : null;
 
     private static string GetMediaStatusLabel(int? requestStatus, int? mediaStatus)
     {
-        if (requestStatus == 4 && mediaStatus is not (4 or 5))
+        if (requestStatus == 4 && mediaStatus is not (4 or 5 or 6 or 7))
         {
             return "Failed";
         }
