@@ -1,3 +1,16 @@
+.seerrfin-requests-search { margin: 1em 0; }
+
+.seerrfin-requests-search input { max-width: 40em; }
+
+.seerrfin-requests-search-section[hidden],
+.seerrfin-requests-search-results[hidden] { display: none; }
+
+.seerrfin-requests-query {
+    flex: 0 1 18em;
+    min-width: 0;
+    margin-left: auto;
+}
+
 .seerrfin-requests-panel .sectionTitleContainer-cards {
     display: flex;
     align-items: center;
@@ -5,7 +18,7 @@
 }
 
 .seerrfin-requests-reload {
-    margin-left: auto;
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;

@@ -1602,6 +1602,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     NativeGridPages: self.readConfigBool(data, 'NativeGridPages', 'nativeGridPages', false),
                     NativeSearchResults: self.readConfigBool(data, 'NativeSearchResults', 'nativeSearchResults', false),
                     ShowDownloadDetailsInDiscoveryPages: self.readConfigBool(data, 'ShowDownloadDetailsInDiscoveryPages', 'showDownloadDetailsInDiscoveryPages', false),
+                    ShowSearchInRequestsPage: self.readConfigBool(data, 'ShowSearchInRequestsPage', 'showSearchInRequestsPage', false),
                     CarouselLayouts: (data && (data.CarouselLayouts || data.carouselLayouts)) || {},
                     DisplayCustomizations: self.parseDisplayCustomizations(data),
                     Advanced: self.parseAdvancedSettings(data)
@@ -1635,6 +1636,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     NativeGridPages: false,
                     NativeSearchResults: false,
                     ShowDownloadDetailsInDiscoveryPages: false,
+                    ShowSearchInRequestsPage: false,
                     CarouselLayouts: {},
                     DisplayCustomizations: self.parseDisplayCustomizations(null),
                     Advanced: self.parseAdvancedSettings(null)
@@ -3202,7 +3204,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             document.addEventListener('click', function (e) {
                 const btn = e.target.closest('.discover-requestbutton');
 
-                if (!btn || !btn.closest('.seerrfin-movies-sections, .seerrfin-tv-sections, .seerrfin-discover-sections, [data-seerrfin-grid-view], .seerrfin-search-section')) {
+                if (!btn || !btn.closest('.seerrfin-movies-sections, .seerrfin-tv-sections, .seerrfin-discover-sections, [data-seerrfin-grid-view], .seerrfin-search-section, .seerrfin-requests-search-results')) {
                     return;
                 }
 
@@ -3237,7 +3239,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 const card = e.target.closest('.seerrfin-discover-card, [data-seerrfin-native-card="true"]');
 
                 if (!card || card.classList.contains('seerrfin-discover-card--static') ||
-                    !card.closest('.seerrfin-movies-sections, .seerrfin-tv-sections, .seerrfin-discover-sections, [data-seerrfin-grid-view], .seerrfin-search-section')) {
+                    !card.closest('.seerrfin-movies-sections, .seerrfin-tv-sections, .seerrfin-discover-sections, [data-seerrfin-grid-view], .seerrfin-search-section, .seerrfin-requests-search-results')) {
                     return;
                 }
 

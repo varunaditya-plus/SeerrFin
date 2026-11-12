@@ -1202,6 +1202,18 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="bst-toggle-row">
+                                <div class="bst-toggle-copy">
+                                    <label class="bst-toggle-label" for="showSearchInRequestsPage">Show search in Requests page</label>
+                                    <div class="bst-field-desc">Show a search bar above requests to quickly request content from Seerr.</div>
+                                </div>
+                                <div class="bst-toggle-actions">
+                                    <label class="bst-toggle">
+                                        <input id="showSearchInRequestsPage" name="showSearchInRequestsPage" type="checkbox" />
+                                        <span class="bst-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="bst-toggle-row bst-toggle-row--release-types">
                                 <div class="bst-toggle-copy">
                                     <span class="bst-toggle-label" id="movieRatingSourcesLabel">Movie ratings</span>
@@ -3476,6 +3488,7 @@
                 document.querySelector('#nativeGridPages').checked = config.NativeGridPages === true;
                 document.querySelector('#nativeSearchResults').checked = config.NativeSearchResults === true;
                 document.querySelector('#showDownloadDetailsInDiscoveryPages').checked = config.ShowDownloadDetailsInDiscoveryPages === true;
+                document.querySelector('#showSearchInRequestsPage').checked = config.ShowSearchInRequestsPage === true;
                 document.querySelector('#elegantFinFixes').checked = config.ElegantFinFixes === true;
                 document.querySelector('#qualityRecommendations').checked = config.QualityRecommendations !== false;
 
@@ -3539,6 +3552,7 @@
                     config.NativeGridPages = document.querySelector('#nativeGridPages').checked;
                     config.NativeSearchResults = document.querySelector('#nativeSearchResults').checked;
                     config.ShowDownloadDetailsInDiscoveryPages = document.querySelector('#showDownloadDetailsInDiscoveryPages').checked;
+                    config.ShowSearchInRequestsPage = document.querySelector('#showSearchInRequestsPage').checked;
                     config.ElegantFinFixes = document.querySelector('#elegantFinFixes').checked;
                     config.QualityRecommendations = document.querySelector('#qualityRecommendations').checked;
 

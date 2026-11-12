@@ -45,7 +45,8 @@ public class JellyseerrRequestsService
         int skip,
         string? filter,
         CancellationToken cancellationToken,
-        bool refresh = false
+        bool refresh = false,
+        string? query = null
     )
     {
         PluginConfiguration config = SeerrFinPlugin.Instance.Configuration;
@@ -78,6 +79,37 @@ public class JellyseerrRequestsService
             List<JObject> requests = allRequests.Where(req => comingSoon ? upcomingDates.ContainsKey(req.Value<int>("id")) :
                 MatchesRequestFilter(req, filter, snapshot.RequestStatuses.GetValueOrDefault(req.Value<int>("id")))).ToList();
             if (comingSoon) { requests = requests.OrderBy(request => upcomingDates[request.Value<int>("id")]).ToList(); }
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                string search = query.Trim();
+                List<JObject> matches = new();
+                
+                // Match titles before pagination, reusing cached metadata and limiting uncached lookups.
+                foreach (JObject[] batch in requests.Chunk(4))
+                {
+                    bool[] matched = await Task.WhenAll(batch.Select(async request =>
+                    {
+                        RequestMetadataEntry metadata = GetRequestMetadataEntry(config, snapshot.UserId, request);
+                        JObject? details;
+                        lock (metadata.Sync) { details = metadata.Data; }
+                        if (details == null)
+                        {
+                            try
+                            {
+                                details = await GetRequestMetadataAsync(config, snapshot.UserId, request, cancellationToken).ConfigureAwait(false);
+                            }
+                            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+                            {
+                                _logger.LogDebug(ex, "SeerrFin • failed to load title for request {RequestId}", request.Value<int>("id"));
+                            }
+                        }
+                        string title = details?.Value<string>("title") ?? details?.Value<string>("name")  ?? request["media"]?.Value<string>("title") ?? request["media"]?.Value<string>("name") ?? string.Empty;
+                        return title.Contains(search, StringComparison.OrdinalIgnoreCase);
+                    })).ConfigureAwait(false);
+                    matches.AddRange(batch.Where((_, index) => matched[index]));
+                }
+                requests = matches;
+            }
             int totalPages = Math.Max(1, (int)Math.Ceiling(requests.Count / (double)take));
             List<JObject> page = requests.Skip(skip).Take(take).ToList();
             Dictionary<string, Guid?> libraryItemCache = new(StringComparer.OrdinalIgnoreCase);

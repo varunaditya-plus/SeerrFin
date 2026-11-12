@@ -31,7 +31,9 @@
 
 .seerrfin-letterboxd-header label { display: block; margin-bottom: 0.5em; }
 
-.seerrfin-letterboxd-header input {
+.seerrfin-letterboxd-header input,
+.seerrfin-requests-search input,
+.seerrfin-requests-query {
     width: 100%;
     box-sizing: border-box;
     padding: 10px 12px;
@@ -42,7 +44,9 @@
     font-size: 1.05em;
 }
 
-.seerrfin-letterboxd-header input:focus { border-color: var(--accent, #00a4dc); outline: none; }
+.seerrfin-letterboxd-header input:focus,
+.seerrfin-requests-search input:focus,
+.seerrfin-requests-query:focus { border-color: var(--accent, #00a4dc); outline: none; }
 
 .seerrfin-letterboxd-header button,
 .seerrfin-letterboxd-actionbar button {

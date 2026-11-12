@@ -49,6 +49,7 @@ window.seerrFinLog = window.seerrFinLog || {
         totalPages: 1,
         page: 1,
         filter: 'all',
+        query: '',
         filterCounts: null,
         loadId: 0,
         isLoading: false,
@@ -791,6 +792,8 @@ window.seerrFinLog = window.seerrFinLog || {
         const pageSize = getPageSize();
         const params = { take: pageSize, skip: (state.page - 1) * pageSize };
 
+        if (state.query) { params.query = state.query; }
+
         if (options.force === true) { params.refresh = true; }
 
         if (state.filter && state.filter !== 'all') {
@@ -853,6 +856,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
         const loadId = ++state.loadId;
         const userId = ApiClient.getCurrentUserId();
+        const query = state.query;
         ensureMetadataSession();
         if (!keepVisible) cancelMetadataLoads();
         const plugin = getPlugin();
@@ -874,7 +878,7 @@ window.seerrFinLog = window.seerrFinLog || {
         log.info('loading requests tab (page ' + state.page + ', filter ' + state.filter + ')');
         state.loadPromise = fetchRequestsPage(options)
             .then(function (data) {
-                if (loadId !== state.loadId || !container.isConnected || userId !== ApiClient.getCurrentUserId()) { return; }
+                if (loadId !== state.loadId || query !== state.query || !container.isConnected || userId !== ApiClient.getCurrentUserId()) { return; }
 
                 if (Array.isArray(data.mediaStatuses)) {
                     plugin.applyMediaStatusSnapshot(data.mediaStatuses, snapshot, revision);
@@ -908,7 +912,7 @@ window.seerrFinLog = window.seerrFinLog || {
             .catch(function (err) {
                 log.error('requests ' + (keepVisible ? 'refresh' : 'load') + ' failed (page ' + state.page + ', filter ' + state.filter + ')', err);
 
-                if (loadId !== state.loadId || !container.isConnected || userId !== ApiClient.getCurrentUserId()) { return; }
+                if (loadId !== state.loadId || query !== state.query || !container.isConnected || userId !== ApiClient.getCurrentUserId()) { return; }
 
                 if (keepVisible) { throw err; }
 
@@ -1073,9 +1077,21 @@ window.seerrFinLog = window.seerrFinLog || {
         const filterButtons = renderFilterButtons(true);
 
         return `
+            <div class="verticalSection seerrfin-requests-search-section" hidden>
+                <div class="sectionTitleContainer sectionTitleContainer-cards padded-left padded-right">
+                    <h2 class="sectionTitle sectionTitle-cards">Search</h2>
+                </div>
+                <form class="seerrfin-requests-search padded-left padded-right" role="search">
+                    <input type="search" aria-label="Search movies and TV shows"
+                        placeholder="Search movies and TV shows…" maxlength="256" autocomplete="off">
+                </form>
+                <div class="seerrfin-requests-search-results" hidden></div>
+            </div>
             <div class="verticalSection seerrfin-requests-panel">
                 <div class="sectionTitleContainer sectionTitleContainer-cards padded-left padded-right">
                     <h2 class="sectionTitle sectionTitle-cards">Requests</h2>
+                    <input type="search" class="seerrfin-requests-query" aria-label="Filter requests"
+                        placeholder="Filter requests…" maxlength="256" autocomplete="off">
                     <button type="button" class="seerrfin-requests-reload" aria-label="Reload requests" title="Reload requests">
                         <span class="material-icons" aria-hidden="true">refresh</span>
                     </button>
@@ -1088,12 +1104,86 @@ window.seerrFinLog = window.seerrFinLog || {
         `;
     }
 
+    function bindSearchEvents(container) {
+        const section = container.querySelector('.seerrfin-requests-search-section');
+        const form = container.querySelector('.seerrfin-requests-search');
+        const input = form.querySelector('input');
+        const results = container.querySelector('.seerrfin-requests-search-results');
+        let timer;
+        let searchId = 0;
+
+        function search(immediate) {
+            clearTimeout(timer);
+            const id = ++searchId;
+            const query = input.value.trim();
+            const userId = ApiClient.getCurrentUserId();
+            const plugin = getPlugin();
+
+            results.hidden = !query;
+            results.innerHTML = query ? '<div class="seerrfin-loading-row padded-left" role="status">Searching Seerr…</div>' : '';
+
+            if (!query || section.hidden) { return; }
+
+            function isCurrent() {
+                return id === searchId && !section.hidden && results.isConnected && input.value.trim() === query && userId === ApiClient.getCurrentUserId();
+            }
+
+            function run() {
+                plugin.loadDisplaySettings().then(function () {
+                    if (isCurrent()) { return plugin.fetchSeerrSearch(query); }
+                }).then(function (data) {
+                    if (!data || !isCurrent()) { return; }
+
+                    if (!data.items.length) {
+                        results.innerHTML = '<div class="seerrfin-empty-row padded-left" role="status">No movies or TV shows found.</div>';
+                        return;
+                    }
+
+                    const useNativeCards = plugin.shouldUseNativeSearchResults();
+                    results.innerHTML = `
+                        <div class="verticalSection seerrfin-grid-view">
+                            <h2 class="sectionTitle sectionTitle-cards padded-left padded-right">Seerr results</h2>
+                            <div is="emby-itemscontainer" class="itemsContainer padded-left padded-right vertical-wrap focuscontainer-x">
+                                ${plugin.createDiscoverCards(data.items, true, { nativeCards: useNativeCards })}
+                            </div>
+                        </div>
+                    `;
+                    plugin.initNativeOrCustomCards(results, useNativeCards);
+                }).catch(function (err) {
+                    if (!isCurrent()) { return; }
+
+                    log.warn('requests tab search failed', err);
+                    results.innerHTML = '<div class="seerrfin-empty-row padded-left" role="alert">Unable to search Seerr. Please try again.</div>';
+                });
+            }
+
+            if (immediate) {
+                run();
+            } else {
+                timer = setTimeout(run, 300);
+            }
+        }
+
+        input.addEventListener('input', function () { search(false); });
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            search(true);
+        });
+    }
+
+    function syncSearchVisibility(container) {
+        const section = container.querySelector('.seerrfin-requests-search-section');
+        section.hidden = getPlugin()?._displaySettings?.ShowSearchInRequestsPage !== true;
+    }
+
     function mount(container) {
         if (container.querySelector('.seerrfin-requests-panel')) { return; }
 
         log.info('adding requests panel');
         container.innerHTML = renderRequestsPanel();
+        container.querySelector('.seerrfin-requests-query').value = state.query;
 
+        bindSearchEvents(container);
         bindContainerEvents(container);
 
         const plugin = getPlugin();
@@ -1106,6 +1196,7 @@ window.seerrFinLog = window.seerrFinLog || {
             Promise.resolve();
 
         settingsPromise.then(function () {
+            syncSearchVisibility(container);
             loadRequests(container);
             startAutoRefresh();
         });
@@ -1115,6 +1206,17 @@ window.seerrFinLog = window.seerrFinLog || {
         if (container.dataset.seerrfinRequestsBound === 'true') { return; }
 
         container.dataset.seerrfinRequestsBound = 'true';
+        let filterTimer;
+        container.addEventListener('input', function (event) {
+            if (!event.target.matches('.seerrfin-requests-query')) { return; }
+
+            clearTimeout(filterTimer);
+            state.query = event.target.value.trim();
+            state.page = 1;
+            filterTimer = setTimeout(function () {
+                if (container.isConnected) { loadRequests(container); }
+            }, 300);
+        });
         container.addEventListener('click', function (event) {
             const retry = event.target.closest('.seerrfin-request-metadata-retry');
             if (retry) {
@@ -1237,8 +1339,12 @@ window.seerrFinLog = window.seerrFinLog || {
             return;
         }
 
+        syncSearchVisibility(container);
+        const queryInput = container.querySelector('.seerrfin-requests-query');
+        const queryChanged = queryInput.value.trim() !== state.query;
+        queryInput.value = state.query;
         startAutoRefresh();
-        if (container.dataset.seerrfinRequestsFilter !== state.filter) {
+        if (container.dataset.seerrfinRequestsFilter !== state.filter || queryChanged) {
             loadRequests(container);
 
             return;

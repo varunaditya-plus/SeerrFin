@@ -313,6 +313,7 @@ public class SeerrFinController : ControllerBase
                 config.NativeGridPages,
                 config.NativeSearchResults,
                 config.ShowDownloadDetailsInDiscoveryPages,
+                config.ShowSearchInRequestsPage,
                 displayCustomizations = DisplayCustomizationsHelper.Resolve(config),
                 carouselLayouts = CarouselLayoutsHelper.Resolve(config).ToDictionary(
                     page => page.Key,
@@ -820,6 +821,7 @@ public class SeerrFinController : ControllerBase
         [FromQuery] int skip = 0,
         [FromQuery] string? filter = null,
         [FromQuery] bool refresh = false,
+        [FromQuery] string? query = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -832,7 +834,7 @@ public class SeerrFinController : ControllerBase
 
         Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
         (int statusCode, string body) = await _requestsService
-            .GetRequestsAsync(userId, username, take, skip, filter, cancellationToken, refresh)
+            .GetRequestsAsync(userId, username, take, skip, filter, cancellationToken, refresh, query)
             .ConfigureAwait(false);
 
         return new ContentResult { StatusCode = statusCode, Content = body, ContentType = "application/json" };

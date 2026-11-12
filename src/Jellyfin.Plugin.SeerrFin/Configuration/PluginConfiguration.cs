@@ -71,6 +71,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool ShowDownloadDetailsInDiscoveryPages { get; set; }
 
+    public bool ShowSearchInRequestsPage { get; set; }
+
     public string DisplayCustomizationsJson { get; set; } = string.Empty;
 
     public string CarouselLayoutsJson { get; set; } = string.Empty;
