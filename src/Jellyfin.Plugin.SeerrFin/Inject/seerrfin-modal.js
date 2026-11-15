@@ -514,13 +514,17 @@ window.seerrFinLog = window.seerrFinLog || {
         });
     }
 
-    function buildJustWatchQualityLines(mediaId, mediaType) {
-        const qualityLines = mountFromHtml(`
-            <div class="bst-sidebar-lines bst-sidebar-lines--qualities" hidden>
-                <div><span class="bst-label">Highest released quality:</span> <span class="bst-quality-value">…</span></div>
-                <div><span class="bst-label">Most common quality:</span> <span class="bst-quality-value">…</span></div>
+    function renderJustWatchQualityLines(result) {
+        return `
+            <div class="bst-sidebar-lines bst-sidebar-lines--qualities"${result ? '' : ' hidden'}>
+                <div><span class="bst-label">Highest released quality:</span> <span class="bst-quality-value">${result ? escapeHtml(result.highestReleasedQuality || result.HighestReleasedQuality || 'Unknown') : '…'}</span></div>
+                <div><span class="bst-label">Most common quality:</span> <span class="bst-quality-value">${result ? escapeHtml(result.mostCommonQuality || result.MostCommonQuality || 'Unknown') : '…'}</span></div>
             </div>
-        `);
+        `;
+    }
+
+    function buildJustWatchQualityLines(mediaId, mediaType) {
+        const qualityLines = mountFromHtml(renderJustWatchQualityLines(null));
 
         fetchJustWatchQualities(mediaId, mediaType).then(function (result) {
             if (!result) {
@@ -721,8 +725,8 @@ window.seerrFinLog = window.seerrFinLog || {
         document.body.style.overflow = '';
     }
 
-    function getRequestableSeasons(details) {
-        const includeSpecials = getRequestModalAdvanced().includeSpecialsSeason === true;
+    function getRequestableSeasons(details, settings) {
+        const includeSpecials = (settings || getRequestModalAdvanced()).includeSpecialsSeason === true;
 
         return (details.seasons || [])
             .filter(function (season) {
@@ -1317,7 +1321,8 @@ window.seerrFinLog = window.seerrFinLog || {
         return parts.join('<span class="bst-dot">•</span>');
     }
 
-    function renderDetails(data, mediaId, mediaType) {
+    function renderDetails(data, mediaId, mediaType, settings) {
+        const modalSettings = settings || getRequestModalAdvanced();
         const title = data.title || data.name || 'Details';
         const overview = data.overview || '';
         const backdrop = resolveImageUrl(data.backdropUrl || data.backdrop_url || '') || tmdbImage(data.backdropPath || data.backdrop_path, 'original');
@@ -1369,7 +1374,7 @@ window.seerrFinLog = window.seerrFinLog || {
                                                 ${hideRequest
                                                     ? ''
                                                     : `<button type="button" class="bst-btn-request" data-action="request"${requestState.requested ? ' disabled' : ''}>${escapeHtml(requestState.label)}</button>`}
-                                                ${getRequestModalAdvanced().showRequest4kButton !== false && !hideRequest4k
+                                                ${modalSettings.showRequest4kButton !== false && !hideRequest4k
                                                     ? `<button type="button" class="bst-btn-request-4k" data-action="request-4k"${request4kState.requested ? ' disabled' : ''}>${escapeHtml(request4kState.label)}</button>`
                                                     : ''}
                                                 <button type="button" class="bst-btn-watchlist" data-action="watchlist" aria-pressed="false" aria-label="Loading watchlist…" title="Loading watchlist…" disabled><span class="material-icons" aria-hidden="true">add</span></button>
@@ -1594,12 +1599,114 @@ window.seerrFinLog = window.seerrFinLog || {
         });
     }
 
+    // Return the existing modal templates without opening, binding or submitting anything.
+    function renderSettingsPreview(kind, data, options) {
+        data = data || {};
+        options = options || {};
+        const settings = options.requestModal || {};
+        const display = options.displaySettings || {};
+        const mediaType = options.mediaType === 'tv' ? 'tv' : 'movie';
+        const is4k = options.is4k === true;
+        const template = document.createElement('template');
+
+        if (kind === 'details') {
+            const credits = data.credits || data.aggregateCredits || {};
+            const details = Object.assign({}, data, {
+                ratingSources: getRatingSources(mediaType, display),
+                useStarForRatings: display.UseStarForRatings ?? display.useStarForRatings,
+                ratingStarColor: display.RatingStarColor ?? display.ratingStarColor,
+                externalRatings: options.externalRatings || data.externalRatings,
+                credits: Object.assign({}, credits, {
+                    cast: Array.isArray(credits.cast) ? credits.cast : [],
+                    crew: Array.isArray(credits.crew) ? credits.crew : []
+                })
+            });
+            template.innerHTML = renderDetails(details, data.id, mediaType, settings);
+
+            if ((display.QualityRecommendations ?? display.qualityRecommendations) !== false && options.qualities) {
+                template.content.querySelector('[data-quality-slot]').insertAdjacentHTML('afterbegin', renderJustWatchQualityLines(options.qualities));
+            }
+        } else if (kind === 'seasons') {
+            if (settings.tvSeasonPickerEnabled === false) {
+                return renderSettingsPreview('quality', data, options);
+            }
+
+            template.innerHTML = renderSeasonModalShell();
+            const list = template.content.querySelector('.bst-quality-list');
+            const seasons = getRequestableSeasons(data, settings);
+            const requestable = seasons.filter(function (season) { return !getSeasonRequestState(data, season.seasonNumber, is4k); });
+            list.innerHTML = seasons.length ? renderSeasonList(seasons, data, is4k) : '<div class="bst-quality-empty">No seasons available.</div>';
+            template.content.querySelector('.bst-quality-continue').disabled = !requestable.length || settings.requireExplicitSeasonSelection === true;
+        } else if (kind === 'quality') {
+            template.innerHTML = renderQualityModalShell(is4k);
+            const payload = options.requestOptions || {};
+            const raw = payload.options || payload.Options || [];
+            const profiles = (Array.isArray(raw) ? raw : []).filter(Boolean).map(function (option) {
+                return {
+                    serverId: option.serverId ?? option.ServerId,
+                    serverName: option.serverName || option.ServerName || '',
+                    profileId: option.profileId ?? option.ProfileId,
+                    profileName: option.profileName || option.ProfileName || '',
+                    rootFolder: option.rootFolder || option.RootFolder || '',
+                    rootFolders: option.rootFolders || option.RootFolders || [],
+                    is4k: (option.is4k ?? option.Is4k) === true,
+                    isDefault: (option.isDefault ?? option.IsDefault) === true,
+                    isDefaultProfile: (option.isDefaultProfile ?? option.IsDefaultProfile) === true
+                };
+            }).filter(function (option) { return option.is4k === is4k; });
+            const allowed = is4k ? payload.canRequest4k ?? payload.CanRequest4k : payload.canRequest ?? payload.CanRequest;
+            const advanced = payload.canRequestAdvanced ?? payload.CanRequestAdvanced;
+            const list = template.content.querySelector('.bst-quality-list');
+            const footer = template.content.querySelector('.bst-quality-footer');
+
+            if (allowed === false || advanced === false || !profiles.length) {
+                const message = allowed === false ? 'You do not have permission to make ' + (is4k ? '4K' : mediaType === 'tv' ? 'series' : 'movie') + ' requests.' : advanced === false ? 'Requests use your Seerr defaults.' : is4k ? 'No 4K quality profiles available.' : 'No quality profiles available.';
+                list.innerHTML = '<div class="bst-quality-empty">' + escapeHtml(message) + '</div>';
+            } else {
+                list.innerHTML = renderQualityOptions(profiles);
+                footer.hidden = false;
+                const selected = profiles.find(function (option) { return option.isDefault && option.isDefaultProfile; }) || (profiles.length === 1 ? profiles[0] : null);
+                const field = footer.querySelector('.bst-root-folder-field');
+                const select = field.querySelector('select');
+                field.hidden = settings.showRootFolderSelector !== true || !selected || !selected.rootFolders.length;
+
+                if (!field.hidden) {
+                    const folders = selected.rootFolders;
+                    const defaultFolder = folders.includes(selected.rootFolder) ? selected.rootFolder : '';
+                    if (!defaultFolder) {
+                        const placeholder = document.createElement('option');
+                        placeholder.textContent = 'Choose a root folder';
+                        placeholder.value = '';
+                        placeholder.setAttribute('selected', '');
+                        select.appendChild(placeholder);
+                    }
+                    folders.forEach(function (folder) {
+                        const option = document.createElement('option');
+                        option.textContent = folder;
+                        option.value = folder;
+                        if (folder === defaultFolder) option.setAttribute('selected', '');
+                        select.appendChild(option);
+                    });
+                }
+
+                footer.querySelector('.bst-quality-continue').disabled = !selected || !field.hidden && !select.value;
+            }
+        } else {
+            return '';
+        }
+
+        const root = template.content.firstElementChild;
+        root.setAttribute('inert', '');
+        return root.outerHTML;
+    }
+
     window.seerrFinModal = {
         open: openDetailsModal,
         close: closeDetailsModal,
         openQualityPicker: openQualityModal,
         fetchRatings: fetchRatings,
         getRatingSources: getRatingSources,
-        getRatingEntries: getRatingEntries
+        getRatingEntries: getRatingEntries,
+        renderSettingsPreview: renderSettingsPreview
     };
 })();

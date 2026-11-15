@@ -100,6 +100,18 @@ public class SeerrFinController : ControllerBase
     [Produces("application/javascript")]
     public ActionResult GetNativeUiScript() => ServeEmbedded("Inject.seerrfin-nativeui.js", "application/javascript");
 
+    [HttpGet("preview-scenes.js")]
+    [Produces("application/javascript")]
+    public ActionResult GetPreviewScenesScript() => ServeEmbedded("Configuration.preview-scenes.js", "application/javascript");
+
+    [HttpGet("settings-previews.js")]
+    [Produces("application/javascript")]
+    public ActionResult GetSettingsPreviewsScript() => ServeEmbedded("Configuration.settings-previews.js", "application/javascript");
+
+    [HttpGet("settings-previews.css")]
+    [Produces("text/css")]
+    public ActionResult GetSettingsPreviewsStylesheet() => ServeEmbedded("Configuration.settings-previews.css", "text/css");
+
     [HttpGet("seerrfin-modal.js")]
     [Produces("application/javascript")]
     public ActionResult GetModalScript() => ServeEmbedded("Inject.seerrfin-modal.js", "application/javascript");

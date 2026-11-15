@@ -127,8 +127,8 @@ window.seerrFinLog = window.seerrFinLog || {
         return window.seerrFinPlugin || null;
     }
 
-    function getRequestsAdvanced() {
-        const plugin = getPlugin();
+    function getRequestsAdvanced(plugin) {
+        plugin = plugin || getPlugin();
         const advanced = plugin && plugin._displaySettings && plugin._displaySettings.Advanced;
 
         return (advanced && advanced.requests) || {};
@@ -160,8 +160,8 @@ window.seerrFinLog = window.seerrFinLog || {
         };
     }
 
-    function getCardOptions() {
-        const settings = getRequestsAdvanced();
+    function getCardOptions(plugin) {
+        const settings = getRequestsAdvanced(plugin);
 
         return { interactive: settings.cardsInteractive === true, includeMetaText: settings.cardsIncludeMetaText === true };
     }
@@ -356,16 +356,21 @@ window.seerrFinLog = window.seerrFinLog || {
         };
     }
 
-    function renderDiscoverCard(item) {
-        const plugin = getPlugin();
+    function renderDiscoverCard(item, options) {
+        options = options || {};
+        const plugin = options.plugin || getPlugin();
 
         if (!plugin || !item.tmdbId || typeof plugin.createDiscoverCards !== 'function') { return; }
 
-        return plugin.createDiscoverCards([mapRequestToDiscoverItem(item)], false, getCardOptions());
+        const cardOptions = getCardOptions(plugin);
+        if (typeof options.cardsInteractive === 'boolean') cardOptions.interactive = options.cardsInteractive;
+        if (typeof options.cardsIncludeMetaText === 'boolean') cardOptions.includeMetaText = options.cardsIncludeMetaText;
+
+        return plugin.createDiscoverCards([mapRequestToDiscoverItem(item)], false, cardOptions);
     }
 
-    function shouldUseLandscapeCards() {
-        const plugin = getPlugin();
+    function shouldUseLandscapeCards(plugin) {
+        plugin = plugin || getPlugin();
 
         return plugin && typeof plugin.shouldUseBackdropThumbnails === 'function' ?
             plugin.shouldUseBackdropThumbnails() :
@@ -1370,6 +1375,28 @@ window.seerrFinLog = window.seerrFinLog || {
         if (container) observeRequestMetadata(container);
         refreshIfActive({ reason: 'visibility' });
     }
+
+    // Settings previews use the same markup without mounting a requests page or binding actions.
+    window.seerrFinRequestsPreview = {
+        render: function (item, options) {
+            options = options || {};
+            const plugin = options.plugin || getPlugin();
+
+            if (!item || !plugin) { return ''; }
+
+            const layout = shouldUseLandscapeCards(plugin);
+            const card = renderDiscoverCard(item, options);
+            if (!card) { return ''; }
+
+            return `
+                <article class="seerrfin-request-box seerrfin-request-box--${layout ? 'landscape' : 'portrait'}">
+                    <div class="seerrfin-request-box-inner">
+                        <div class="seerrfin-request-card-slot">${card}</div>
+                    </div>
+                </article>
+            `;
+        }
+    };
 
     function init() {
         if (typeof ApiClient === 'undefined' || !getPlugin() || !ApiClient.accessToken() || !ApiClient.getCurrentUserId()) {

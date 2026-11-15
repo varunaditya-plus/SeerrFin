@@ -20,6 +20,9 @@
 
     <ItemGroup>
         <EmbeddedResource Include="Configuration\config.html" />
+        <EmbeddedResource Include="Configuration\preview-scenes.js" />
+        <EmbeddedResource Include="Configuration\settings-previews.js" />
+        <EmbeddedResource Include="Configuration\settings-previews.css" />
         <EmbeddedResource Include="Inject\seerrfin-nativeui.js" />
         <EmbeddedResource Include="Inject\seerrfin-tabs.js" />
         <EmbeddedResource Include="Inject\seerrfin-tabs.css" />

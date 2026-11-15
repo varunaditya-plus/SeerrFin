@@ -1,0 +1,102 @@
+.bst-settings-preview {
+    position: fixed;
+    z-index: 100050;
+    width: 480px;
+    max-width: calc(100% - 24px);
+    height: 260px;
+    max-height: calc(100vh - 24px);
+    overflow: hidden;
+    pointer-events: none;
+    box-sizing: border-box;
+    border: 1px solid var(--divider, rgba(255, 255, 255, 0.2));
+    border-radius: 4px;
+    background: var(--jf-palette-background-default, Canvas);
+    color: var(--jf-palette-text-primary, var(--primaryTextColor, #fff));
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.bst-settings-preview[hidden] { display: none !important; }
+.bst-preview-comparison, .bst-preview-columns { width: 100%; height: 100%; }
+.bst-preview-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.bst-preview-column { position: relative; min-width: 0; overflow: hidden; }
+.bst-preview-column + .bst-preview-column { border-left: 1px solid var(--divider, rgba(255, 255, 255, 0.25)); }
+.bst-preview-state {
+    position: absolute;
+    z-index: 3;
+    left: 12px;
+    bottom: 12px;
+    padding: 4px 8px;
+    background: #606060;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.03em;
+}
+.bst-preview-state.is-on { background: #008bd4; }
+.bst-preview-scene { position: absolute; inset: 12px 12px 44px; overflow: hidden; box-sizing: border-box; }
+.bst-preview-cursor { position: absolute; z-index: 2; width: 20px; height: 25px; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55)); }
+
+/* The stage supplies only the original section variables and a bounded viewport. */
+.bst-preview-staging { left: -100000px; top: 0; visibility: hidden; }
+.bst-preview-staging > .bst-preview-comparison { position: absolute; inset: 0; }
+.bst-preview-live {
+    --seerrfin-discover-backdrop-width: 20em;
+    --seerrfin-discover-portrait-width: 13.333em;
+    position: absolute;
+    top: 0;
+    left: 0;
+    contain: layout;
+    box-sizing: border-box;
+    overflow: visible;
+    font-family: inherit;
+    transform: scale(var(--bst-preview-scale, 0.5)) translate(var(--bst-preview-x, 0px), var(--bst-preview-y, 0px));
+    transform-origin: top left;
+}
+.bst-preview-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+}
+.bst-preview-live:is([data-preview-kind="details"], [data-preview-kind="seasons"], [data-preview-kind="quality"]) > .bst-preview-content { padding: 0; }
+.bst-preview-live[data-preview-kind="details"] :is(.bst-popout-wrapper, .bst-aether-card, .bst-modal-scroll) { overflow: visible; }
+
+/* These three rules are normally supplied by the Requests page's mount root. */
+.bst-preview-live[data-preview-kind="requests"] .seerrfin-discover-card--static .seerrfin-discover-overlay-title { display: none; }
+.bst-preview-live[data-preview-kind="requests"] .seerrfin-discover-card--static { pointer-events: none; cursor: default; }
+.bst-preview-live[data-preview-kind="requests"] .seerrfin-discover-card--static .cardScalable { cursor: default; }
+
+/* Show the same focus enlargement used by Jellyfin's card animation. */
+.bst-preview-live .bst-preview-focus.is-focused .card:first-child > .cardBox { transform: scale(1.07, 1.07); }
+.bst-preview-live[data-preview-hover="true"] .cardOverlayContainer,
+.bst-preview-live[data-preview-hover="true"] .cardOverlayButton-hover { opacity: 1; }
+
+/* Prepared scenes are still HTML, but have no entry, image, or theme transitions. */
+.bst-settings-preview,
+.bst-settings-preview::before,
+.bst-settings-preview::after,
+.bst-settings-preview *,
+.bst-settings-preview *::before,
+.bst-settings-preview *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+}
+.bst-preview-live .bst-external-link { opacity: 1; transform: scale(1); }
+
+/* Keep the real loading shimmer, without animating entry or hidden prepared scenes. */
+.bst-settings-preview:not(.bst-preview-staging) :is(
+    .seerrfin-skeleton-title,
+    .seerrfin-skeleton-card,
+    .seerrfin-native-skeleton-image,
+    .seerrfin-native-skeleton-text,
+    .seerrfin-card-thumb-skeleton
+)::after { animation: seerrfin-skeleton-shimmer 1.5s ease-in-out infinite !important; }
+.bst-settings-preview:not(.bst-preview-staging) .bst-preview-hidden-context *::after { animation: none !important; }

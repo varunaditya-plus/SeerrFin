@@ -1180,18 +1180,6 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="nativeSearchResults">Native search results</label>
-                                    <div class="bst-field-desc">Use Jellyfin's default carousel styles for cards in Seerr search results.</div>
-                                </div>
-                                <div class="bst-toggle-actions">
-                                    <label class="bst-toggle">
-                                        <input id="nativeSearchResults" name="nativeSearchResults" type="checkbox" />
-                                        <span class="bst-toggle-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="bst-toggle-row">
-                                <div class="bst-toggle-copy">
                                     <label class="bst-toggle-label" for="showDownloadDetailsInDiscoveryPages">Show download details in discovery pages</label>
                                     <div class="bst-field-desc">In discovery pages, show if media has been downloaded, is downloading (and its percent), or any other status it might be.</div>
                                 </div>
@@ -1395,6 +1383,18 @@
                     <div class="bst-section-container">
                         <div class="bst-section-title">Search</div>
                         <div class="bst-card">
+                            <div class="bst-toggle-row">
+                                <div class="bst-toggle-copy">
+                                    <label class="bst-toggle-label" for="nativeSearchResults">Native search results</label>
+                                    <div class="bst-field-desc">Use Jellyfin's default carousel styles for cards in Seerr search results.</div>
+                                </div>
+                                <div class="bst-toggle-actions">
+                                    <label class="bst-toggle">
+                                        <input id="nativeSearchResults" name="nativeSearchResults" type="checkbox" />
+                                        <span class="bst-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
                                     <label class="bst-toggle-label" for="addSeerrResultsInSearch">Add Seerr results in Search</label>
@@ -2052,6 +2052,99 @@
             const form = document.querySelector('.seerrFinConfigurationForm');
             const bannerTitle = document.querySelector('#seerrFinConfigurationPage .bst-page-banner > span');
             let savedConfigurationState = null;
+            let settingsPreviewsReady = false;
+            let settingsPreviewController = null;
+            const configurationPage = document.getElementById('seerrFinConfigurationPage');
+
+            configurationPage.addEventListener('viewshow', function () {
+                if (settingsPreviewsReady) { startSettingsPreviews(); }
+            });
+            configurationPage.addEventListener('viewhide', function () { settingsPreviewController = null; });
+
+            function settingsPreviewContext() {
+                const page = document.getElementById('seerrFinConfigurationPage');
+                const values = {};
+                page.querySelectorAll('input, select, textarea').forEach(function (input) {
+                    if (input.id) { values[input.id] = input.type === 'checkbox' ? input.checked : input.value; }
+                });
+
+                const display = {};
+                [
+                    'streamingServiceUseImages', 'studioNetworkUseImages', 'genreUseBackdrops', 'discoverUsePosters',
+                    'nativeCarousels', 'nativeGridPages', 'nativeSearchResults', 'showDownloadDetailsInDiscoveryPages',
+                    'showSearchInRequestsPage', 'elegantFinFixes', 'qualityRecommendations', 'useStarForRatings',
+                    'addSeerrResultsInSearch', 'ratingStarColor'
+                ].forEach(function (id) { display[id.charAt(0).toUpperCase() + id.slice(1)] = values[id]; });
+
+                display.MovieRatingSources = getRatingSourcesPayload('movieRatingSources');
+                display.TvShowRatingSources = getRatingSourcesPayload('tvShowRatingSources');
+                display.DisplayCustomizations = buildDisplayCustomizationsPayload();
+
+                if (activeCustomizeKey && customizeModal.classList.contains('is-open')) {
+                    display.DisplayCustomizations[DISPLAY_STYLE_ITEMS[activeCustomizeKey].configKey] = {
+                        DuotoneEnabled: customizeDuotone.checked,
+                        DuotoneLight: normalizeHexColor(customizeDuotoneLight.value, 'ffffff'),
+                        DuotoneDark: normalizeHexColor(customizeDuotoneDark.value, '969696')
+                    };
+                }
+
+                let renderer = null;
+                if (window.seerrFinPlugin) {
+                    renderer = Object.create(window.seerrFinPlugin);
+                    display.Advanced = renderer.parseAdvancedSettings({ Advanced: buildAdvancedPayload() });
+                    renderer._displaySettings = display;
+                    renderer.applyAdvancedSettings(display.Advanced);
+                }
+
+                return {
+                    plugin: renderer,
+                    values: values,
+                    customizeKey: activeCustomizeKey,
+                    customizeKeys: Object.keys(DISPLAY_STYLE_ITEMS)
+                };
+            }
+
+            function startSettingsPreviews() {
+                const page = document.getElementById('seerrFinConfigurationPage');
+                const version = '?_=' + Date.now();
+
+                let style = document.getElementById('bstSettingsPreviewStyles');
+                const newStyle = !style;
+                if (newStyle) {
+                    style = document.createElement('link');
+                    style.id = 'bstSettingsPreviewStyles';
+                    style.rel = 'stylesheet';
+                    style.href = ApiClient.getUrl('SeerrFin/settings-previews.css') + version;
+                }
+                const styleReady = style.sheet ? Promise.resolve() : new Promise(function (resolve, reject) {
+                    style.addEventListener('load', resolve, { once: true });
+                    style.addEventListener('error', function () { style.remove(); reject(new Error('Could not load preview styles.')); }, { once: true });
+                });
+                if (newStyle) { document.head.appendChild(style); }
+
+                function loadScript(name, ready) {
+                    if (ready()) { return Promise.resolve(); }
+                    return new Promise(function (resolve, reject) {
+                        const script = document.createElement('script');
+                        script.src = ApiClient.getUrl('SeerrFin/' + name) + version;
+                        script.onload = function () { script.remove(); resolve(); };
+                        script.onerror = function () { script.remove(); reject(new Error('Could not load setting previews.')); };
+                        document.head.appendChild(script);
+                    });
+                }
+
+                Promise.all([
+                    styleReady,
+                    document.fonts ? document.fonts.ready : Promise.resolve(),
+                    loadScript('preview-scenes.js', function () { return !!window.seerrFinPreviewScenes; }),
+                    loadScript('settings-previews.js', function () { return !!window.seerrFinSettingsPreviews; })
+                ]).then(function () {
+                    const route = window.location.hash.split('?');
+                    if (!settingsPreviewController && page.isConnected && route[0].endsWith('/configurationpage') && new URLSearchParams(route[1] || '').get('name') === 'SeerrFin') {
+                        settingsPreviewController = window.seerrFinSettingsPreviews.mount(page, { getContext: settingsPreviewContext });
+                    }
+                }).catch(function (error) { console.warn('SeerrFin • ' + error.message); });
+            }
 
             function switchBstPage(pageId) {
                 document.querySelectorAll('.bst-page-nav-btn[data-bst-panel]').forEach(function (btn) {
@@ -3507,6 +3600,8 @@
                 savedConfigurationState = configurationState();
                 updateUnsavedChanges();
                 Dashboard.hideLoadingMsg();
+                settingsPreviewsReady = true;
+                startSettingsPreviews();
             }).catch(function () {
                 displayCustomizations = createDefaultDisplayCustomizations();
                 loadCarouselLayoutsFromConfig({});
