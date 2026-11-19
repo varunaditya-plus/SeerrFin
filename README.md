@@ -13,7 +13,7 @@
 [![GitHub Release](https://shieldcn.dev/github/release/varunaditya-plus/SeerrFin.svg?size=sm)](https://github.com/varunaditya-plus/SeerrFin/releases/latest)
 ![Please star this repo](https://shieldcn.dev/badge/★%20please%20star-22c55e.svg?theme=amber&color=eab308&size=sm&variant=outline)
 
-The best way to discover and request Movies and TV Shows by using Seerr directly in Jellyfin. This plugin adds tabs for discovery, requests, and Letterboxd watchlist syncing, with request modals powered by your Seerr instance. The categories are gotten using TMDB.
+The best way to discover and request Movies and TV Shows, track requests, and access Seerr, directly inside Jellyfin Web. Use the same Seerr setup you already have directly inside Jellyfin, with extra features like Letterboxd watchlist syncing, and access every part of Seerr without needing the seperate site.
 
 </div>
 
@@ -23,6 +23,14 @@ The best way to discover and request Movies and TV Shows by using Seerr directly
 
 ---
 
+## How do I request movies and track Seerr requests inside Jellyfin?
+
+1. Browse the **Movies** and **TV Shows** tabs for ideas, or use Jellyfin search if you already have a title in mind. Search includes movies and shows missing from your library.
+2. Open a title and select **Request**. For a series, choose the seasons you want. If the title is already in your library, select **Play** to watch it in Jellyfin.
+3. Open the **Requests** tab in Jellyfin to see whether a request is pending approval, approved, processing, or available. If your admin has connected Radarr or Sonarr, you can also see download progress here.
+
+To set this up, [install the plugin](#installation) and connect it to your existing Seerr server. Seerr is the successor to [Jellyseerr and Overseerr](https://docs.seerr.dev/blog/seerr-release/). Each viewer needs a linked Seerr account with request permission. The tabs and search integration work in a browser or an app that loads Jellyfin Web. Native clients such as Swiftfin use their own interface.
+
 ## Features
 - **Movie and TV tabs**: New tabs for discovering movies and TV shows directly in Jellyfin
 - **Discovery sections**: Carousels sorting movies/tv shows to be discovered by (eg. Trending, Popular, etc.)
@@ -30,7 +38,7 @@ The best way to discover and request Movies and TV Shows by using Seerr directly
 - **Request from Seerr**: Easily request movies and TV shows directly in Jellyfin and select quality profiles and specific seasons (for shows)
 - **Play what you already have**: Titles already in your Jellyfin library get a Play button in the details popup that opens them directly in Jellyfin
 - **Quality recommendations**: See the highest released and most common streaming quality when requesting to know the right quality profile for your request
-- **Requests tab**: Track your Seerr requests with, and open each request open requested content in Seerr, Radarr or Sonarr
+- **Requests tab**: Filter requests by title or status. Each request also has links to Seerr, Radarr, or Sonarr when available.
 - **Radarr/Sonarr download progress**: See live download progress of requests to see how far along each request is
 - **Letterboxd watchlist sync**: Sync your Letterboxd watchlist into Jellyfin and request all movies from your watchlist at once
 - **Bulk request from Letterboxd**: Select and request multiple movies from your Letterboxd watchlist at once
@@ -53,8 +61,13 @@ https://raw.githubusercontent.com/varunaditya-plus/SeerrFin/main/manifest.json
 3. Now go back to **Plugins** in the sidebar, select **All** in the filters above the plugins, and click SeerrFin. Then click **Install**.
 4. Now you have to restart your Jellyfin instance. Go to **Dashboard** and click the **Restart** button. You're done!
 
-### Configuration
-After installation, now configure the extension so it will work with your Seerr instance. Go to **Dashboard → SeerrFin**, click settings, and follow the instructions. Also fill out all the configurations (TMDB is optional but recommended). You're not stupid. You figured out how to get Jellyfin and Seerr installed.
+### Connect Seerr to Jellyfin
+
+1. Open **Dashboard → SeerrFin → Configurations**. Under **Seerr configuration**, enter the **Seerr URL** your Jellyfin server can reach and your **Seerr API Key**. Save your settings.
+2. In **Dashboard → SeerrFin → Overview**, enable the tabs you want viewers to use. For discovery and tracking, enable **Movies**, **TV Shows**, and **Requests**.
+3. Sign in to Jellyfin Web as a viewer whose Jellyfin account is linked to Seerr and has request permission. Search for a missing title, request it, and open **Requests** to check its status.
+
+For download progress, also connect Radarr or Sonarr in the plugin settings. A TMDB API key is optional and adds artwork and release-type filters.
 
 ## Screenshots
 <table>
