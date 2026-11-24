@@ -69,6 +69,8 @@ public class PluginConfiguration : BasePluginConfiguration
 
     public bool NativeSearchResults { get; set; }
 
+    public bool ShowDownloadDetailsInSearch { get; set; }
+
     public bool ShowDownloadDetailsInDiscoveryPages { get; set; }
 
     public bool ShowSearchInRequestsPage { get; set; }

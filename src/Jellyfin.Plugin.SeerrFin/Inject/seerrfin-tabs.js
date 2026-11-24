@@ -1250,7 +1250,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 }
 
                 if (self.isContainerPopulated(container)) {
-                    self.scheduleDiscoveryDownloadDetails();
+                    self.scheduleDownloadDetails();
                     return;
                 }
 
@@ -1601,6 +1601,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     NativeCarousels: self.readConfigBool(data, 'NativeCarousels', 'nativeCarousels', false),
                     NativeGridPages: self.readConfigBool(data, 'NativeGridPages', 'nativeGridPages', false),
                     NativeSearchResults: self.readConfigBool(data, 'NativeSearchResults', 'nativeSearchResults', false),
+                    ShowDownloadDetailsInSearch: self.readConfigBool(data, 'ShowDownloadDetailsInSearch', 'showDownloadDetailsInSearch', false),
                     ShowDownloadDetailsInDiscoveryPages: self.readConfigBool(data, 'ShowDownloadDetailsInDiscoveryPages', 'showDownloadDetailsInDiscoveryPages', false),
                     ShowSearchInRequestsPage: self.readConfigBool(data, 'ShowSearchInRequestsPage', 'showSearchInRequestsPage', false),
                     CarouselLayouts: (data && (data.CarouselLayouts || data.carouselLayouts)) || {},
@@ -1635,6 +1636,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                     NativeCarousels: false,
                     NativeGridPages: false,
                     NativeSearchResults: false,
+                    ShowDownloadDetailsInSearch: false,
                     ShowDownloadDetailsInDiscoveryPages: false,
                     ShowSearchInRequestsPage: false,
                     CarouselLayouts: {},
@@ -1897,7 +1899,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             this._tabConfig = null;
             this._tabConfigPromise = null;
             this.clearBackdropCaches();
-            document.querySelectorAll('.seerrfin-movies-sections, .seerrfin-tv-sections, .seerrfin-discover-sections, .seerrfin-discover-body, .seerrfin-search-section').forEach(function (section) {
+            document.querySelectorAll('.seerrfin-movies-sections, .seerrfin-tv-sections, .seerrfin-discover-sections, .seerrfin-discover-body').forEach(function (section) {
                 delete section.dataset.seerrfinDisplaySettings;
                 delete section.dataset.seerrfinLoadId;
                 delete section.dataset.seerrfinLoading;
@@ -2049,7 +2051,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         },
 
         initNativeOrCustomCards: function (container, useNativeCards) {
-            this.scheduleDiscoveryDownloadDetails();
+            this.scheduleDownloadDetails();
 
             if (useNativeCards) {
                 if (this.shouldUseBackdropThumbnails()) {
@@ -2324,8 +2326,12 @@ if (typeof window.seerrFinPlugin === 'undefined') {
 
         createDiscoverCards: function (items, forGrid, options) {
             options = Object.assign({}, options);
-            options.showDownloadDetails = options.discoveryPage === true &&
-                (this._displaySettings || {}).ShowDownloadDetailsInDiscoveryPages === true;
+            const settings = this._displaySettings || {};
+            const searchResults = options.searchResults === true;
+            const showDownloadDetails = searchResults ? settings.ShowDownloadDetailsInSearch === true :
+                options.discoveryPage === true && settings.ShowDownloadDetailsInDiscoveryPages === true;
+            options.downloadDetailsHtml = showDownloadDetails ?
+                `<div class="seerrfin-discover-download-details"${searchResults ? ' data-search-result' : ''}></div>` : '';
             const useBackdrop = options.forceBackdrop === true ||
                 (options.forceBackdrop !== false && this.shouldUseBackdropThumbnails());
 
@@ -2342,22 +2348,31 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             return this.createDiscoverPosterCards(items, forGrid, options);
         },
 
-        scheduleDiscoveryDownloadDetails: function () {
-            if ((this._displaySettings || {}).ShowDownloadDetailsInDiscoveryPages !== true || this._discoveryDownloadSchedule) { return; }
+        scheduleDownloadDetails: function () {
+            const settings = this._displaySettings || {};
+
+            if ((!settings.ShowDownloadDetailsInDiscoveryPages && !settings.ShowDownloadDetailsInSearch) || this._downloadDetailsSchedule) { return; }
 
             const self = this;
-            self._discoveryDownloadSchedule = setTimeout(function () {
-                self._discoveryDownloadSchedule = null;
+            self._downloadDetailsSchedule = setTimeout(function () {
+                self._downloadDetailsSchedule = null;
                 window.__seerrFinRefreshMediaStatus?.({ reason: 'cards' });
             }, 50);
         },
 
-        getVisibleDiscoveryDownloadSlots: function () {
-            if (document.hidden || (this._displaySettings || {}).ShowDownloadDetailsInDiscoveryPages !== true) { return []; }
+        getDownloadDetailsSlots: function () {
+            const settings = this._displaySettings || {};
 
+            if (!settings.ShowDownloadDetailsInDiscoveryPages && !settings.ShowDownloadDetailsInSearch) { return []; }
+
+            return Array.from(document.querySelectorAll('.seerrfin-discover-download-details')).filter(function (slot) {
+                return slot.hasAttribute('data-search-result') ? settings.ShowDownloadDetailsInSearch === true : settings.ShowDownloadDetailsInDiscoveryPages === true;
+            });
+        },
+
+        hasVisibleDownloadDetails: function () {
             const self = this;
-            return Array.from(document.querySelectorAll('.seerrfin-discover-download-details'))
-                .filter(function (slot) { return self.isContainerVisible(slot); });
+            return !document.hidden && this.getDownloadDetailsSlots().some(function (slot) { return self.isContainerVisible(slot); });
         },
 
         getMediaStatusChipClass: function (label) {
@@ -2398,24 +2413,29 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             }
         },
 
-        renderRequestStatusChip: function (item, label, displayLabel) {
+        renderRequestStatusChip: function (item, label, displayLabel, interactive) {
+            const chipClass = 'seerrfin-request-chip ' + this.getMediaStatusChipClass(label);
+            const text = this.escapeHtml(displayLabel || label);
+
+            if (interactive === false) { return `<span class="${chipClass}">${text}</span>`; }
+
             const filter = this.getMediaStatusFilter(item);
             const filterLabel = filter === 'pending' ? 'Pending Approval' : filter === 'partial' ? 'Partially Available' :
                 filter.charAt(0).toUpperCase() + filter.slice(1);
 
-            return `<button type="button" class="seerrfin-request-chip ${this.getMediaStatusChipClass(label)}" data-request-filter="${filter}" aria-label="View ${filterLabel} requests">${this.escapeHtml(displayLabel || label)}</button>`;
+            return `<button type="button" class="${chipClass}" data-request-filter="${filter}" aria-label="View ${filterLabel} requests">${text}</button>`;
         },
 
-        renderDiscoveryDownloadDetails: function (item) {
+        renderDownloadDetails: function (item, interactive) {
             const label = this.getMediaStatusDisplayLabel(item);
             const displayLabel = item.is4k ? '4K · ' + label : label;
             const chip = label && label.toLowerCase() !== 'unknown' ?
-                this.renderRequestStatusChip(item, label, displayLabel) : '';
+                this.renderRequestStatusChip(item, label, displayLabel, interactive) : '';
             const progressLabel = item.servarrProgress?.statusLabel || label;
             const separateState = item.servarrProgress?.isTransfer === true && progressLabel !== label;
 
             if (item.downloadPercent == null || !Number.isFinite(Number(item.downloadPercent))) {
-                return separateState ? chip + this.renderRequestStatusChip(item, progressLabel) : chip;
+                return separateState ? chip + this.renderRequestStatusChip(item, progressLabel, null, interactive) : chip;
             }
 
             const percent = Math.max(0, Math.min(100, Number(item.downloadPercent)));
@@ -2434,45 +2454,46 @@ if (typeof window.seerrFinPlugin === 'undefined') {
         getMediaStatusSnapshotState: function () {
             const key = ApiClient.getUrl('SeerrFin/media-status') + ':' + ApiClient.getCurrentUserId();
 
-            if (!this._discoveryDownloadState || this._discoveryDownloadState.key !== key) {
-                this._discoveryDownloadState = { key: key, cache: new Map(), loaded: false, revision: 0 };
+            if (!this._mediaStatusSnapshot || this._mediaStatusSnapshot.key !== key) {
+                this._mediaStatusSnapshot = { key: key, cache: new Map(), loaded: false, revision: 0 };
                 document.querySelectorAll('.seerrfin-discover-download-details').forEach(function (slot) { slot.innerHTML = ''; });
             }
 
-            return this._discoveryDownloadState;
+            return this._mediaStatusSnapshot;
         },
 
-        updateDiscoveryDownloadCards: function (state) {
-            if (!state.loaded || (this._displaySettings || {}).ShowDownloadDetailsInDiscoveryPages !== true) { return; }
+        updateDownloadDetailsCards: function (state) {
+            if (!state.loaded) { return; }
 
-            document.querySelectorAll('.seerrfin-discover-download-details').forEach(function (slot) {
+            const self = this;
+            this.getDownloadDetailsSlots().forEach(function (slot) {
                 const card = slot.closest('[data-tmdb-id][data-media-type]');
-                const html = state.cache.get(card.dataset.mediaType + ':' + card.dataset.tmdbId) || '';
+                const item = state.cache.get(card.dataset.mediaType + ':' + card.dataset.tmdbId);
+                const html = item ? self.renderDownloadDetails(item, !slot.hasAttribute('data-search-result')) : '';
 
                 if (slot.innerHTML !== html) { slot.innerHTML = html; }
             });
         },
 
         applyMediaStatusSnapshot: function (items, state, revision) {
-            if (this._discoveryDownloadState !== state || state.revision !== revision ||
+            if (this._mediaStatusSnapshot !== state || state.revision !== revision ||
                 state.key !== ApiClient.getUrl('SeerrFin/media-status') + ':' + ApiClient.getCurrentUserId()) { return; }
 
-            const self = this;
             state.cache = new Map(items.map(function (item) {
-                return [item.type + ':' + item.tmdbId, self.renderDiscoveryDownloadDetails(item)];
+                return [item.type + ':' + item.tmdbId, item];
             }));
             state.loaded = true;
-            self.updateDiscoveryDownloadCards(state);
+            this.updateDownloadDetailsCards(state);
         },
 
-        refreshDiscoveryDownloadDetails: function (options) {
+        refreshDownloadDetails: function (options) {
             const self = this;
 
-            if (!self.getVisibleDiscoveryDownloadSlots().length) { return Promise.resolve(false); }
+            if (!self.hasVisibleDownloadDetails()) { return Promise.resolve(false); }
 
             const state = self.getMediaStatusSnapshotState();
             const revision = state.revision;
-            self.updateDiscoveryDownloadCards(state);
+            self.updateDownloadDetailsCards(state);
 
             if (state.loaded && options?.force !== true) { return Promise.resolve(false); }
 
@@ -2483,9 +2504,6 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             }).then(function (data) {
                 self.applyMediaStatusSnapshot(data.items, state, revision);
                 return true;
-            }).catch(function (err) {
-                log.warn('discovery download details failed', err);
-                throw err;
             });
         },
 
@@ -2597,6 +2615,24 @@ if (typeof window.seerrFinPlugin === 'undefined') {
             });
         },
 
+        renderDiscoverCardControls: function (mediaId, mediaType, options) {
+            const downloadDetailsHtml = options.downloadDetailsHtml || '';
+
+            if (options.interactive === false) { return downloadDetailsHtml; }
+
+            return `
+                <div class="cardOverlayContainer">
+                    <div class="cardImageContainer"></div>
+                    ${downloadDetailsHtml && options.searchResults !== true ? '' : `<div class="cardOverlayButton-br flex">
+                        <button is="discover-requestbutton" type="button" class="discover-requestbutton cardOverlayButton cardOverlayButton-hover paper-icon-button-light emby-button" data-id="${mediaId}" data-media-type="${mediaType}">
+                            <span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover add" aria-hidden="true"></span>
+                        </button>
+                    </div>`}
+                </div>
+                ${downloadDetailsHtml}
+            `;
+        },
+
         createDiscoverPosterCards: function (items, forGrid, options) {
             const self = this;
             options = options || {};
@@ -2622,16 +2658,6 @@ if (typeof window.seerrFinPlugin === 'undefined') {
 
                 const safeUrl = self.escapeHtml(posterUrl || '');
                 const imageAttrs = posterUrl ? ` data-src="${safeUrl}"` : '';
-                const overlayHtml = interactive ? `
-                    <div class="cardOverlayContainer">
-                        <div class="cardImageContainer"></div>
-                        ${options.showDownloadDetails ? '' : `<div class="cardOverlayButton-br flex">
-                            <button is="discover-requestbutton" type="button" class="discover-requestbutton cardOverlayButton cardOverlayButton-hover paper-icon-button-light emby-button" data-id="${mediaId}" data-media-type="${mediaType}">
-                                <span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover add" aria-hidden="true"></span>
-                            </button>
-                        </div>`}
-                    </div>
-                ` : '';
                 const metaHtml = includeMetaText ? (function () {
                     const meta = self.buildDiscoverYearText(item);
 
@@ -2661,8 +2687,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                             <div class="cardScalable">
                                 <div class="cardPadder ${padderType} lazy-hidden-children"></div>
                                 <div class="cardImageContainer coveredImage cardContent lazy lazy-hidden"${imageAttrs} aria-label="${safeName}"></div>
-                                ${overlayHtml}
-                                ${options.showDownloadDetails ? '<div class="seerrfin-discover-download-details"></div>' : ''}
+                                ${self.renderDiscoverCardControls(mediaId, mediaType, options)}
                                 ${chromeHtml}
                             </div>
                             ${metaHtml}
@@ -2702,16 +2727,6 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 const safeBackdropPath = self.escapeHtml(tmdbBackdropPath);
                 const fallbackAttr = safeFallback ? ` data-fallback-src="${safeFallback}"` : '';
                 const backdropPathAttr = safeBackdropPath ? ` data-tmdb-backdrop-path="${safeBackdropPath}"` : '';
-                const overlayHtml = interactive ? `
-                    <div class="cardOverlayContainer">
-                        <div class="cardImageContainer"></div>
-                        ${options.showDownloadDetails ? '' : `<div class="cardOverlayButton-br flex">
-                            <button is="discover-requestbutton" type="button" class="discover-requestbutton cardOverlayButton cardOverlayButton-hover paper-icon-button-light emby-button" data-id="${mediaId}" data-media-type="${mediaType}">
-                                <span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover add" aria-hidden="true"></span>
-                            </button>
-                        </div>`}
-                    </div>
-                ` : '';
                 const metaHtml = includeMetaText ? (function () {
                     const meta = self.buildDiscoverYearText(item);
 
@@ -2740,8 +2755,7 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                                     <span class="seerrfin-discover-backdrop-media"></span>
                                     <span class="seerrfin-discover-overlay-title seerrfin-box-label">${safeName}</span>
                                 </div>
-                                ${overlayHtml}
-                                ${options.showDownloadDetails ? '<div class="seerrfin-discover-download-details"></div>' : ''}
+                                ${self.renderDiscoverCardControls(mediaId, mediaType, options)}
                                 ${chromeHtml}
                             </div>
                             ${metaHtml}
@@ -3761,8 +3775,9 @@ if (typeof window.seerrFinPlugin === 'undefined') {
 
             if (self._lastSearchQuery === query) {
                 const existingSection = searchPage.querySelector('.seerrfin-search-section');
+                const showDownloadDetails = self._displaySettings?.ShowDownloadDetailsInSearch === true;
 
-                if (!existingSection && Array.isArray(self._lastSearchItems) && self._lastSearchItems.length) {
+                if (self._lastSearchItems?.length && existingSection?.dataset.downloadDetails !== String(showDownloadDetails)) {
                     self.renderSearchSection(searchPage, query, self._lastSearchItems);
                 }
 
@@ -3830,10 +3845,12 @@ if (typeof window.seerrFinPlugin === 'undefined') {
                 `);
 
             const itemsContainer = section.querySelector('.itemsContainer');
+            section.dataset.downloadDetails = String(this._displaySettings?.ShowDownloadDetailsInSearch === true);
             itemsContainer.innerHTML = this.createDiscoverCards(items, false, {
                 interactive: true,
                 includeMetaText: true,
-                nativeCards: useNativeCards
+                nativeCards: useNativeCards,
+                searchResults: true
             });
             this.appendHorizontalScroller(section, itemsContainer, {
                 focusScale: this.getAdvancedCarouselSetting('discoverRowFocusScale', true),

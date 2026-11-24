@@ -269,7 +269,7 @@ public class JellyseerrRequestsService
     )
     {
         PluginConfiguration config = SeerrFinPlugin.Instance.Configuration;
-        if (!config.ShowDownloadDetailsInDiscoveryPages)
+        if (!config.ShowDownloadDetailsInDiscoveryPages && !config.ShowDownloadDetailsInSearch)
         {
             return (200, "{\"items\":[]}");
         }

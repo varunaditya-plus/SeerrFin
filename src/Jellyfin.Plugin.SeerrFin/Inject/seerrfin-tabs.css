@@ -292,6 +292,11 @@ main > [data-seerrfin-modern-panel]:not(.is-active) {
     pointer-events: none;
 }
 
+.cardScalable:has(> .seerrfin-discover-download-details[data-search-result]:not(:empty)) > .cardOverlayContainer > .cardOverlayButton-br {
+    top: 0;
+    bottom: auto;
+}
+
 .seerrfin-discover-download-progress {
     display: flex;
     align-items: center;

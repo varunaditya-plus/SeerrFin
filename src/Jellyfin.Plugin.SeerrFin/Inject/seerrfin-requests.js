@@ -956,12 +956,13 @@ window.seerrFinLog = window.seerrFinLog || {
         state.autoRefreshInterval = 0;
     }
 
-    function hasActiveDiscovery() {
+    function hasActiveDownloadDetails() {
         const plugin = getPlugin();
 
-        if (!plugin || plugin._displaySettings?.ShowDownloadDetailsInDiscoveryPages !== true) { return false; }
+        if (!plugin) { return false; }
 
-        return plugin.getVisibleDiscoveryDownloadSlots().length > 0 ||
+        return plugin.hasVisibleDownloadDetails() ||
+            plugin._displaySettings?.ShowDownloadDetailsInDiscoveryPages === true &&
             Array.from(document.querySelectorAll('.seerrfin-discovery-reload')).some(function (button) {
                 return plugin.isContainerVisible(button);
             });
@@ -998,9 +999,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
         const container = findActiveContainer();
         const requestsActive = reason !== 'cards' && !!container?.querySelector('.seerrfin-requests-panel');
-        const discoveryActive = hasActiveDiscovery();
-
-        if (!requestsActive && !discoveryActive) { return Promise.resolve(false); }
+        if (!requestsActive && !hasActiveDownloadDetails()) { return Promise.resolve(false); }
 
         const now = Date.now();
         const force = options.force === true || reason !== 'cards';
@@ -1028,7 +1027,7 @@ window.seerrFinLog = window.seerrFinLog || {
 
         state.refreshPromise = Promise.resolve().then(function () {
             return requestsActive ? refreshActiveRequests(force) :
-                getPlugin().refreshDiscoveryDownloadDetails({ force: force });
+                getPlugin().refreshDownloadDetails({ force: force });
         }).then(function (fetched) {
             resultMode = fetched === true ? 'success' : 'idle';
 
@@ -1043,7 +1042,7 @@ window.seerrFinLog = window.seerrFinLog || {
             const queued = state.queuedRefresh;
             state.queuedRefresh = null;
 
-            if (queued && !document.hidden && (findActiveContainer() || hasActiveDiscovery())) {
+            if (queued && !document.hidden && (findActiveContainer() || hasActiveDownloadDetails())) {
                 return refreshIfActive(queued);
             }
 
@@ -1060,7 +1059,7 @@ window.seerrFinLog = window.seerrFinLog || {
         const settings = getRefreshSettings();
         const requestsActive = container && container.querySelector('.seerrfin-requests-panel');
 
-        if (document.hidden || (!requestsActive && !hasActiveDiscovery()) || settings.intervalSeconds <= 0) {
+        if (document.hidden || (!requestsActive && !hasActiveDownloadDetails()) || settings.intervalSeconds <= 0) {
             stopAutoRefresh();
 
             return;
@@ -1146,10 +1145,10 @@ window.seerrFinLog = window.seerrFinLog || {
 
                     const useNativeCards = plugin.shouldUseNativeSearchResults();
                     results.innerHTML = `
-                        <div class="verticalSection seerrfin-grid-view">
+                        <div class="verticalSection seerrfin-grid-view" data-download-details="${plugin._displaySettings?.ShowDownloadDetailsInSearch === true}">
                             <h2 class="sectionTitle sectionTitle-cards padded-left padded-right">Seerr results</h2>
                             <div is="emby-itemscontainer" class="itemsContainer padded-left padded-right vertical-wrap focuscontainer-x">
-                                ${plugin.createDiscoverCards(data.items, true, { nativeCards: useNativeCards })}
+                                ${plugin.createDiscoverCards(data.items, true, { nativeCards: useNativeCards, searchResults: true })}
                             </div>
                         </div>
                     `;
@@ -1177,8 +1176,14 @@ window.seerrFinLog = window.seerrFinLog || {
     }
 
     function syncSearchVisibility(container) {
+        const settings = getPlugin()?._displaySettings;
         const section = container.querySelector('.seerrfin-requests-search-section');
-        section.hidden = getPlugin()?._displaySettings?.ShowSearchInRequestsPage !== true;
+        section.hidden = settings?.ShowSearchInRequestsPage !== true;
+
+        const results = section.querySelector('.seerrfin-requests-search-results > [data-download-details]');
+        if (!section.hidden && results && results.dataset.downloadDetails !== String(settings.ShowDownloadDetailsInSearch === true)) {
+            section.querySelector('.seerrfin-requests-search').requestSubmit();
+        }
     }
 
     function mount(container) {
@@ -1419,11 +1424,11 @@ window.seerrFinLog = window.seerrFinLog || {
             refreshIfActive({ reason: 'manual' });
         });
         document.addEventListener('seerrfin-request-changed', function () {
-            const discovery = getPlugin()._discoveryDownloadState;
+            const snapshot = getPlugin()._mediaStatusSnapshot;
 
-            if (discovery) {
-                discovery.revision += 1;
-                discovery.loaded = false;
+            if (snapshot) {
+                snapshot.revision += 1;
+                snapshot.loaded = false;
             }
 
             refreshIfActive({ reason: 'mutation' });

@@ -4,6 +4,7 @@
     const PREVIEW_SETTINGS = new Set([
         'streamingServiceUseImages', 'studioNetworkUseImages', 'genreUseBackdrops', 'discoverUsePosters',
         'nativeCarousels', 'nativeGridPages', 'nativeSearchResults', 'showDownloadDetailsInDiscoveryPages',
+        'showDownloadDetailsInSearch',
         'useStarForRatings', 'qualityRecommendations',
         'advDiscoverRowFocusScale', 'advBrowseCarouselFocusScale',
         'advRequestsCardsInteractive', 'advRequestsCardsIncludeMetaText', 'advLbRequestCardsInteractive',
@@ -318,13 +319,21 @@
                 template.content.querySelectorAll('[data-grid-menu]').forEach(function (button) { button.disabled = false; });
                 return scene(template.innerHTML, '', 'grid', { focusSelector: '.bst-preview-subject' + (enabled ? ', [data-grid-menu]' : '') });
             }
-            case 'showDownloadDetailsInDiscoveryPages': {
+            case 'showDownloadDetailsInDiscoveryPages':
+            case 'showDownloadDetailsInSearch': {
                 const request = realRequests(samples).find(function (item) { return item.statusLabel || item.mediaStatusLabel; });
                 if (!request || !plugin) return scene(exampleCard(plugin));
-                settings.ShowDownloadDetailsInDiscoveryPages = enabled;
+                const searchResults = id === 'showDownloadDetailsInSearch';
+                settings[searchResults ? 'ShowDownloadDetailsInSearch' : 'ShowDownloadDetailsInDiscoveryPages'] = enabled;
                 const template = document.createElement('template');
-                template.innerHTML = cards(plugin, withItems(context, [requestItem(request)]), { discoveryPage: true, interactive: true });
-                template.content.querySelectorAll('.seerrfin-discover-download-details').forEach(function (slot) { slot.innerHTML = plugin.renderDiscoveryDownloadDetails(request); });
+                template.innerHTML = cards(plugin, withItems(context, [requestItem(request)]), {
+                    nativeCards: searchResults ? plugin.shouldUseNativeSearchResults() : plugin.shouldUseNativeCarousels(),
+                    discoveryPage: !searchResults,
+                    searchResults: searchResults,
+                    interactive: true
+                });
+                const slot = template.content.querySelector('.seerrfin-discover-download-details');
+                if (slot) { slot.innerHTML = plugin.renderDownloadDetails(request, !searchResults); }
                 return scene(template.innerHTML);
             }
             case 'qualityRecommendations':
@@ -412,6 +421,7 @@
             nativeSearchResults: '.sectionTitle, ' + box,
             nativeGridPages: box + (enabled ? ', [data-grid-menu]' : ''),
             showDownloadDetailsInDiscoveryPages: enabled ? card + ' .seerrfin-discover-download-details > *' : card + ' .discover-requestbutton',
+            showDownloadDetailsInSearch: enabled ? card + ' .seerrfin-discover-download-details > *' : artwork,
             useStarForRatings: card + ' [data-seerrfin-card-ratings]',
             qualityRecommendations: enabled ? '.bst-sidebar-lines--qualities' : '[data-quality-slot] .bst-sidebar-lines:not(.bst-sidebar-lines--qualities)',
             advDiscoverRowFocusScale: box,
@@ -430,8 +440,10 @@
 
         result.effectSelector = input.hasAttribute('data-rating-source') ? card + ' [data-seerrfin-card-ratings]' : effects[input.id];
         if (input.id === 'advIncludeSpecialsSeason' && !enabled) { result.effectFirst = true; }
-        result.hover = enabled && ['advRequestsCardsInteractive', 'advLbRequestCardsInteractive'].includes(input.id) || input.id === 'showDownloadDetailsInDiscoveryPages';
-        if (['advDiscoverRowFocusScale', 'advBrowseCarouselFocusScale', 'advRequestsCardsInteractive', 'advLbRequestCardsInteractive', 'showDownloadDetailsInDiscoveryPages'].includes(input.id)) {
+        const downloadDetails = ['showDownloadDetailsInDiscoveryPages', 'showDownloadDetailsInSearch'].includes(input.id);
+        const interactiveCards = ['advRequestsCardsInteractive', 'advLbRequestCardsInteractive'].includes(input.id);
+        result.hover = downloadDetails || enabled && interactiveCards;
+        if (downloadDetails || interactiveCards || ['advDiscoverRowFocusScale', 'advBrowseCarouselFocusScale'].includes(input.id)) {
             result.cursorSelector = '.bst-preview-subject .cardScalable';
         }
         return result;

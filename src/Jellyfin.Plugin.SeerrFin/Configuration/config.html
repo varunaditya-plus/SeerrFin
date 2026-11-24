@@ -1385,6 +1385,18 @@
                         <div class="bst-card">
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
+                                    <label class="bst-toggle-label" for="addSeerrResultsInSearch">Add Seerr results in Search</label>
+                                    <div class="bst-field-desc">Add Seerr movie/tv show results to Jellyfin search results to let you request specific content from Seerr.</div>
+                                </div>
+                                <div class="bst-toggle-actions">
+                                    <label class="bst-toggle">
+                                        <input id="addSeerrResultsInSearch" name="addSeerrResultsInSearch" type="checkbox" checked />
+                                        <span class="bst-toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="bst-toggle-row">
+                                <div class="bst-toggle-copy">
                                     <label class="bst-toggle-label" for="nativeSearchResults">Native search results</label>
                                     <div class="bst-field-desc">Use Jellyfin's default carousel styles for cards in Seerr search results.</div>
                                 </div>
@@ -1397,12 +1409,12 @@
                             </div>
                             <div class="bst-toggle-row">
                                 <div class="bst-toggle-copy">
-                                    <label class="bst-toggle-label" for="addSeerrResultsInSearch">Add Seerr results in Search</label>
-                                    <div class="bst-field-desc">Add Seerr movie/tv show results to Jellyfin search results to let you request specific content from Seerr.</div>
+                                    <label class="bst-toggle-label" for="showDownloadDetailsInSearch">Show download details in search</label>
+                                    <div class="bst-field-desc">In Seerr search results, show if media has been downloaded, is downloading (and its percent), or any other status it might be.</div>
                                 </div>
                                 <div class="bst-toggle-actions">
                                     <label class="bst-toggle">
-                                        <input id="addSeerrResultsInSearch" name="addSeerrResultsInSearch" type="checkbox" checked />
+                                        <input id="showDownloadDetailsInSearch" name="showDownloadDetailsInSearch" type="checkbox" />
                                         <span class="bst-toggle-slider"></span>
                                     </label>
                                 </div>
@@ -3580,6 +3592,7 @@
                 document.querySelector('#nativeCarousels').checked = config.NativeCarousels === true;
                 document.querySelector('#nativeGridPages').checked = config.NativeGridPages === true;
                 document.querySelector('#nativeSearchResults').checked = config.NativeSearchResults === true;
+                document.querySelector('#showDownloadDetailsInSearch').checked = config.ShowDownloadDetailsInSearch === true;
                 document.querySelector('#showDownloadDetailsInDiscoveryPages').checked = config.ShowDownloadDetailsInDiscoveryPages === true;
                 document.querySelector('#showSearchInRequestsPage').checked = config.ShowSearchInRequestsPage === true;
                 document.querySelector('#elegantFinFixes').checked = config.ElegantFinFixes === true;
@@ -3646,6 +3659,7 @@
                     config.NativeCarousels = document.querySelector('#nativeCarousels').checked;
                     config.NativeGridPages = document.querySelector('#nativeGridPages').checked;
                     config.NativeSearchResults = document.querySelector('#nativeSearchResults').checked;
+                    config.ShowDownloadDetailsInSearch = document.querySelector('#showDownloadDetailsInSearch').checked;
                     config.ShowDownloadDetailsInDiscoveryPages = document.querySelector('#showDownloadDetailsInDiscoveryPages').checked;
                     config.ShowSearchInRequestsPage = document.querySelector('#showSearchInRequestsPage').checked;
                     config.ElegantFinFixes = document.querySelector('#elegantFinFixes').checked;

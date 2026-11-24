@@ -44,7 +44,6 @@ window.seerrFinLog = window.seerrFinLog || {
 
             options = options || {};
 
-            const interactive = options.interactive !== false;
             const includeMetaText = options.includeMetaText !== false;
             const forGrid = options.forGrid === true;
             const usePoster = options.usePoster === true;
@@ -84,16 +83,6 @@ window.seerrFinLog = window.seerrFinLog || {
                         <bdi><span title="${meta.year}">${meta.yearText}</span></bdi>
                     </div>
                 ` : '';
-                const overlayHtml = interactive ? `
-                    <div class="cardOverlayContainer">
-                        <div class="cardImageContainer"></div>
-                        ${options.showDownloadDetails ? '' : `<div class="cardOverlayButton-br flex">
-                            <button is="discover-requestbutton" type="button" class="discover-requestbutton cardOverlayButton cardOverlayButton-hover paper-icon-button-light emby-button" data-id="${mediaId}" data-media-type="${mediaType}">
-                                <span class="material-icons cardOverlayButtonIcon cardOverlayButtonIcon-hover add" aria-hidden="true"></span>
-                            </button>
-                        </div>`}
-                    </div>
-                ` : '';
 
                 return `
                     <div class="card ${cardType} card-hoverable card-withuserdata" data-seerrfin-native-card="true" data-tmdb-id="${mediaId}" data-media-type="${mediaType}" data-name="${safeName}" data-year="${yearValue}" data-rating="${meta.rating}" data-use-poster="${usePoster ? 'true' : 'false'}"${fallbackAttr}${backdropPathAttr}${posterAttr}>
@@ -102,8 +91,7 @@ window.seerrFinLog = window.seerrFinLog || {
                                 <div class="cardPadder ${padderType} seerrfin-card-thumb-skeleton"></div>
                                 <canvas aria-hidden="true" width="20" height="20" class="blurhash-canvas lazy-hidden"></canvas>
                                 <div class="${imageClass}"${imageAttrs} aria-label="${safeName}" role="img"></div>
-                                ${overlayHtml}
-                                ${options.showDownloadDetails ? '<div class="seerrfin-discover-download-details"></div>' : ''}
+                                ${plugin.renderDiscoverCardControls(mediaId, mediaType, options)}
                             </div>
                             ${metaHtml}
                         </div>

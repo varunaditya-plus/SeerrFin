@@ -324,6 +324,7 @@ public class SeerrFinController : ControllerBase
                 config.NativeCarousels,
                 config.NativeGridPages,
                 config.NativeSearchResults,
+                config.ShowDownloadDetailsInSearch,
                 config.ShowDownloadDetailsInDiscoveryPages,
                 config.ShowSearchInRequestsPage,
                 displayCustomizations = DisplayCustomizationsHelper.Resolve(config),
