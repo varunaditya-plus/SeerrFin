@@ -1,14 +1,14 @@
 {
   "category": "General",
-  "changelog": "Added hover previews for visual settings and moved native search results into Search settings",
+  "changelog": "Added option to show download details in Seerr search cards",
   "description": "The best way to discover and request Movies and TV shows and track request status through Seerr directly in Jellyfin.",
   "guid": "c8e4f2a1-9b3d-4e7f-a6c2-1d5e8f0a3b7c",
   "name": "SeerrFin",
   "overview": "Browse the Movies and TV Shows tabs or search Jellyfin for a missing title. Request a movie or specific seasons, then open the Requests tab to check approval, availability, and download progress when Radarr or Sonarr is connected.",
   "owner": "varunaditya-plus",
   "targetAbi": "12.0.0.0",
-  "timestamp": "2026-11-15T12:25:47.0000000Z",
-  "version": "1.9.5.0",
+  "timestamp": "2026-11-24T00:01:55.0000000Z",
+  "version": "1.9.6.0",
   "status": "Active",
   "autoUpdate": true,
   "assemblies": [

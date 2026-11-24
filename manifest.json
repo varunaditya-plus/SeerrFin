@@ -10,6 +10,15 @@
     "repositoryUrl": "https://github.com/varunaditya-plus/SeerrFin",
     "versions": [
       {
+        "version": "1.9.6.0",
+        "changelog": "Added option to show download details in Seerr search cards",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/varunaditya-plus/SeerrFin/releases/download/1.9.6.0/Jellyfin.Plugin.SeerrFin_12.0.0.zip",
+        "checksum": "354D762D307CBDD266DB88949B8EBA7A",
+        "timestamp": "2026-11-24T00:01:55.0000000Z",
+        "dependencies": []
+      },
+      {
         "version": "1.9.5.0",
         "changelog": "Added hover previews for visual settings and moved native search results into Search settings",
         "targetAbi": "12.0.0.0",
